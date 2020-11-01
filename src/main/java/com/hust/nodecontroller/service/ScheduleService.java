@@ -52,10 +52,10 @@ public class ScheduleService {
     {
         this.threadNum = threadNum;
         destination = "112.125.88.24:10400";
-//        Scanner scan = new Scanner(System.in);
-//        System.out.println("Please input Server's IP and port in form:  IP:port");
-//        destination = scan.next();
-//        System.out.println("Server works on " + destination);
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please input Server's IP and port in form:  IP:port");
+        String destination = scan.next();
+        System.out.println("Server works on " + destination);
     }
 
     @PostConstruct
