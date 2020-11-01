@@ -29,88 +29,88 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ScheduleService {
     static ZooKeeper zookeeper;
     static Stat stat = new Stat();
-    private final String destination;
-    private final AtomicInteger threadNum;
-
-
-    //添加定时任务
-    @Scheduled(cron = "0/8 * * * * ?")
-    //或直接指定时间间隔，例如：5秒
-    //@Scheduled(fixedRate=5000)
-    private void configureTasks() {
-        try {
-            stat = zookeeper.setData("/servers/" + destination, (threadNum + "").getBytes(), stat.getVersion());
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-       // System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
-    }
-
-    @Autowired
-    public ScheduleService(AtomicInteger threadNum)
-    {
-        this.threadNum = threadNum;
-        destination = "112.125.88.24:10400";
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Please input Server's IP and port in form:  IP:port");
-        String destination = scan.next();
-        System.out.println("Server works on " + destination);
-    }
-
-    @PostConstruct
-    public void Init()
-    {
-        //   nodeController=(NodeController)applicationContext.getBean("NodeController");
-        try {
-            Watcher watcher = new Watcher(){
-                public void process(WatchedEvent event) {
-                    System.out.println("receive event："+event);
-                }
-            };
-            String value = null;
-            zookeeper = new ZooKeeper("112.125.88.24:10001", 10000, watcher);
-            Thread.sleep(10000);
-
-            if (zookeeper.exists("/servers", null) == null) {
-                zookeeper.create("/servers", (threadNum+"").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
-            }
-            if (zookeeper.exists("/servers/"+destination, null) == null) {
-                zookeeper.create("/servers/"+destination, (threadNum+"").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
-            }
-            zookeeper.getData("/servers/"+destination,true,stat);
-            System.out.println("Data version:"+stat.getVersion());
-
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-    @RequestMapping(value = "/zk")
-    public String zk() {
-        threadNum.incrementAndGet();
-        return "123456";
-    }
-
-    @RequestMapping(value = "/zkget")
-    public String zkget() {
-        Watcher watcher = new Watcher(){
-            public void process(WatchedEvent event) {
-                System.out.println("receive event："+event);
-            }
-        };
-
-        String value = null;
-        try {
-            final ZooKeeper zookeeper = new ZooKeeper("112.125.88.24:10001", 999999, watcher);
-            final byte[] data = zookeeper.getData("/servers/"+destination, watcher, null);
-            value = new String(data);
-            zookeeper.close();
-        }catch(Exception e){
-            e.printStackTrace();
-            return "Something goes wrong!";
-        }
-
-        return "get value from zookeeper [" + value + "]";
-    }
+//    private final String destination;
+//    private final AtomicInteger threadNum;
+//
+//
+//    //添加定时任务
+//    @Scheduled(cron = "0/8 * * * * ?")
+//    //或直接指定时间间隔，例如：5秒
+//    //@Scheduled(fixedRate=5000)
+//    private void configureTasks() {
+//        try {
+//            stat = zookeeper.setData("/servers/" + destination, (threadNum + "").getBytes(), stat.getVersion());
+//        }catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//       // System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
+//    }
+//
+//    @Autowired
+//    public ScheduleService(AtomicInteger threadNum)
+//    {
+//        this.threadNum = threadNum;
+//        destination = "112.125.88.24:10400";
+//        Scanner scan = new Scanner(System.in);
+//        System.out.println("Please input Server's IP and port in form:  IP:port");
+//        String destination = scan.next();
+//        System.out.println("Server works on " + destination);
+//    }
+//
+//    @PostConstruct
+//    public void Init()
+//    {
+//        //   nodeController=(NodeController)applicationContext.getBean("NodeController");
+//        try {
+//            Watcher watcher = new Watcher(){
+//                public void process(WatchedEvent event) {
+//                    System.out.println("receive event："+event);
+//                }
+//            };
+//            String value = null;
+//            zookeeper = new ZooKeeper("112.125.88.24:10001", 10000, watcher);
+//            Thread.sleep(10000);
+//
+//            if (zookeeper.exists("/servers", null) == null) {
+//                zookeeper.create("/servers", (threadNum+"").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
+//            }
+//            if (zookeeper.exists("/servers/"+destination, null) == null) {
+//                zookeeper.create("/servers/"+destination, (threadNum+"").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
+//            }
+//            zookeeper.getData("/servers/"+destination,true,stat);
+//            System.out.println("Data version:"+stat.getVersion());
+//
+//        }catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
+//    @RequestMapping(value = "/zk")
+//    public String zk() {
+//        threadNum.incrementAndGet();
+//        return "123456";
+//    }
+//
+//    @RequestMapping(value = "/zkget")
+//    public String zkget() {
+//        Watcher watcher = new Watcher(){
+//            public void process(WatchedEvent event) {
+//                System.out.println("receive event："+event);
+//            }
+//        };
+//
+//        String value = null;
+//        try {
+//            final ZooKeeper zookeeper = new ZooKeeper("112.125.88.24:10001", 999999, watcher);
+//            final byte[] data = zookeeper.getData("/servers/"+destination, watcher, null);
+//            value = new String(data);
+//            zookeeper.close();
+//        }catch(Exception e){
+//            e.printStackTrace();
+//            return "Something goes wrong!";
+//        }
+//
+//        return "get value from zookeeper [" + value + "]";
+//    }
 }
