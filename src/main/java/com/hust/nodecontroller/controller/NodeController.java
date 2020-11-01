@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -37,11 +38,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequestMapping(value = "/api")
 public class NodeController {
 
-    @Bean("ThreadNum")
+    public String ipAndPort;
+
+    @Bean("threadNum")
     AtomicInteger Num()
     {
         return threadNum;
     }
+
+    @Bean("IPAndPort")
+    String IPAndPort() { return ipAndPort; }
 
     public static AtomicInteger threadNum = new AtomicInteger(0);
 
@@ -51,6 +57,10 @@ public class NodeController {
 
     public NodeController(NodeService nodeService) {
         this.nodeService = nodeService;
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please input Server's IP and port in form:  IP:port");
+        ipAndPort = scan.next();
+        System.out.println("Server works on " + ipAndPort);
     }
 
 
