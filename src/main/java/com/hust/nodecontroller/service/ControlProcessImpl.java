@@ -48,32 +48,12 @@ public class ControlProcessImpl implements ControlProcess{
         String prefix = infoFromClient.getPrefix(); //标识前缀
         JSONObject data = infoFromClient.getData();
 
-        boolean empowerBool = true;
         String url = null;
         String goodsHash = null;
-        String authority = null;
-        String erp_name = null;
 
         if(type == 2 || type == 8){
-            authority = data.getString("authority"); //权限类型
-            erp_name = data.getString("erp_name");  //可以对该前缀进行权限类型操作的企业名称
             url = data.getString("url");
             goodsHash = data.getString("goodsHash");
-        }
-
-        //赋权操作分为增、删、改三种
-        //目前的方案是在增、删、改产品标识的时候同步进行赋权操作
-        //其中增、改需要提供权限类型和企业名称
-        //删除没有data部分，因此不需要提供
-        //如果没有提供相应参数则默认为不进行赋权
-        //当进行查询或者注册操作时，要求被赋权企业名和权限均不为空
-        if(type == 2 || type == 8) {
-            if(authority.isEmpty() || erp_name.isEmpty())
-                empowerBool = false;
-        }
-        //当进行删除操作时，要求被赋权企业名不为空
-        else {
-            empowerBool = false;
         }
 
         //1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权
@@ -88,19 +68,7 @@ public class ControlProcessImpl implements ControlProcess{
             throw new Exception(amSystemInfo.get().getMessage());
         }
 
-
-        //2. 比对前缀所有者和发送请求企业，判断是否可以执行赋权操作,然后进行赋权相关操作
-        //赋权操作需要满足（1）请求者是前缀的所有者（2）提供了赋权相关参数
-        if (amSystemInfo.get().getOwner().equals(client) && empowerBool){
-            if(type == 8)
-                authorityModule.register(erp_name,prefix,amSystemInfo.get().getKey(),authority,amSystemInfo.get().getOwner());
-            else if(type == 4)
-                authorityModule.delete(erp_name,prefix);
-            else if(type == 2)
-                authorityModule.update(erp_name,prefix,amSystemInfo.get().getKey(),authority,amSystemInfo.get().getOwner());
-        }
-
-        //3.向解析结果验证子系统、标识管理系统发送对应的json数据
+        //2.向解析结果验证子系统、标识管理系统发送对应的json数据
         Future<NormalMsg> dhtFlag = null;
         Future<NormalMsg> bcFlag = null;
         if (type == 8){

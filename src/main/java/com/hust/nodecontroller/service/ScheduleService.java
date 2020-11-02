@@ -44,7 +44,7 @@ public class ScheduleService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
+       //System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
     }
 
     @PostConstruct
