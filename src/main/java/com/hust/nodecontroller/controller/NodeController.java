@@ -53,16 +53,15 @@ public class NodeController {
 
 
     private final NodeService nodeService;
-    private final ApplicationArguments applicationArguments;
     public static AtomicInteger threadNum = new AtomicInteger(0);
     private static final Logger logger = LoggerFactory.getLogger(NodeController.class);
 
     @Autowired
     public NodeController(NodeService nodeService, ApplicationArguments applicationArguments) {
         this.nodeService = nodeService;
-        this.applicationArguments = applicationArguments;
-        List<String> ip = this.applicationArguments.getOptionValues("Ip");
+        List<String> ip = applicationArguments.getOptionValues("Ip");
         ipAndPort = ip.get(0) + ":" + "10400";
+        System.out.println("Server's IP and port is: " + ipAndPort);
         //logger.info(this.ipAndPort);
     }
 
