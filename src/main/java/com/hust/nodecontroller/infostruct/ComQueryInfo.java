@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ComQueryInfo extends NormalMsg{
     private String information;
+    private String jsonStr;
 
     public String getInformation() {
         return information;
@@ -19,5 +20,13 @@ public class ComQueryInfo extends NormalMsg{
 
     public void setInformation(String information) {
         this.information = information;
+    }
+
+    public String getJsonStr() {
+        return jsonStr;
+    }
+
+    public void setJsonStr(String jsonStr) {
+        this.jsonStr = jsonStr;
     }
 }

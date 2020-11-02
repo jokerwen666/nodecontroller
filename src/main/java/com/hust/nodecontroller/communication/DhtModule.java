@@ -52,7 +52,7 @@ public class DhtModule implements sendInfoToModule{
         jsonToIMSystem.put("orgname", prefix);
         jsonToIMSystem.put("Identity", id);
         jsonToIMSystem.put("type", type);
-        jsonToIMSystem.put("ip port", "112.125.88.26 10666");
+        jsonToIMSystem.put("ip port", "112.125.88.26 10106");
 
         NormalMsg normalMsg = new NormalMsg();
 
@@ -75,7 +75,7 @@ public class DhtModule implements sendInfoToModule{
         jsonToIMSystem.put("orgname", prefix);
         jsonToIMSystem.put("Identity", identity);
         jsonToIMSystem.put("type", 1);
-        jsonToIMSystem.put("ip port", "112.125.88.26 10666");
+        jsonToIMSystem.put("ip port", "112.125.88.26 10106");
         jsonToIMSystem.put("crossDomain_flag", crossDomain_flag);
         IMSystemInfo imSystemInfo = new IMSystemInfo();
         try {
@@ -96,7 +96,7 @@ public class DhtModule implements sendInfoToModule{
         jsonToIMSystem.put("Identity", id);
         jsonToIMSystem.put("type",type);
         jsonToIMSystem.put("mappingdata", url);
-        jsonToIMSystem.put("ip port", "112.125.88.26 10666");
+        jsonToIMSystem.put("ip port", "112.125.88.26 10106");
 
         NormalMsg normalMsg = new NormalMsg();
 

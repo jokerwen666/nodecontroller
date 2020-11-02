@@ -9,6 +9,7 @@ import com.hust.nodecontroller.utils.GetSysInfoUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,21 +51,20 @@ public class NodeController {
     @Bean("IPAndPort")
     String IPAndPort() { return ipAndPort; }
 
-    public static AtomicInteger threadNum = new AtomicInteger(0);
 
     private final NodeService nodeService;
-
+    private final ApplicationArguments applicationArguments;
+    public static AtomicInteger threadNum = new AtomicInteger(0);
     private static final Logger logger = LoggerFactory.getLogger(NodeController.class);
 
-    public NodeController(NodeService nodeService) {
+    @Autowired
+    public NodeController(NodeService nodeService, ApplicationArguments applicationArguments) {
         this.nodeService = nodeService;
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Please input Server's IP and port in form:  IP:port");
-        ipAndPort = scan.next();
-        System.out.println("Server works on " + ipAndPort);
+        this.applicationArguments = applicationArguments;
+        List<String> ip = this.applicationArguments.getOptionValues("Ip");
+        ipAndPort = ip.get(0) + ":" + "10400";
+        //logger.info(this.ipAndPort);
     }
-
-
 
     /**
      * @Description : 向dht网络中注册标识信息

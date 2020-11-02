@@ -26,10 +26,9 @@ public class ComInfoModule implements sendInfoToModule{
     //@Async("comInfoQueryExecutor")
     public ComQueryInfo query(String toUrl){
         long beginTime = System.nanoTime();
-        JSONObject jsonToIMSystem = new JSONObject();
         ComQueryInfo comQueryInfo = new ComQueryInfo();
         try {
-            comQueryInfo = PostRequestUtil.getComQueryInfo(toUrl, jsonToIMSystem);
+            comQueryInfo = PostRequestUtil.getComQueryInfo(toUrl);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return comQueryInfo;

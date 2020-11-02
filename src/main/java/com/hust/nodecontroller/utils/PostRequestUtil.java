@@ -144,11 +144,10 @@ public class PostRequestUtil {
      * @author : Zhang Bowen
      * @date : 2020.10.31 21:46
      * @param url : 目的服务器url
-     * @param json : 要发送的json数据
      * @return : com.hust.nodecontroller.infostruct.ComQueryInfo
      */
-    public static ComQueryInfo getComQueryInfo(String url, JSONObject json) throws Exception{
-        JSONObject resJson = SendPostPacket(url, json);
+    public static ComQueryInfo getComQueryInfo(String url) throws Exception{
+        JSONObject resJson = SendGetPacket(url);
         ComQueryInfo response = new ComQueryInfo();
 
         if(!resJson.getBoolean("IsSuccess")){
@@ -157,9 +156,12 @@ public class PostRequestUtil {
             return response;
         }
 
+        JSONObject dataJson = resJson.getJSONObject("Data");
+
         response.setStatus(1);
         response.setMessage("Query CompanyInfo Success!");
-        response.setInformation(resJson.getString("Data"));
+        response.setInformation(dataJson.toString());
+        response.setJsonStr(resJson.toString());
 
         return response;
     }
@@ -322,6 +324,8 @@ public class PostRequestUtil {
      * @return : com.alibaba.fastjson.JSONObject
      */
     private static JSONObject SendPostPacket(String url, JSONObject json) throws Exception{
+
+
         RestTemplate client = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         HttpMethod method = HttpMethod.POST;
@@ -336,5 +340,17 @@ public class PostRequestUtil {
         return JSONObject.parseObject(res);
     }
 
+    private static JSONObject SendGetPacket(String url) throws Exception {
+        RestTemplate client = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        HttpMethod method = HttpMethod.GET;
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
 
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+
+        HttpEntity<JSONObject> requestEntity = new HttpEntity<JSONObject>(headers);
+
+        return client.exchange(url, method, requestEntity, JSONObject.class).getBody();
+    }
 }

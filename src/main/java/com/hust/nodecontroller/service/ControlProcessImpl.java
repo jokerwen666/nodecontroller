@@ -51,10 +51,12 @@ public class ControlProcessImpl implements ControlProcess{
         boolean empowerBool = true;
         String url = null;
         String goodsHash = null;
-        String authority = data.getString("authority"); //权限类型
-        String erp_name = data.getString("erp_name");  //可以对该前缀进行权限类型操作的企业名称
+        String authority = null;
+        String erp_name = null;
 
-        if (type == 2 || type == 8) {
+        if(type == 2 || type == 8){
+            authority = data.getString("authority"); //权限类型
+            erp_name = data.getString("erp_name");  //可以对该前缀进行权限类型操作的企业名称
             url = data.getString("url");
             goodsHash = data.getString("goodsHash");
         }
@@ -71,8 +73,7 @@ public class ControlProcessImpl implements ControlProcess{
         }
         //当进行删除操作时，要求被赋权企业名不为空
         else {
-            if (erp_name.isEmpty())
-                empowerBool = false;
+            empowerBool = false;
         }
 
         //1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权
@@ -125,14 +126,12 @@ public class ControlProcessImpl implements ControlProcess{
 
         if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() != 0){
             logger.info("BlockchainErrorMsg({})", bcFlag.get().getMessage());
-            String errStr = "区块链节点错误信息(" + bcFlag.get().getMessage() + ")";
-            throw new Exception(errStr);
+            throw new Exception(bcFlag.get().getMessage());
         }
 
         if(bcFlag.get().getStatus() != 0 && dhtFlag.get().getStatus() == 0){
             logger.info("DHTErrorMsg({})", dhtFlag.get().getMessage());
-            String errStr = "DHT节点错误信息(" + dhtFlag.get().getMessage() + ")";
-            throw new Exception(errStr);
+            throw new Exception(dhtFlag.get().getMessage());
         }
 
         if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() == 0){
