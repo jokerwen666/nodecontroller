@@ -82,7 +82,7 @@ public class NodeController {
             threadNum.addAndGet(1);
             nodeService.register(infoFromClient);
             backHtml.setStatus(1);
-            backHtml.setMessage("Success!");
+            backHtml.setMessage("注册标识信息成功！");
             threadNum.decrementAndGet();
             return backHtml;
 
@@ -102,7 +102,7 @@ public class NodeController {
             threadNum.addAndGet(1);
             nodeService.delete(infoFromClient);
             backHtml.setStatus(1);
-            backHtml.setMessage("Success!");
+            backHtml.setMessage("删除标识信息成功！");
             threadNum.decrementAndGet();
             return backHtml;
 
@@ -122,7 +122,7 @@ public class NodeController {
             threadNum.addAndGet(1);
             nodeService.update(infoFromClient);
             backHtml.setStatus(1);
-            backHtml.setMessage("Success!");
+            backHtml.setMessage("更新标识信息成功！");
             threadNum.decrementAndGet();
             return backHtml;
 
@@ -142,7 +142,7 @@ public class NodeController {
             threadNum.addAndGet(1);
             backHtml = nodeService.query(infoFromClient);
             backHtml.setStatus(1);
-            backHtml.setMessage("Success!");
+            backHtml.setMessage("查询标识信息成功！");
             CalStateUtil.successCount++;
             threadNum.decrementAndGet();
             return backHtml;
