@@ -31,14 +31,18 @@ public class ControlProcessImpl implements ControlProcess{
     private final BlockchainModule blockchainModule;
     private final AuthorityModule authorityModule;
     private final ComInfoModule comInfoModule;
+    private final BCErrorHandle bcErrorHandle;
+    private final DhtErrorHandle dhtErrorHandle;
     private static final Logger logger = LoggerFactory.getLogger(ControlProcessImpl.class);
 
     @Autowired
-    public ControlProcessImpl(DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule) {
+    public ControlProcessImpl(DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule, BCErrorHandle bcErrorHandle, DhtErrorHandle dhtErrorHandle) {
         this.dhtModule = dhtModule;
         this.blockchainModule = blockchainModule;
         this.authorityModule = authorityModule;
         this.comInfoModule = comInfoModule;
+        this.bcErrorHandle = bcErrorHandle;
+        this.dhtErrorHandle = dhtErrorHandle;
     }
 
     public void enterpriseHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl, int type) throws Exception {
@@ -93,11 +97,13 @@ public class ControlProcessImpl implements ControlProcess{
         }
 
         if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() != 0){
+            //bcErrorHandle.errorHandle(type,identity);
             logger.info("BlockchainErrorMsg({})", bcFlag.get().getMessage());
             throw new Exception(bcFlag.get().getMessage());
         }
 
         if(bcFlag.get().getStatus() != 0 && dhtFlag.get().getStatus() == 0){
+            //dhtErrorHandle.errorHandle(type,identity,prefix);
             logger.info("DHTErrorMsg({})", dhtFlag.get().getMessage());
             throw new Exception(dhtFlag.get().getMessage());
         }

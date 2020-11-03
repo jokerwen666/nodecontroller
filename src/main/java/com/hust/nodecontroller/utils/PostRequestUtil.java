@@ -98,7 +98,7 @@ public class PostRequestUtil {
         IMSystemInfo response = new IMSystemInfo();
 
         if (resJson.getIntValue("status") == 0) {
-            response.setMessage(resJson.getString("message"));
+            response.setMessage(resJson.getString("wrongInformation"));
             response.setStatus(resJson.getIntValue("status"));
             return response;
         }
