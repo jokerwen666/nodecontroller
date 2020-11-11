@@ -1,12 +1,12 @@
 package com.hust.nodecontroller.service;
 
-import com.hust.nodecontroller.controller.NodeController;
+import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.DhtNodeInfo;
-import com.hust.nodecontroller.infostruct.DhtNodeInfo;
-import com.hust.nodecontroller.infostruct.NormalMsg;
+import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
+import javax.print.attribute.standard.Destination;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,27 +25,38 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequestMapping(value = "/api")
 public class ScheduleService {
     static ZooKeeper zookeeper;
-    static Stat stat=new Stat();
+    static Stat stat = new Stat();
+    boolean setFlag = false;
+
+    @Value("${dht.ownInfo.url}")
+    private String dhtOwnNode;
 
     @Autowired
     ApplicationContext applicationContext;
 
     @Autowired
     String IPAndPort;
-    DhtNodeInfo node;
+    String destination;
 
     //添加定时任务
-    @Scheduled(cron = "0/1 * * * * ?")
+    @Scheduled(cron = "0/10 * * * * ?")
     private void configureTasks() {
-        AtomicInteger Threadnum=(AtomicInteger)applicationContext.getBean("threadNum");
-        // DHTnodeinfo node=(DHTnodeinfo)applicationContext.getBean("DHTnodeinfo");
-        //String result;
+        AtomicInteger threadNum = (AtomicInteger)applicationContext.getBean("threadNum");
         try {
-            stat = zookeeper.setData("/servers/" + IPAndPort, (Threadnum+"").getBytes(), stat.getVersion());
+            DhtNodeInfo node = queryDhtInfo();
+            if(node.getStatus()==0)
+                return;
+            if(!setFlag)
+            {
+                setFlag=true;
+                setZook(node.getDomainName());
+            }
+
+            stat = zookeeper.setData(destination, (threadNum+"/"+node.toString()).getBytes(), stat.getVersion());
         } catch (Exception e) {
             e.printStackTrace();
         }
-       //System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
+        System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
     }
 
     @PostConstruct
@@ -59,22 +71,26 @@ public class ScheduleService {
             String value = null;
             zookeeper = new ZooKeeper("39.105.189.17:10001", 10000, watcher);
             Thread.sleep(20000);
-            Setzook(IPAndPort);
         }catch (Exception e)
         {
             e.printStackTrace();
         }
     }
 
-    public static void Setzook(String IPandPort) throws Exception {
 
+    public void setZook(String Domain) throws Exception {
         if (zookeeper.exists("/servers", null) == null) {
             zookeeper.create("/servers", ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
         }
-        if (zookeeper.exists("/servers/" + IPandPort, null) == null) {
-            zookeeper.create("/servers/" + IPandPort, ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
+        if (zookeeper.exists("/servers/"+Domain, null) == null) {
+            zookeeper.create("/servers/"+Domain, ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
         }
-        zookeeper.getData("/servers/" + IPandPort, null, stat);
+
+        destination="/servers/"+Domain+"/"+IPAndPort;
+        if (zookeeper.exists(destination, null) == null) {
+            zookeeper.create(destination, ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
+        }
+        zookeeper.getData(destination, null, stat);
     }
 
     @RequestMapping(value = "/zkget")
@@ -98,4 +114,9 @@ public class ScheduleService {
         return "get value from zookeeper [" + IPAndPort+":"+ value + "]";
     }
 
+    public DhtNodeInfo queryDhtInfo() {
+        JSONObject callJson = new JSONObject();
+        callJson.put("type", 9);
+        return PostRequestUtil.getOwnNodeInfo(dhtOwnNode,callJson);
+    }
 }

@@ -10,85 +10,67 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @date ：2020/10/29 11:15
  */
 
-@Component("DhtNodeInfo")
-public class DhtNodeInfo{
-    @JsonIgnore
-    static boolean Flag=false;
-    String DomainName;
-    String NodeID;
-    String Latitude;
-    String Longtitude;
-    String City;
-    String IdentityNum;
+@Component
+public class DhtNodeInfo extends NormalMsg{
+    String domainName;
+    String nodeID;
+    String latitude;
+    String longtitude;
+    String city;
+    String identityNum;
 
-    @JsonProperty(value = "DomainName")
-    public void setDomainName(String DomainName) {
-        this.DomainName = DomainName;
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
     }
 
     public String getDomainName() {
-        return DomainName;
+        return domainName;
     }
 
-    @JsonProperty(value = "NodeID")
-    public void setNodeID(String NodeID) {
-        this.NodeID = NodeID;
+    public void setNodeID(String nodeID) {
+        this.nodeID = nodeID;
     }
 
     public String getNodeID() {
-        return NodeID;
+        return nodeID;
     }
 
-    @JsonProperty(value = "Latitude")
-    public void setLatitude(String Latitude) {
-        this.Latitude = Latitude;
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
     }
 
     public String getLatitude() {
-        return Latitude;
+        return latitude;
     }
 
-    @JsonProperty(value = "Longtitude")
-    public void setLongtitude(String Longtitude) {
-        this.Longtitude = Longtitude;
+    public void setLongtitude(String longtitude) {
+        this.longtitude = longtitude;
     }
 
     public String getLongtitude() {
-        return Longtitude;
+        return longtitude;
     }
 
-    @JsonProperty(value = "City")
-    public void setCity(String City) {
-        this.City = City;
+    public void setCity(String city) {
+        this.city = city;
     }
 
     public String getCity() {
-        return City;
+        return city;
     }
 
-    @JsonProperty(value = "IdentityNum")
-    public void setIdentityNum(String IdentityNum) {
-        this.IdentityNum = IdentityNum;
+    public void setIdentityNum(String identityNum) {
+        this.identityNum = identityNum;
     }
 
     public String getIdentityNum() {
-        return IdentityNum;
-    }
-
-    @JsonIgnore
-    static public void setFlag(boolean input) {
-        Flag=input;
-
-    }
-
-    static public boolean getFlag() {
-        return Flag;
+        return identityNum;
     }
 
     @Override
     public String toString()
     {
-        return NodeID+"/"+Latitude+"/"+Longtitude+"/"+City+"/"+IdentityNum;
+        return nodeID+"/"+latitude+"/"+longtitude+"/"+city+"/"+identityNum;
     }
 
 }

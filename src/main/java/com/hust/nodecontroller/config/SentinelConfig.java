@@ -23,7 +23,7 @@ public class SentinelConfig {
         FlowRule rule1 = new FlowRule();
         rule1.setResource("DHT Register");
         rule1.setGrade(RuleConstant.FLOW_GRADE_QPS);
-        rule1.setCount(100);   // 每秒调用最大次数为 1 次
+        rule1.setCount(1000);   // 每秒调用最大次数为 1000 次
 
         List<FlowRule> rules = new ArrayList<>();
         rules.add(rule1);

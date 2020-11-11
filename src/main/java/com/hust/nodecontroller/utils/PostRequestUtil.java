@@ -200,10 +200,10 @@ public class PostRequestUtil {
             dhtNodeID = dhtNodeID.replace("node","");
 
             JSONObject dhtNodeInfo = (JSONObject) entry.getValue();
-            String latitude = dhtNodeInfo.getString("Latitude");
-            String longitude = dhtNodeInfo.getString("Longtitude");
-            String city = dhtNodeInfo.getString("City");
-            int nodeNums = dhtNode.getIntValue("NodeNums");
+            String latitude = dhtNodeInfo.getString("latitude");
+            String longitude = dhtNodeInfo.getString("longtitude");
+            String city = dhtNodeInfo.getString("city");
+            int nodeNums = dhtNode.getIntValue("idNums");
 
             dhtNode.put("nodeID",Integer.parseInt(dhtNodeID));
             dhtNode.put("latitude",latitude);
@@ -217,11 +217,49 @@ public class PostRequestUtil {
         }
 
         response.setNodeCount(nodeCount);
-        response.setDomainID(dataJson.getIntValue("domainID"));
+        response.setDomainID(dataJson.getString("domainID"));
         response.setBoundaryID(dataJson.getIntValue("bNodeID"));
         response.setMessage("全部DHT节点信息查询成功！");
 
         response.setNodeList(nodeList);
+        response.setStatus(1);
+        return response;
+    }
+
+    /**
+     * @Description : 向指定url发送json数据，返回DhtNodeInfo数据，用于查询本节点的DHT信息
+     * @author : Zhang Bowen
+     * @date : 2020.10.30 18:06
+     * @param url : 目的服务器url
+     * @param json : 要发送的json数据
+     * @return : com.hust.nodecontroller.infostruct.DhtNodeInfo
+     */
+    public static DhtNodeInfo getOwnNodeInfo(String url, JSONObject json){
+        JSONObject resJson;
+        DhtNodeInfo response = new DhtNodeInfo();
+        try {
+            resJson = SendPostPacket(url, json);
+        }catch (Exception e)
+        {
+            response.setStatus(0);
+            response.setMessage("Dht not ready!");
+            return response;
+        }
+
+        if (resJson.getIntValue("status") == 0) {
+            response.setMessage(resJson.getString("message"));
+            response.setStatus(resJson.getIntValue("status"));
+            return response;
+        }
+
+        JSONObject dataJson = resJson.getJSONObject("message");
+        response.setDomainName(dataJson.getString("domainID"));
+        response.setCity(dataJson.getString("city"));
+        response.setIdentityNum(dataJson.getString("idNums"));
+        response.setNodeID(dataJson.getString("nodeID"));
+        response.setLatitude(dataJson.getString("latitude"));
+        response.setLongtitude(dataJson.getString("longtitude"));
+        response.setMessage("自身DHT节点信息查询成功！");
         response.setStatus(1);
         return response;
     }

@@ -40,8 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequestMapping(value = "/api")
 public class NodeController {
 
-    public String ipAndPort;
-
     @Bean("threadNum")
     AtomicInteger Num()
     {
@@ -53,6 +51,7 @@ public class NodeController {
 
 
     private final NodeService nodeService;
+    public String ipAndPort;
     public static AtomicInteger threadNum = new AtomicInteger(0);
     private static final Logger logger = LoggerFactory.getLogger(NodeController.class);
 

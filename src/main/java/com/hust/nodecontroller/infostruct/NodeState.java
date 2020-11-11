@@ -12,8 +12,8 @@ import java.util.List;
  */
 public class NodeState extends NormalMsg{
     int nodeCount;
-    int domainID;
     int boundaryID;
+    String domainID;
     List<JSONObject> nodeList;
 
     public int getNodeCount() {
@@ -32,11 +32,11 @@ public class NodeState extends NormalMsg{
         this.boundaryID = boundaryID;
     }
 
-    public int getDomainID() {
+    public String getDomainID() {
         return domainID;
     }
 
-    public void setDomainID(int domainID) {
+    public void setDomainID(String domainID) {
         this.domainID = domainID;
     }
 
