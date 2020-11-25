@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.infostruct;
 
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class QueryResult extends NormalMsg{
     private String url;
-    private String goodsInfo;
+    private JSONObject goodsInfo;
     private String nodeID;
 
     public String getUrl() {
@@ -26,11 +27,11 @@ public class QueryResult extends NormalMsg{
         this.url = url;
     }
 
-    public String getGoodsInfo() {
+    public JSONObject getGoodsInfo() {
         return goodsInfo;
     }
 
-    public void setGoodsInfo(String goodsInfo) {
+    public void setGoodsInfo(JSONObject goodsInfo) {
         this.goodsInfo = goodsInfo;
     }
 

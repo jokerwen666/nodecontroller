@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.infostruct;
 
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,14 +12,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ComQueryInfo extends NormalMsg{
-    private String information;
+    private JSONObject information;
     private String jsonStr;
 
-    public String getInformation() {
+    public JSONObject getInformation() {
         return information;
     }
 
-    public void setInformation(String information) {
+    public void setInformation(JSONObject information) {
         this.information = information;
     }
 

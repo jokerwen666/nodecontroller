@@ -160,7 +160,7 @@ public class PostRequestUtil {
 
         response.setStatus(1);
         response.setMessage("Query CompanyInfo Success!");
-        response.setInformation(dataJson.toString());
+        response.setInformation(dataJson);
         response.setJsonStr(resJson.toString());
 
         return response;
@@ -253,7 +253,7 @@ public class PostRequestUtil {
         }
 
         JSONObject dataJson = resJson.getJSONObject("message");
-        response.setDomainName(dataJson.getString("domainID"));
+        response.setDomainName("domain"+dataJson.getString("domainID"));
         response.setCity(dataJson.getString("city"));
         response.setIdentityNum(dataJson.getString("idNums"));
         response.setNodeID(dataJson.getString("nodeID"));

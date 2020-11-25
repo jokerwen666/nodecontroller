@@ -3,6 +3,7 @@ package com.hust.nodecontroller.errorhandle;
 import com.hust.nodecontroller.communication.BlockchainModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,6 +34,7 @@ public class BCErrorHandle {
         this.blockchainModule = blockchainModule;
     }
 
+    @Async
     public void errorHandle(int type, String identity) {
         if (type == 8)
             blockchainModule.delete(identity,bcDeleteUrl);

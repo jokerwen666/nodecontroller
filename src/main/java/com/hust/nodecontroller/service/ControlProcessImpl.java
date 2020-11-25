@@ -97,13 +97,13 @@ public class ControlProcessImpl implements ControlProcess{
         }
 
         if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() != 0){
-            //bcErrorHandle.errorHandle(type,identity);
+            dhtErrorHandle.errorHandle(type,identity,prefix);
             logger.info("BlockchainErrorMsg({})", bcFlag.get().getMessage());
             throw new Exception(bcFlag.get().getMessage());
         }
 
         if(bcFlag.get().getStatus() != 0 && dhtFlag.get().getStatus() == 0){
-            //dhtErrorHandle.errorHandle(type,identity,prefix);
+            bcErrorHandle.errorHandle(type,identity);
             logger.info("DHTErrorMsg({})", dhtFlag.get().getMessage());
             throw new Exception(dhtFlag.get().getMessage());
         }
@@ -125,7 +125,7 @@ public class ControlProcessImpl implements ControlProcess{
         //1.进行跨域解析判断
 
         //2.向权限管理子系统发送请求，接收到相关权限信息
-        Future<AMSystemInfo> amSystemInfo = authorityModule.query(client,prefix,1);
+        //Future<AMSystemInfo> amSystemInfo = authorityModule.query(client,prefix,1);
 
         //3.向标识管理子系统发送请求获得url\向解析结果验证子系统发送请求获得两个摘要信息
         Future<IMSystemInfo> dhtFlag = dhtModule.query(identity,prefix,dhtUrl,crossDomain_flag);
@@ -133,15 +133,21 @@ public class ControlProcessImpl implements ControlProcess{
 
         //4.判断是否完成查询
         while (true) {
-            if(dhtFlag.isDone() && bcFlag.isDone() && amSystemInfo.isDone()) {
+            if(dhtFlag.isDone() && bcFlag.isDone()) {
                 break;
             }
         }
 
-        if (amSystemInfo.get().getStatus() == 0){
-            logger.info("AuthorityVerifyError({})", amSystemInfo.get().getMessage());
-            throw new Exception(amSystemInfo.get().getMessage());
-        }
+
+//        while (true) {
+//            if(dhtFlag.isDone() && bcFlag.isDone() && amSystemInfo.isDone()) {
+//                break;
+//            }
+//        }
+//        if (amSystemInfo.get().getStatus() == 0){
+//            logger.info("AuthorityVerifyError({})", amSystemInfo.get().getMessage());
+//            throw new Exception(amSystemInfo.get().getMessage());
+//        }
 
         if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() != 0){
             logger.info("BlockchainErrorMsg({})", bcFlag.get().getMessage());
@@ -179,7 +185,7 @@ public class ControlProcessImpl implements ControlProcess{
             throw new Exception(comQueryInfo.getMessage());
         }
 
-        String goodsHash_ = Integer.toHexString(HashUtil.apHash(comQueryInfo.getInformation()));
+        String goodsHash_ = Integer.toHexString(HashUtil.apHash(comQueryInfo.getInformation().toString()));
 
         if (!goodsHash.equals(goodsHash_)) {
             logger.info(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
