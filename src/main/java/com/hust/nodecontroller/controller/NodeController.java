@@ -49,9 +49,13 @@ public class NodeController {
     @Bean("IPAndPort")
     String IPAndPort() { return ipAndPort; }
 
+    @Bean("ServerIp")
+    String ServerIp() {return serverIp;}
+
 
     private final NodeService nodeService;
     public String ipAndPort;
+    public String serverIp;
     public static AtomicInteger threadNum = new AtomicInteger(0);
     private static final Logger logger = LoggerFactory.getLogger(NodeController.class);
 
@@ -59,7 +63,8 @@ public class NodeController {
     public NodeController(NodeService nodeService, ApplicationArguments applicationArguments) {
         this.nodeService = nodeService;
         List<String> ip = applicationArguments.getOptionValues("Ip");
-        ipAndPort = ip.get(0) + ":" + "10400";
+        serverIp = ip.get(0);
+        ipAndPort = serverIp + ":" + "10400";
         System.out.println("Server's IP and port is: " + ipAndPort);
         //logger.info(this.ipAndPort);
     }
