@@ -28,14 +28,14 @@ public class ScheduleService {
     static Stat stat = new Stat();
     boolean setFlag = false;
 
-    @Value("${dht.ownInfo.url}")
-    private String dhtOwnNode;
-
     @Autowired
     ApplicationContext applicationContext;
 
     @Autowired
+    String ServerIp;
     String IPAndPort;
+
+    private String dhtOwnNode;
     String destination;
 
     //添加定时任务
@@ -62,6 +62,9 @@ public class ScheduleService {
     @PostConstruct
     public void Init()
     {
+        IPAndPort = ServerIp + ":" + "10400";
+        dhtOwnNode="http://"+ServerIp+":10106/dht/printList";
+
         try {
             Watcher watcher= new Watcher(){
                 public void process(WatchedEvent event) {

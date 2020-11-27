@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -18,6 +20,7 @@ import org.springframework.util.MultiValueMap;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Zhang Bowen
@@ -28,16 +31,22 @@ import java.util.Date;
 
 @Service
 public class NodeServiceImpl implements NodeService{
+
+    String serverIp;
+
+    @Bean("ServerIp")
+    String ServerIp() {return serverIp;}
+
     //标识管理子系统url
-    @Value("${dht.register.url}")
+    //@Value("${dht.register.url}")
     private String dhtRegisterUrl;
-    @Value("${dht.delete.url}")
+    //@Value("${dht.delete.url}")
     private String dhtDeleteUrl;
-    @Value("${dht.update.url}")
+    //@Value("${dht.update.url}")
     private String dhtUpdateUrl;
-    @Value("${dht.query.url}")
+    //@Value("${dht.query.url}")
     private String dhtQueryUrl;
-    @Value("${dht.allNode.url}")
+    //@Value("${dht.allNode.url}")
     private String dhtAllNode;
 
     //解析结果验证子系统url
@@ -57,8 +66,16 @@ public class NodeServiceImpl implements NodeService{
     private static final Logger logger = LoggerFactory.getLogger(NodeServiceImpl.class);
 
     @Autowired
-    public NodeServiceImpl(@Qualifier("controlProcessImpl")ControlProcess controlProcess) {
+    public NodeServiceImpl(@Qualifier("controlProcessImpl")ControlProcess controlProcess, ApplicationArguments applicationArguments) {
         this.controlProcess = controlProcess;
+
+        List<String> ip = applicationArguments.getOptionValues("Ip");
+        serverIp = ip.get(0);
+        dhtRegisterUrl="http://"+serverIp+":10106/dht/register";
+        dhtDeleteUrl="http://"+serverIp+":10106/dht/delete";
+        dhtUpdateUrl="http://"+serverIp+":10106/dht/modify";
+        dhtQueryUrl="http://"+serverIp+":10106//dht/resolve";
+        dhtAllNode="http://"+serverIp+":10106/dht/printList";
     }
 
     @Override
