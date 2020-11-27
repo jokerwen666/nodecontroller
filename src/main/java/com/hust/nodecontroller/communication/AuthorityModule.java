@@ -48,7 +48,7 @@ public class AuthorityModule implements sendInfoToModule{
     public Future<AMSystemInfo> query(String client, String prefix, int type){
         long beginTime = System.nanoTime();
         JSONObject jsonToAMSystem = new JSONObject();
-        jsonToAMSystem.put("peer_name","peer1");
+        jsonToAMSystem.put("peer_name","peer0");
         jsonToAMSystem.put("erp_name", client);
         jsonToAMSystem.put("identity_prefix", prefix);
         AMSystemInfo amSystemInfo = new AMSystemInfo();
@@ -78,7 +78,7 @@ public class AuthorityModule implements sendInfoToModule{
 
     public NormalMsg delete(String erp_name, String prefix) throws Exception{
         JSONObject jsonToAMSystem = new JSONObject();
-        jsonToAMSystem.put("peer_name", "peer1");
+        jsonToAMSystem.put("peer_name", "peer0");
         jsonToAMSystem.put("erp_name", erp_name);
         jsonToAMSystem.put("identity_prefix", prefix);
 
@@ -94,7 +94,7 @@ public class AuthorityModule implements sendInfoToModule{
 
     public NormalMsg registerAndUpdate(String erp_name, String prefix, String key, String authority, String owner, String toUrl) throws Exception{
         JSONObject jsonToAMSystem = new JSONObject();
-        jsonToAMSystem.put("peer_name", "peer1");
+        jsonToAMSystem.put("peer_name", "peer0");
         jsonToAMSystem.put("erp_name", erp_name);
         jsonToAMSystem.put("identity_prefix", prefix);
         jsonToAMSystem.put("public_key", key);

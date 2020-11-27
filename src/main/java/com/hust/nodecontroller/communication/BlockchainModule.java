@@ -49,7 +49,7 @@ public class BlockchainModule implements sendInfoToModule{
     public Future<NormalMsg> delete(String id, String toUrl) {
         long beginTime = System.nanoTime();
         JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name","peer1");
+        jsonToRVSystem.put("peer_name","peer0");
         jsonToRVSystem.put("Identifier",id);
         NormalMsg normalMsg = new NormalMsg();
 
@@ -69,7 +69,7 @@ public class BlockchainModule implements sendInfoToModule{
     public Future<RVSystemInfo> query(String identity, String toUrl) {
         long beginTime = System.nanoTime();
         JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name", "peer1");
+        jsonToRVSystem.put("peer_name", "peer0");
         jsonToRVSystem.put("Identifier", identity);
         RVSystemInfo rvSystemInfo = new RVSystemInfo();
         try {
@@ -102,7 +102,7 @@ public class BlockchainModule implements sendInfoToModule{
 
     private NormalMsg registerAndUpdate(String id, String hash, String url, String toUrl) {
         JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name","peer1");
+        jsonToRVSystem.put("peer_name","peer0");
         jsonToRVSystem.put("Identifier",id);
         jsonToRVSystem.put("hash",hash);
         jsonToRVSystem.put("abstract", Integer.toHexString(HashUtil.apHash(url)));

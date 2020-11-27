@@ -288,7 +288,7 @@ public class PostRequestUtil {
             jsonToBC.put("prefix",prefix);
             jsonToBC.put("pageNum",bookmark);
             jsonToBC.put("pageSize",10);
-            jsonToBC.put("peer_name","peer1");
+            jsonToBC.put("peer_name","peer0");
 
             JSONObject resJson = SendPostPacket(url,jsonToBC);
 
