@@ -1,5 +1,7 @@
 package com.hust.nodecontroller.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.hust.nodecontroller.infostruct.BulkInfo;
 import com.hust.nodecontroller.infostruct.IdentityInfo;
 import com.hust.nodecontroller.infostruct.InfoFromClient;
 import com.hust.nodecontroller.infostruct.QueryResult;
@@ -11,4 +13,8 @@ public interface ControlProcess {
     public QueryResult userHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl) throws Exception;
 
     public IdentityInfo identityHandle(InfoFromClient infoFromClient, String bcUrl) throws Exception;
+
+    public BulkInfo bulkRegister(JSONArray jsonArray, String url) ;
+
+    public BulkInfo bulkQuery(JSONArray jsonArray, String url) ;
 }

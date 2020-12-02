@@ -1,6 +1,7 @@
 package com.hust.nodecontroller.controller;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.service.NodeService;
@@ -145,6 +146,18 @@ public class NodeController {
             threadNum.decrementAndGet();
             return backHtml;
         }
+    }
+
+    @RequestMapping(value = "bulk-register")
+    @ResponseBody
+    public BulkInfo bulkRegister(@RequestBody JSONArray jsonArray) throws Exception {
+        return nodeService.bulkRegister(jsonArray);
+    }
+
+    @RequestMapping(value = "bulk-query")
+    @ResponseBody
+    public BulkInfo bulkQuery(@RequestBody JSONArray jsonArray) throws Exception {
+        return nodeService.bulkQuery(jsonArray);
     }
 
     @RequestMapping(value = "/nodeState")

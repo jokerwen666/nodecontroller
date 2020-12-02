@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.hust.nodecontroller.controller.NodeController;
 import com.hust.nodecontroller.exception.AuthorityTestException;
 import com.hust.nodecontroller.exception.FormatException;
@@ -48,6 +49,10 @@ public class NodeServiceImpl implements NodeService{
     private String dhtQueryUrl;
     //@Value("${dht.allNode.url}")
     private String dhtAllNode;
+    //@Value("${dht.registers.url}")
+    private String dhtBulkRegisterUrl;
+    //@Value("${dht.querys.url}")
+    private String dhtBulkQueryUrl;
 
     //解析结果验证子系统url
     @Value("${bc.register.url}")
@@ -76,11 +81,18 @@ public class NodeServiceImpl implements NodeService{
         dhtUpdateUrl="http://"+serverIp+":10106/dht/modify";
         dhtQueryUrl="http://"+serverIp+":10106//dht/resolve";
         dhtAllNode="http://"+serverIp+":10106/dht/printList";
+        dhtBulkRegisterUrl = "http://"+serverIp+":10106/dht/registers";
+        dhtBulkQueryUrl = "http://"+serverIp+":10106/dht/resolves";
     }
 
     @Override
     public void register(InfoFromClient infoFromClient) throws Exception {
         controlProcess.enterpriseHandle(infoFromClient,dhtRegisterUrl,bcRegisterUrl,8);
+    }
+
+    @Override
+    public BulkInfo bulkRegister(JSONArray jsonArray) {
+        return controlProcess.bulkRegister(jsonArray,dhtBulkRegisterUrl);
     }
 
     @Override
@@ -99,6 +111,11 @@ public class NodeServiceImpl implements NodeService{
     }
 
     @Override
+    public BulkInfo bulkQuery(JSONArray jsonArray) {
+        return controlProcess.bulkQuery(jsonArray,dhtBulkQueryUrl);
+    }
+
+    @Override
     public IdentityInfo queryAllByPrefix(InfoFromClient infoFromClient) throws Exception {
         return controlProcess.identityHandle(infoFromClient,bcPrefixQuery);
     }
@@ -109,4 +126,5 @@ public class NodeServiceImpl implements NodeService{
         callJson.put("type", 9);
         return PostRequestUtil.getAllNodeState(dhtAllNode,callJson);
     }
+
 }

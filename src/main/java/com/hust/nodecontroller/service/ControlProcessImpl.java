@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.communication.AuthorityModule;
 import com.hust.nodecontroller.communication.BlockchainModule;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.sql.BatchUpdateException;
 import java.util.concurrent.Future;
 
 /**
@@ -226,5 +228,41 @@ public class ControlProcessImpl implements ControlProcess{
         return identityInfo;
     }
 
+    @Override
+    public BulkInfo bulkRegister(JSONArray jsonArray, String url){
+        int idCount = jsonArray.size();
+        int number = 0;
+        StringBuilder identities = new StringBuilder();
+        StringBuilder mappingData = new StringBuilder();
+
+        do {
+            JSONObject jsonObject = jsonArray.getJSONObject(number);
+            identities.append(jsonObject.getString("identity"));
+            identities.append(';');
+            mappingData.append(jsonObject.getString("url"));
+            mappingData.append(';');
+            number++;
+        } while (number != idCount);
+
+        return dhtModule.bulkRegister(identities,mappingData,url);
+
+    }
+
+    @Override
+    public BulkInfo bulkQuery(JSONArray jsonArray, String url) {
+        int idCount = jsonArray.size();
+        int number = 0;
+        StringBuilder identities = new StringBuilder();
+
+        do {
+            JSONObject jsonObject = jsonArray.getJSONObject(number);
+            identities.append(jsonObject.getString("identity"));
+            identities.append(';');
+            number++;
+        } while (number != idCount);
+
+        return dhtModule.bulkQuery(identities,url);
+
+    }
 
 }

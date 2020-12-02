@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.hust.nodecontroller.controller.NodeController;
 import com.hust.nodecontroller.infostruct.*;
 
@@ -18,4 +19,7 @@ public interface NodeService {
     QueryResult query(InfoFromClient infoFromClient) throws Exception;
     NodeState queryNodeState() throws Exception;
     IdentityInfo queryAllByPrefix(InfoFromClient infoFromClient) throws Exception;
+    BulkInfo bulkRegister(JSONArray jsonArray);
+    BulkInfo bulkQuery(JSONArray jsonArray);
+
 }

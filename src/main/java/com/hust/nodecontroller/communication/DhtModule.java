@@ -2,6 +2,7 @@ package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.aop.ServiceAspect;
+import com.hust.nodecontroller.infostruct.BulkInfo;
 import com.hust.nodecontroller.infostruct.IMSystemInfo;
 import com.hust.nodecontroller.infostruct.NormalMsg;
 import com.hust.nodecontroller.utils.PostRequestUtil;
@@ -106,6 +107,44 @@ public class DhtModule implements sendInfoToModule{
             normalMsg.setStatus(0);
             normalMsg.setMessage(e.getMessage());
             return normalMsg;
+        }
+    }
+
+    public BulkInfo bulkRegister(StringBuilder id, StringBuilder url, String toUrl){
+        JSONObject jsonToIMSystem = new JSONObject();
+        jsonToIMSystem.put("Identitys", id);
+        jsonToIMSystem.put("type", 8);
+        jsonToIMSystem.put("mappingdatas", url);
+
+        BulkInfo bulkInfo = new BulkInfo();
+
+        try {
+            bulkInfo = PostRequestUtil.getBulkRegisterInfo(toUrl,jsonToIMSystem);
+            return bulkInfo;
+
+        }catch (Exception e){
+            bulkInfo.setStatus(0);
+            bulkInfo.setMessage(e.getMessage());
+            return bulkInfo;
+        }
+
+    }
+
+    public BulkInfo bulkQuery(StringBuilder id, String toUrl){
+        JSONObject jsonToIMSystem = new JSONObject();
+        jsonToIMSystem.put("Identitys", id);
+        jsonToIMSystem.put("type", 1);
+
+        BulkInfo bulkInfo = new BulkInfo();
+
+        try {
+            bulkInfo = PostRequestUtil.getBulkQueryInfo(toUrl,jsonToIMSystem);
+            return bulkInfo;
+
+        }catch (Exception e){
+            bulkInfo.setStatus(0);
+            bulkInfo.setMessage(e.getMessage());
+            return bulkInfo;
         }
     }
 }

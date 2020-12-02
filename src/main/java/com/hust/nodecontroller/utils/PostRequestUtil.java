@@ -7,6 +7,7 @@ import org.apache.zookeeper.data.Id;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.swing.plaf.basic.BasicButtonUI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -353,6 +354,68 @@ public class PostRequestUtil {
     }
 
 
+    public static BulkInfo getBulkQueryInfo(String url, JSONObject json) throws Exception{
+        JSONArray resJson = SendPostPacket_(url, json);
+        int jsonCount = resJson.size();
+        BulkInfo bulkInfo = new BulkInfo();
+        JSONArray data = new JSONArray();
+        JSONObject idJson = new JSONObject();
+
+        for (int i = 0; i < jsonCount - 1; i++){
+            JSONObject idData = new JSONObject();
+            idJson = resJson.getJSONObject(i);
+            if (idJson.getIntValue("status") == 0)
+                idData.put("message", idJson.getString("wrongInformation"));
+            else{
+                idData.put("identity", idJson.getJSONObject("message").getString("identity"));
+                idData.put("url", idJson.getJSONObject("message").getString("mappingData"));
+                idData.put("message","标识查询成功！");
+            }
+            data.add(idData);
+        }
+        idJson = resJson.getJSONObject(jsonCount-1);
+
+        bulkInfo.setData(data);
+        bulkInfo.setStatus(1);
+        bulkInfo.setMessage("批量查询操作执行完成！");
+        bulkInfo.setBeginTime(idJson.getString("startTime"));
+        bulkInfo.setEndTime(idJson.getString("endTime"));
+        bulkInfo.setCostTime(idJson.getString("costTime"));
+        bulkInfo.setRate(idJson.getString("qps"));
+
+        return bulkInfo;
+    }
+
+    public static BulkInfo getBulkRegisterInfo(String url, JSONObject json) throws Exception{
+        JSONArray resJson = SendPostPacket_(url, json);
+        int jsonCount = resJson.size();
+        BulkInfo bulkInfo = new BulkInfo();
+        JSONArray data = new JSONArray();
+        JSONObject idJson = new JSONObject();
+
+        for (int i = 0; i < jsonCount - 1; i++){
+            JSONObject idData = new JSONObject();
+            idJson = resJson.getJSONObject(i);
+            if (idJson.getIntValue("status") == 0)
+                idData.put("message", idJson.getString("wrongInformation"));
+            else{
+                idData.put("message","标识注册成功！");
+            }
+            data.add(idData);
+        }
+        idJson = resJson.getJSONObject(jsonCount-1);
+
+        bulkInfo.setData(data);
+        bulkInfo.setStatus(1);
+        bulkInfo.setMessage("批量注册操作执行完成！");
+        bulkInfo.setBeginTime(idJson.getString("startTime"));
+        bulkInfo.setEndTime(idJson.getString("endTime"));
+        bulkInfo.setCostTime(idJson.getString("costTime"));
+        bulkInfo.setRate(idJson.getString("qps"));
+
+        return bulkInfo;
+    }
+
     /**
      * @Description : 设定发送向指定url发送json数据
      * @author : Zhang Bowen
@@ -376,6 +439,23 @@ public class PostRequestUtil {
 
         String res = client.exchange(url, method, requestEntity, String.class).getBody();
         return JSONObject.parseObject(res);
+    }
+
+    private static JSONArray SendPostPacket_(String url, JSONObject json) throws Exception{
+
+
+        RestTemplate client = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        HttpMethod method = HttpMethod.POST;
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+
+        headers.setContentType(type);
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+
+        HttpEntity<String> requestEntity = new HttpEntity<String>(json.toString(), headers);
+
+        String res = client.exchange(url, method, requestEntity, String.class).getBody();
+        return JSONArray.parseArray(res);
     }
 
     private static JSONObject SendGetPacket(String url) throws Exception {
