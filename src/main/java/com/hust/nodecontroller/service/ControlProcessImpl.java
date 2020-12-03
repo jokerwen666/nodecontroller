@@ -171,6 +171,7 @@ public class ControlProcessImpl implements ControlProcess{
 
         //5.防篡改检验
         String url = dhtFlag.get().getMappingData();
+        url = url.replace(" ", "");
         String urlHash_ = Integer.toHexString(HashUtil.apHash(url));
         String urlHash = bcFlag.get().getUrlHash();
         String goodsHash = bcFlag.get().getMappingDataHash();

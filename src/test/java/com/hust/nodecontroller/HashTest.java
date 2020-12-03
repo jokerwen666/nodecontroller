@@ -13,23 +13,13 @@ public class HashTest {
 
     @Test
     public void test(){
-        int re;
-        re = Integer.parseInt("0000", 2);
-        re = Integer.parseInt("0001", 2);
-        re = Integer.parseInt("0010", 2);
-        re = Integer.parseInt("0011", 2);
-        re = Integer.parseInt("0100", 2);
-        re = Integer.parseInt("0101", 2);
-        re = Integer.parseInt("0110", 2);
-        re = Integer.parseInt("0111", 2);
-        re = Integer.parseInt("1000", 2);
-        re = Integer.parseInt("1001", 2);
-        re = Integer.parseInt("1010", 2);
-        re = Integer.parseInt("1011", 2);
-        re = Integer.parseInt("1100", 2);
-        re = Integer.parseInt("1101", 2);
-        re = Integer.parseInt("1110", 2);
-        re = Integer.parseInt("1111", 2);
+        String data = "http://222.180.148.30:8666/Query/086.001.000001/01.02.06.20201119.600057";
+
+        String data_ = " http://222.180.148.30:8666/Query/086.001.000001/01.02.06.20201119.600057";
+
+        String dataHash = Integer.toHexString(HashUtil.apHash(data));
+
+        String dataHash_ = Integer.toHexString(HashUtil.apHash(data_));
 
     }
 }
