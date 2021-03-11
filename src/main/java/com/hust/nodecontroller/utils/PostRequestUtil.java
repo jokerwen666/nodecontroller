@@ -417,7 +417,7 @@ public class PostRequestUtil {
     }
 
     /**
-     * @Description : 设定发送向指定url发送json数据
+     * @Description : 设定向指定url发送json数据
      * @author : Zhang Bowen
      * @date : 2020.10.12 19:51
      * @param url :

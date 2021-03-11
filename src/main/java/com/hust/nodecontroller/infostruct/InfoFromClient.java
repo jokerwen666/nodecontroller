@@ -6,8 +6,6 @@ import com.hust.nodecontroller.enums.FormatResultEnum;
 import org.springframework.stereotype.Component;
 
 /**
- * @author Zhang Bowen
- * @Description
  * 该类用于存储从客户端获得的相关信息；
  * 控制模块会从客户端中首先获得：标识 + <标识，操作类型、映射数据>的密文；
  * 然后根据标识提取企业前缀，并将其发送给区块链；
@@ -19,6 +17,7 @@ import org.springframework.stereotype.Component;
  * identificationCipher字段表示密文
  * privateKeyStr表示加密的密文
  *
+ * @author Zhang Bowen
  * @ClassName InfoFromClient
  * @date 2020.09.12 16:51
  */
@@ -26,13 +25,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class InfoFromClient {
 
-    // ContextCipher中包含的是标识、操作类型、url、产品信息摘要、对标识操作的权限
-    // 中间用“:”分割，例如明文为：
-    // edu.COMP1.xx/abc:type:url:goodsinfohash:authority
-
     private String identification;
     private String orgPrefix;
     private JSONObject data;
+    private String signData;
+    private String encryptData;
     private String client;
     private Boolean crossDomain_flag = false;
 
@@ -72,13 +69,21 @@ public class InfoFromClient {
         return crossDomain_flag;
     }
 
+    public String getSignData() { return signData; }
+
+    public void setSignData(String signData) { this.signData = signData; }
+
+    public String getEncryptData() { return encryptData; }
+
+    public void setEncryptData(String encryptData) { this.encryptData = encryptData; }
+
     public void setCrossDomain_flag(Boolean crossDomain_flag) {
         this.crossDomain_flag = crossDomain_flag;
     }
 
     /**
      * @Description : 获得标识前缀
-     * @author : Zhang Bowen
+     * @author : Zhang Boweno'l'p
      * @date : 2020.09.15 10:55
 
      * @return : java.lang.String
@@ -95,6 +100,4 @@ public class InfoFromClient {
             return prefix;
         }
     }
-
-
 }

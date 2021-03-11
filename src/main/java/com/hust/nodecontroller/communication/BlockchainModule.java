@@ -105,7 +105,7 @@ public class BlockchainModule implements sendInfoToModule{
         jsonToRVSystem.put("peer_name","peer0");
         jsonToRVSystem.put("Identifier",id);
         jsonToRVSystem.put("hash",hash);
-        jsonToRVSystem.put("abstract", Integer.toHexString(HashUtil.apHash(url)));
+        jsonToRVSystem.put("abstract", HashUtil.SM3Hash(url));
 
         NormalMsg normalMsg = new NormalMsg();
 

@@ -3,11 +3,9 @@ package com.hust.nodecontroller.infostruct;
 import org.springframework.stereotype.Component;
 
 /**
- * @author Zhang Bowen
- * @Description
  * 该类主要用于接收简单的返回消息，形如<status,msg>
  * 其中status表示状态，1为成功，0为失败
- *
+ * @author Zhang Bowen
  * @ClassName NormalMsg
  * @date 2020.09.15 10:44
  */

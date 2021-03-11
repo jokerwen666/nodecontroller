@@ -8,8 +8,10 @@ import com.hust.nodecontroller.communication.ComInfoModule;
 import com.hust.nodecontroller.communication.DhtModule;
 import com.hust.nodecontroller.errorhandle.BCErrorHandle;
 import com.hust.nodecontroller.errorhandle.DhtErrorHandle;
+import com.hust.nodecontroller.fnlencrypt.SM2EncDecUtils;
 import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.enums.AuthorityResultEnum;
+import com.hust.nodecontroller.utils.ConvertUtil;
 import com.hust.nodecontroller.utils.HashUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,15 +54,18 @@ public class ControlProcessImpl implements ControlProcess{
         String client = infoFromClient.getClient(); //请求发送的企业名称
         String identity = infoFromClient.getIdentification(); //请求标识
         String prefix = infoFromClient.getPrefix(); //标识前缀
-        JSONObject data = infoFromClient.getData();
+        String encryptData = infoFromClient.getEncryptData(); //加密数据
+
+//        String signData = infoFromClient.getSignData(); //签名信息
+//        JSONObject data = infoFromClient.getData(); //注册信息
 
         String url = null;
         String goodsHash = null;
 
-        if(type == 2 || type == 8){
-            url = data.getString("url");
-            goodsHash = data.getString("goodsHash");
-        }
+//        if(type == 2 || type == 8){
+//            url = data.getString("url");
+//            goodsHash = data.getString("goodsHash");
+//        }
 
         //1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权
         Future<AMSystemInfo> amSystemInfo = authorityModule.query(client,prefix,type);
@@ -74,7 +79,22 @@ public class ControlProcessImpl implements ControlProcess{
             throw new Exception(amSystemInfo.get().getMessage());
         }
 
-        //2.向解析结果验证子系统、标识管理系统发送对应的json数据
+        //2.注册/更新时需要使用公钥对注册/更新的内容进行签名验证
+        if (type == 2 || type == 8) {
+            String pubKey = amSystemInfo.get().getKey();
+            String decryptData = new String(SM2EncDecUtils.decrypt(ConvertUtil.hexToByte(pubKey), ConvertUtil.hexToByte(encryptData)));
+            JSONObject data = new JSONObject();
+            try {
+                data = JSONObject.parseObject(decryptData);
+            } catch (Exception e) {
+                throw new Exception("验证签名失败！");
+            }
+            url = data.getString("url");
+            goodsHash = data.getString("goodsHash");
+
+        }
+
+        //3.向解析结果验证子系统、标识管理系统发送对应的json数据
         Future<NormalMsg> dhtFlag = null;
         Future<NormalMsg> bcFlag = null;
         if (type == 8){
@@ -172,7 +192,8 @@ public class ControlProcessImpl implements ControlProcess{
         //5.防篡改检验
         String url = dhtFlag.get().getMappingData();
         url = url.replace(" ", "");
-        String urlHash_ = Integer.toHexString(HashUtil.apHash(url));
+
+        String urlHash_ = HashUtil.SM3Hash(url);
         String urlHash = bcFlag.get().getUrlHash();
         String goodsHash = bcFlag.get().getMappingDataHash();
 
@@ -188,7 +209,7 @@ public class ControlProcessImpl implements ControlProcess{
             throw new Exception(comQueryInfo.getMessage());
         }
 
-        String goodsHash_ = Integer.toHexString(HashUtil.apHash(comQueryInfo.getInformation().toString()));
+        String goodsHash_ = HashUtil.SM3Hash(comQueryInfo.getInformation().toString());
 
         if (!goodsHash.equals(goodsHash_)) {
             logger.info(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
