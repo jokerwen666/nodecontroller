@@ -107,7 +107,26 @@ public class NodeServiceImpl implements NodeService{
 
     @Override
     public QueryResult query(InfoFromClient infoFromClient) throws Exception {
-        return controlProcess.userHandle(infoFromClient,dhtQueryUrl,bcQueryUrl);
+        String identification = infoFromClient.getIdentification();
+        QueryResult queryResult = new QueryResult();
+        switch (IdTypeJudgeUtil.TypeJudge(infoFromClient.getIdentification())) {
+            case 1 : //oid
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
+                break;
+            case 2 : //handle
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.handleResolve(identification));
+                break;
+            case 3 : //ecode
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
+                break;
+            case 4 : //创新型
+                queryResult = controlProcess.userHandle(infoFromClient,dhtQueryUrl,bcQueryUrl);
+                break;
+            default:
+                //提示标识不合法
+                break;
+        }
+        return queryResult;
     }
 
     @Override

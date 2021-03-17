@@ -82,16 +82,15 @@ public class ControlProcessImpl implements ControlProcess{
         //2.注册/更新时需要使用公钥对注册/更新的内容进行签名验证
         if (type == 2 || type == 8) {
             String pubKey = amSystemInfo.get().getKey();
-            String decryptData = new String(SM2EncDecUtils.decrypt(ConvertUtil.hexToByte(pubKey), ConvertUtil.hexToByte(encryptData)));
             JSONObject data = new JSONObject();
             try {
+                String decryptData = new String(SM2EncDecUtils.decrypt(ConvertUtil.hexToByte(pubKey), ConvertUtil.hexToByte(encryptData)));
                 data = JSONObject.parseObject(decryptData);
             } catch (Exception e) {
                 throw new Exception("验证签名失败！");
             }
             url = data.getString("url");
             goodsHash = data.getString("goodsHash");
-
         }
 
         //3.向解析结果验证子系统、标识管理系统发送对应的json数据
