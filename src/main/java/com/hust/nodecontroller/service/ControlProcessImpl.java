@@ -54,18 +54,18 @@ public class ControlProcessImpl implements ControlProcess{
         String client = infoFromClient.getClient(); //请求发送的企业名称
         String identity = infoFromClient.getIdentification(); //请求标识
         String prefix = infoFromClient.getPrefix(); //标识前缀
-        String encryptData = infoFromClient.getEncryptData(); //加密数据
+        JSONObject data = infoFromClient.getData(); //注册信息
 
+//        String encryptData = infoFromClient.getEncryptData(); //加密数据
 //        String signData = infoFromClient.getSignData(); //签名信息
-//        JSONObject data = infoFromClient.getData(); //注册信息
 
         String url = null;
         String goodsHash = null;
 
-//        if(type == 2 || type == 8){
-//            url = data.getString("url");
-//            goodsHash = data.getString("goodsHash");
-//        }
+        if(type == 2 || type == 8){
+            url = data.getString("url");
+            goodsHash = data.getString("goodsHash");
+        }
 
         //1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权
         Future<AMSystemInfo> amSystemInfo = authorityModule.query(client,prefix,type);
@@ -80,18 +80,18 @@ public class ControlProcessImpl implements ControlProcess{
         }
 
         //2.注册/更新时需要使用公钥对注册/更新的内容进行签名验证
-        if (type == 2 || type == 8) {
-            String pubKey = amSystemInfo.get().getKey();
-            JSONObject data = new JSONObject();
-            try {
-                String decryptData = new String(SM2EncDecUtils.decrypt(ConvertUtil.hexToByte(pubKey), ConvertUtil.hexToByte(encryptData)));
-                data = JSONObject.parseObject(decryptData);
-            } catch (Exception e) {
-                throw new Exception("验证签名失败！");
-            }
-            url = data.getString("url");
-            goodsHash = data.getString("goodsHash");
-        }
+//        if (type == 2 || type == 8) {
+//            String pubKey = amSystemInfo.get().getKey();
+//            JSONObject data = new JSONObject();
+//            try {
+//                String decryptData = new String(SM2EncDecUtils.decrypt(ConvertUtil.hexToByte(pubKey), ConvertUtil.hexToByte(encryptData)));
+//                data = JSONObject.parseObject(decryptData);
+//            } catch (Exception e) {
+//                throw new Exception("验证签名失败！");
+//            }
+//            url = data.getString("url");
+//            goodsHash = data.getString("goodsHash");
+//        }
 
         //3.向解析结果验证子系统、标识管理系统发送对应的json数据
         Future<NormalMsg> dhtFlag = null;
@@ -158,7 +158,6 @@ public class ControlProcessImpl implements ControlProcess{
                 break;
             }
         }
-
 
 //        while (true) {
 //            if(dhtFlag.isDone() && bcFlag.isDone() && amSystemInfo.isDone()) {

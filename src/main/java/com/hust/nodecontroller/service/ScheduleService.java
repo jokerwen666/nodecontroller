@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.PostConstruct;
 import javax.print.attribute.standard.Destination;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration      //1.主要用于标记配置类，兼备Component的效果。
@@ -28,15 +30,20 @@ public class ScheduleService {
     static Stat stat = new Stat();
     boolean setFlag = false;
 
-    @Autowired
-    ApplicationContext applicationContext;
+    final ApplicationContext applicationContext;
+    final String dhtOwnNode;
+    final String controllerAddress;
+    final String zookeeperAddress;
+
+    private String destination;
 
     @Autowired
-    String ServerIp;
-    String IPAndPort;
-
-    private String dhtOwnNode;
-    String destination;
+    public ScheduleService(ApplicationContext applicationContext, List<String> serverInfo) {
+        this.applicationContext = applicationContext;
+        controllerAddress = serverInfo.get(0) + ":" + serverInfo.get(2);
+        dhtOwnNode = "http://" + serverInfo.get(0) + ":" + serverInfo.get(1) + "/dht/printList";
+        zookeeperAddress = serverInfo.get(3);
+    }
 
     //添加定时任务
     @Scheduled(cron = "0/10 * * * * ?")
@@ -62,9 +69,6 @@ public class ScheduleService {
     @PostConstruct
     public void Init()
     {
-        IPAndPort = ServerIp + ":" + "10400";
-        dhtOwnNode="http://"+ServerIp+":10106/dht/printList";
-
         try {
             Watcher watcher= new Watcher(){
                 public void process(WatchedEvent event) {
@@ -72,7 +76,7 @@ public class ScheduleService {
                 }
             };
             String value = null;
-            zookeeper = new ZooKeeper("39.105.189.17:10001", 10000, watcher);
+            zookeeper = new ZooKeeper(zookeeperAddress, 10000, watcher);
             Thread.sleep(20000);
         }catch (Exception e)
         {
@@ -89,7 +93,7 @@ public class ScheduleService {
             zookeeper.create("/servers/"+Domain, ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
         }
 
-        destination="/servers/"+Domain+"/"+IPAndPort;
+        destination="/servers/"+Domain+"/"+controllerAddress;
         if (zookeeper.exists(destination, null) == null) {
             zookeeper.create(destination, ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
         }
@@ -106,15 +110,15 @@ public class ScheduleService {
 
         String value = null;
         try {
-            final ZooKeeper zookeeper = new ZooKeeper("39.105.189.17:10001", 999999, watcher);
-            final byte[] data = zookeeper.getData("/servers/"+IPAndPort, watcher, null);
+            final ZooKeeper zookeeper = new ZooKeeper(zookeeperAddress, 999999, watcher);
+            final byte[] data = zookeeper.getData("/servers/" + controllerAddress, watcher, null);
             value = new String(data);
             zookeeper.close();
         }catch(Exception e){
             e.printStackTrace();
             return "Something goes wrong!";
         }
-        return "get value from zookeeper [" + IPAndPort+":"+ value + "]";
+        return "get value from zookeeper [" + controllerAddress+":"+ value + "]";
     }
 
     public DhtNodeInfo queryDhtInfo() {

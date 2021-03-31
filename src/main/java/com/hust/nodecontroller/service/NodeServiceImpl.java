@@ -21,6 +21,7 @@ import org.springframework.util.MultiValueMap;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -33,28 +34,22 @@ import java.util.List;
 @Service
 public class NodeServiceImpl implements NodeService{
 
-    String serverIp;
+    // 服务器地址与接口信息
+    private final String serverIp;
+    private final String dhtPort;
+    private final String controllerPort;
+    private final String zookeeperAddress;
 
-    @Bean("ServerIp")
-    String ServerIp() {return serverIp;}
+    // 标识管理子系统url
+    private final String dhtRegisterUrl;
+    private final String dhtDeleteUrl;
+    private final String dhtUpdateUrl;
+    private final String dhtQueryUrl;
+    private final String dhtAllNode;
+    private final String dhtBulkRegisterUrl;
+    private final String dhtBulkQueryUrl;
 
-    //标识管理子系统url
-    //@Value("${dht.register.url}")
-    private String dhtRegisterUrl;
-    //@Value("${dht.delete.url}")
-    private String dhtDeleteUrl;
-    //@Value("${dht.update.url}")
-    private String dhtUpdateUrl;
-    //@Value("${dht.query.url}")
-    private String dhtQueryUrl;
-    //@Value("${dht.allNode.url}")
-    private String dhtAllNode;
-    //@Value("${dht.registers.url}")
-    private String dhtBulkRegisterUrl;
-    //@Value("${dht.querys.url}")
-    private String dhtBulkQueryUrl;
-
-    //解析结果验证子系统url
+    // 解析结果验证子系统url
     @Value("${bc.register.url}")
     private String bcRegisterUrl;
     @Value("${bc.delete.url}")
@@ -63,26 +58,43 @@ public class NodeServiceImpl implements NodeService{
     private String bcUpdateUrl;
     @Value("${bc.query.url}")
     private String bcQueryUrl;
+
     @Value("${bc.queryPrefix.url}")
     private String bcPrefixQuery;
 
     private final ControlProcess controlProcess;
-
     private static final Logger logger = LoggerFactory.getLogger(NodeServiceImpl.class);
 
     @Autowired
     public NodeServiceImpl(@Qualifier("controlProcessImpl")ControlProcess controlProcess, ApplicationArguments applicationArguments) {
         this.controlProcess = controlProcess;
 
-        List<String> ip = applicationArguments.getOptionValues("Ip");
+        List<String> ip = applicationArguments.getOptionValues("ip");
+        List<String> dPort = applicationArguments.getOptionValues("dPort");
+        List<String> cPort = applicationArguments.getOptionValues("server.port");
+        List<String> zAddress = applicationArguments.getOptionValues("zAddress");
         serverIp = ip.get(0);
-        dhtRegisterUrl="http://"+serverIp+":10106/dht/register";
-        dhtDeleteUrl="http://"+serverIp+":10106/dht/delete";
-        dhtUpdateUrl="http://"+serverIp+":10106/dht/modify";
-        dhtQueryUrl="http://"+serverIp+":10106//dht/resolve";
-        dhtAllNode="http://"+serverIp+":10106/dht/printList";
-        dhtBulkRegisterUrl = "http://"+serverIp+":10106/dht/registers";
-        dhtBulkQueryUrl = "http://"+serverIp+":10106/dht/resolves";
+        dhtPort = dPort.get(0);
+        controllerPort = cPort.get(0);
+        zookeeperAddress = zAddress.get(0);
+
+        dhtRegisterUrl = "http://" + serverIp + ":" + dhtPort + "/dht/register";
+        dhtDeleteUrl = "http://" + serverIp + ":" + dhtPort + "/dht/delete";
+        dhtUpdateUrl = "http://" + serverIp + ":" + dhtPort + "/dht/modify";
+        dhtQueryUrl = "http://" + serverIp + ":" + dhtPort + "/dht/resolve";
+        dhtAllNode = "http://" + serverIp + ":" + dhtPort + "/dht/printList";
+        dhtBulkRegisterUrl = "http://" + serverIp + ":" + dhtPort + "/dht/registers";
+        dhtBulkQueryUrl = "http://" + serverIp + ":" + dhtPort + "/dht/resolves";
+    }
+
+    @Bean
+    List<String> serverInfo() {
+        List<String > infoList = new LinkedList<>();
+        infoList.add(serverIp);
+        infoList.add(dhtPort);
+        infoList.add(controllerPort);
+        infoList.add(zookeeperAddress);
+        return infoList;
     }
 
     @Override
