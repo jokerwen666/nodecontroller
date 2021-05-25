@@ -10,7 +10,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,14 +46,19 @@ public class ScheduleService {
         AtomicInteger threadNum = (AtomicInteger)applicationContext.getBean("threadNum");
         try {
             DhtNodeInfo node = queryDhtInfo();
-            if(node.getStatus()==0)
+            if(node.getStatus()==0) {
+                if(setFlag)
+                {
+                    zookeeper.delete(destination,-1);
+                    setFlag=false;
+                }
                 return;
+            }
             if(!setFlag)
             {
                 setFlag=true;
                 setZook(node.getDomainName());
             }
-
             stat = zookeeper.setData(destination, (threadNum+"/"+node.toString()).getBytes(), stat.getVersion());
         } catch (Exception e) {
             e.printStackTrace();
