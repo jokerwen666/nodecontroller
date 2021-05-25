@@ -19,6 +19,8 @@ public class HashTest {
 
         String dataHash = Integer.toHexString(HashUtil.apHash(data));
 
+        String url = "python \"" + "/root/hust/OID.py" + "\" " + "123456";
+
         String dataHash_ = Integer.toHexString(HashUtil.apHash(data_));
 
     }

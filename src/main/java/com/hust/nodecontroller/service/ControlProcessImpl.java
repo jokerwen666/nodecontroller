@@ -8,17 +8,18 @@ import com.hust.nodecontroller.communication.ComInfoModule;
 import com.hust.nodecontroller.communication.DhtModule;
 import com.hust.nodecontroller.errorhandle.BCErrorHandle;
 import com.hust.nodecontroller.errorhandle.DhtErrorHandle;
-import com.hust.nodecontroller.fnlencrypt.SM2EncDecUtils;
+import com.hust.nodecontroller.fnlencrypt.hashutils.ApHash;
+import com.hust.nodecontroller.fnlencrypt.hashutils.HashUtils;
+import com.hust.nodecontroller.fnlencrypt.hashutils.SM3Hash;
 import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.enums.AuthorityResultEnum;
-import com.hust.nodecontroller.utils.ConvertUtil;
 import com.hust.nodecontroller.utils.HashUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.sql.BatchUpdateException;
 import java.util.concurrent.Future;
 
 /**
@@ -55,10 +56,9 @@ public class ControlProcessImpl implements ControlProcess{
         String identity = infoFromClient.getIdentification(); //请求标识
         String prefix = infoFromClient.getPrefix(); //标识前缀
         JSONObject data = infoFromClient.getData(); //注册信息
-
+        String hashType = infoFromClient.getHashType();
 //        String encryptData = infoFromClient.getEncryptData(); //加密数据
 //        String signData = infoFromClient.getSignData(); //签名信息
-
         String url = null;
         String goodsHash = null;
 

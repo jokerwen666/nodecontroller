@@ -6,18 +6,12 @@ import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.PostConstruct;
-import javax.print.attribute.standard.Destination;
-import java.time.LocalDateTime;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,7 +28,6 @@ public class ScheduleService {
     final String dhtOwnNode;
     final String controllerAddress;
     final String zookeeperAddress;
-
     private String destination;
 
     @Autowired

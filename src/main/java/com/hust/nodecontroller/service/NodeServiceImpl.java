@@ -58,7 +58,6 @@ public class NodeServiceImpl implements NodeService{
     private String bcUpdateUrl;
     @Value("${bc.query.url}")
     private String bcQueryUrl;
-
     @Value("${bc.queryPrefix.url}")
     private String bcPrefixQuery;
 
@@ -135,8 +134,7 @@ public class NodeServiceImpl implements NodeService{
                 queryResult = controlProcess.userHandle(infoFromClient,dhtQueryUrl,bcQueryUrl);
                 break;
             default:
-                //提示标识不合法
-                break;
+                throw new Exception("标识格式错误!请重新输入!");
         }
         return queryResult;
     }

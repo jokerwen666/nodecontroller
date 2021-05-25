@@ -28,10 +28,12 @@ public class InfoFromClient {
     private String identification;
     private String orgPrefix;
     private JSONObject data;
-    private String signData;
-    private String encryptData;
     private String client;
     private Boolean crossDomain_flag = false;
+
+    private String hashType = "SM3";
+    private String signData;
+    private String encryptData;
 
     public String getIdentification() {
         return identification;
@@ -99,5 +101,13 @@ public class InfoFromClient {
             String suffix = idList[1];
             return prefix;
         }
+    }
+
+    public String getHashType() {
+        return hashType;
+    }
+
+    public void setHashType(String hashType) {
+        this.hashType = hashType;
     }
 }

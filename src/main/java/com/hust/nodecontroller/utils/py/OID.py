@@ -4,6 +4,8 @@ import urllib.request
 import urllib.parse
 from lxml import etree
 import sys
+import importlib
+importlib.reload(sys)
 
 def query(content):
     ##xml_items = '//td[@class="span3 tc"]//text()'
@@ -24,5 +26,7 @@ def query(content):
     return content
 
 if __name__ == '__main__':
+    importlib.reload(sys)
+    sys.setdefaultencoding("utf-8")
     print(query(sys.argv[1]))
     #print(query("1.2.156.112783"))

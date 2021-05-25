@@ -15,5 +15,4 @@ public class NodecontrollerApplication {
     public static void main(String[] args) {
         SpringApplication.run(NodecontrollerApplication.class, args);
     }
-
 }

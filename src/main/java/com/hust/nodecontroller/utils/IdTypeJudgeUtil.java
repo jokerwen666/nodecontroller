@@ -3,15 +3,19 @@ package com.hust.nodecontroller.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.hust.nodecontroller.communication.BlockchainModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class IdTypeJudgeUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(IdTypeJudgeUtil.class);
+
+
     public static int TypeJudge(String identification){
         if(identification.split("\\.").length == 4)
             return 1;
@@ -73,10 +77,9 @@ public class IdTypeJudgeUtil {
         String[] title={" 'Ecode编码：\\u3000'"," '产品名称：\\u3000'"," '型号名称：\\u3000'"," '企业名称：\\u3000'"," '回传时间：\\u3000'"};
         String[] value=new String[title.length];
         try {
-            File file=new File("src/main/java/com/hust/nodecontroller/utils/py/Ecode.py");    //定位脚本文件所在位置
-            String path=file.getAbsolutePath();
-            proc = Runtime.getRuntime().exec("python \""+path+"\" "+id);
-            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream(),"gb2312"));
+
+            proc = Runtime.getRuntime().exec("python /root/hust/Ecode.py " + id);
+            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line = null;
             line = in.readLine();
             String[] ecode=line.split(",");
@@ -106,16 +109,18 @@ public class IdTypeJudgeUtil {
     }
 
     public static JSONObject oidResolve(String id){
-        Process proc;
         String[] title = {"站点：", "数字OID：", "中文OID：", "英文OID：", "应用范围：", "申请机构中文名：", "申请机构英文名：", "申请机构中文地址：", "申请机构英文地址：", "申请机构网址：", "申请机构邮编：", "申请机构传真："};
         String[] value = new String[title.length];
         try {
-            File file = new File("src/main/java/com/hust/nodecontroller/utils/py/OID.py");    //定位脚本文件所在位置
-            String path = file.getAbsolutePath();
-            proc = Runtime.getRuntime().exec("python \"" + path + "\" " + id);
-            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream(), "gb2312"));
+//            File file=new File("D:\\OID.py");    //定位脚本文件所在位置
+
+            Process proc = Runtime.getRuntime().exec("python /root/hust/OID.py " + id);
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+
             String line = null;
             line = in.readLine();
+
             int index = line.indexOf("]");
             String lines = line.substring(2, index - 1);
             String[] oid = lines.split("', '|', \"|\", '");
