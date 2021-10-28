@@ -132,6 +132,7 @@ public class NodeController {
     @ResponseBody
     public QueryResult query(@RequestBody InfoFromClient infoFromClient) throws Exception {
         QueryResult backHtml = new QueryResult();
+        CalStateUtil.totalQuery++;
         try {
             threadNum.addAndGet(1);
             backHtml = nodeService.query(infoFromClient);
@@ -199,6 +200,7 @@ public class NodeController {
             backHtml.setRegisterCount(CalStateUtil.differRegister());
             backHtml.setSuccessRate(CalStateUtil.getSuccessRate());
             backHtml.setTotalCount(CalStateUtil.differTotal());
+            backHtml.setFlowCount(GetSysInfoUtil.FlowTotal());
             backHtml.setStatus(1);
             backHtml.setMessage("Success!");
             CalStateUtil.updateState();
@@ -223,6 +225,38 @@ public class NodeController {
             backHtml.setMessage("Success!");
             return backHtml;
         }catch (Exception e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
+    }
+
+    @RequestMapping(value = "/resourceInfo")
+    @ResponseBody
+    public ResourceInfo getResourceInfo() throws Exception {
+        ResourceInfo backHtml = new ResourceInfo();
+        try {
+            backHtml.setMemTotal(GetSysInfoUtil.MemTotal());
+            backHtml.setDiskTotal(GetSysInfoUtil.DiskTotal());
+            backHtml.setQueryCount(CalStateUtil.totalQuery);
+            backHtml.setIdCount(nodeService.QueryNodeIdTotal());
+            return backHtml;
+        }catch (Exception e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
+
+    }
+
+    @RequestMapping(value = "/systemState")
+    @ResponseBody
+    public SystemTotalState querySystemState() throws Exception {
+        SystemTotalState backHtml = new SystemTotalState();
+        try{
+            backHtml = nodeService.querySystemTotalState();
+            return backHtml;
+        }catch (Exception e){
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
             return backHtml;

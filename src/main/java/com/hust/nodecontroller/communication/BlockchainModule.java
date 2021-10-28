@@ -26,20 +26,20 @@ public class BlockchainModule implements sendInfoToModule{
     private static final Logger logger = LoggerFactory.getLogger(BlockchainModule.class);
 
     @Async
-    public Future<NormalMsg> register(String id, String hash, String url, String toUrl) {
+    public Future<NormalMsg> register(String id, String hash, String url, String toUrl, String queryPermissions) {
         long beginTime = System.nanoTime();
         NormalMsg normalMsg;
-        normalMsg = registerAndUpdate(id, hash, url, toUrl);
+        normalMsg = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
         long endTime = System.nanoTime();
         logger.info("Register Time({}ms)", (endTime-beginTime)/1000000);
         return new AsyncResult<>(normalMsg);
     }
 
     @Async
-    public Future<NormalMsg> update(String id, String hash, String url, String toUrl) {
+    public Future<NormalMsg> update(String id, String hash, String url, String toUrl, String queryPermissions) {
         long beginTime = System.nanoTime();
         NormalMsg normalMsg;
-        normalMsg = registerAndUpdate(id, hash, url, toUrl);
+        normalMsg = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
         long endTime = System.nanoTime();
         logger.info("Update Time({}ms)", (endTime-beginTime)/1000000);
         return new AsyncResult<>(normalMsg);
@@ -100,12 +100,13 @@ public class BlockchainModule implements sendInfoToModule{
         }
     }
 
-    private NormalMsg registerAndUpdate(String id, String hash, String url, String toUrl) {
+    private NormalMsg registerAndUpdate(String id, String hash, String url, String toUrl, String queryPermissions) {
         JSONObject jsonToRVSystem = new JSONObject();
         jsonToRVSystem.put("peer_name","peer0");
         jsonToRVSystem.put("Identifier",id);
         jsonToRVSystem.put("hash",hash);
         jsonToRVSystem.put("abstract", HashUtil.SM3Hash(url));
+        jsonToRVSystem.put("permisssion", queryPermissions);
 
         NormalMsg normalMsg = new NormalMsg();
 

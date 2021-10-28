@@ -46,6 +46,7 @@ public class NodeServiceImpl implements NodeService{
     private final String dhtUpdateUrl;
     private final String dhtQueryUrl;
     private final String dhtAllNode;
+    private final String dhtFindAllId;
     private final String dhtBulkRegisterUrl;
     private final String dhtBulkQueryUrl;
 
@@ -82,6 +83,7 @@ public class NodeServiceImpl implements NodeService{
         dhtUpdateUrl = "http://" + serverIp + ":" + dhtPort + "/dht/modify";
         dhtQueryUrl = "http://" + serverIp + ":" + dhtPort + "/dht/resolve";
         dhtAllNode = "http://" + serverIp + ":" + dhtPort + "/dht/printList";
+        dhtFindAllId = "http://" + serverIp + ":" + dhtPort + "/dht/findAllId";
         dhtBulkRegisterUrl = "http://" + serverIp + ":" + dhtPort + "/dht/registers";
         dhtBulkQueryUrl = "http://" + serverIp + ":" + dhtPort + "/dht/resolves";
     }
@@ -103,7 +105,7 @@ public class NodeServiceImpl implements NodeService{
 
     @Override
     public BulkInfo bulkRegister(JSONArray jsonArray) {
-        return controlProcess.bulkRegister(jsonArray,dhtBulkRegisterUrl);
+        return controlProcess.bulkRegister(jsonArray,dhtBulkRegisterUrl,bcRegisterUrl);
     }
 
     @Override
@@ -119,8 +121,14 @@ public class NodeServiceImpl implements NodeService{
     @Override
     public QueryResult query(InfoFromClient infoFromClient) throws Exception {
         String identification = infoFromClient.getIdentification();
+        String hashType = infoFromClient.getHashType();
+
+        // 添加解密，解密出明文
+        if (hashType.equals("sm2")) identification = EncDecUtil.sMDecrypt(identification);
+        else if (hashType.equals("rsa")) identification = EncDecUtil.rsaDecrypt(identification);
+
         QueryResult queryResult = new QueryResult();
-        switch (IdTypeJudgeUtil.TypeJudge(infoFromClient.getIdentification())) {
+        switch (IdTypeJudgeUtil.TypeJudge(identification)) {
             case 1 : //oid
                 queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
                 break;
@@ -131,7 +139,7 @@ public class NodeServiceImpl implements NodeService{
                 queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
                 break;
             case 4 : //创新型
-                queryResult = controlProcess.userHandle(infoFromClient,dhtQueryUrl,bcQueryUrl);
+                queryResult = controlProcess.userHandle(infoFromClient, identification, dhtQueryUrl,bcQueryUrl);
                 break;
             default:
                 throw new Exception("标识格式错误!请重新输入!");
@@ -154,6 +162,22 @@ public class NodeServiceImpl implements NodeService{
         JSONObject callJson = new JSONObject();
         callJson.put("type", 9);
         return PostRequestUtil.getAllNodeState(dhtAllNode,callJson);
+    }
+
+    @Override
+    public SystemTotalState querySystemTotalState() throws Exception {
+        JSONObject callJson = new JSONObject();
+        callJson.put("type", 9);
+        return PostRequestUtil.getSystemTotalState(dhtAllNode,callJson);
+    }
+
+    @Override
+    public int QueryNodeIdTotal() throws Exception {
+        JSONObject callJson = new JSONObject();
+        callJson.put("orgname","controller");
+        callJson.put("type",0);
+        return PostRequestUtil.QueryNodeIdTotal(dhtFindAllId,callJson);
+
     }
 
 }

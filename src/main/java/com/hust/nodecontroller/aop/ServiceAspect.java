@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.aop;
 
+import com.hust.nodecontroller.utils.CalStateUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -36,6 +37,9 @@ public class ServiceAspect {
         Object result = joinPoint.proceed();
         long endTime = System.nanoTime();
         logger.info("Finish the service method({}), Total time({}ms)", methodSignature, (endTime-beginTime)/1000000);
+        //解析操作时，添加总查询时延
+        if (methodSignature.equals("com.hust.nodecontroller.service.NodeServiceImpl.query()"))
+        CalStateUtil.totalQueryTimeout += (endTime-beginTime)/1000000;
         return result;
     }
 

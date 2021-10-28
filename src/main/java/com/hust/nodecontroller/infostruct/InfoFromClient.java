@@ -31,7 +31,7 @@ public class InfoFromClient {
     private String client;
     private Boolean crossDomain_flag = false;
 
-    private String hashType = "SM3";
+    private String hashType = "sm2";
     private String signData;
     private String encryptData;
 
@@ -90,8 +90,8 @@ public class InfoFromClient {
 
      * @return : java.lang.String
      */
-    public String getPrefix() throws FormatException {
-        String[] idList = this.identification.split("/");
+    public String getPrefix(String identification) throws FormatException {
+        String[] idList = identification.split("/");
         if (idList.length != 2) {
             throw new FormatException(FormatResultEnum.IDENTIFICATION_PREFIX_SPLIT_ERROR);
         }
@@ -101,6 +101,16 @@ public class InfoFromClient {
             String suffix = idList[1];
             return prefix;
         }
+    }
+
+    public String getDomainPrefix(String identification) throws FormatException {
+        String prefix = getPrefix(identification);
+        int pos = prefix.lastIndexOf(".");
+        if (pos == -1) {
+            throw new FormatException(FormatResultEnum.INDETIFICATION_DOMAIN_PREFIX_ERROR);
+        }
+
+        return prefix.substring(0,pos);
     }
 
     public String getHashType() {

@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class NodeState extends NormalMsg{
     int nodeCount;
+
     int boundaryID;
     String domainID;
     List<JSONObject> nodeList;

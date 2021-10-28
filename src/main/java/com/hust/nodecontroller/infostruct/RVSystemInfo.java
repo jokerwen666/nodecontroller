@@ -15,6 +15,24 @@ import org.springframework.stereotype.Component;
 public class RVSystemInfo extends NormalMsg{
     private String urlHash;
     private String mappingDataHash;
+    private String permission;
+    private String owner;
+
+    public String getPermission() {
+        return permission;
+    }
+
+    public void setPermission(String permission) {
+        this.permission = permission;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
 
     public String getUrlHash() {
         return urlHash;

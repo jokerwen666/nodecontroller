@@ -134,6 +134,7 @@ public class PostRequestUtil {
         JSONObject dataJson = resJson.getJSONObject("data");
         response.setUrlHash(dataJson.getString("abstract"));
         response.setMappingDataHash(dataJson.getString("mappingData_hash"));
+        response.setPermission(dataJson.getString("permission"));
         response.setMessage(resJson.getString("message"));
         response.setStatus(resJson.getIntValue("status"));
 
@@ -223,6 +224,33 @@ public class PostRequestUtil {
         response.setMessage("全部DHT节点信息查询成功！");
 
         response.setNodeList(nodeList);
+        response.setStatus(1);
+        return response;
+    }
+
+    public static SystemTotalState getSystemTotalState(String url, JSONObject json) throws Exception {
+        JSONObject resJson = SendPostPacket(url, json);
+        SystemTotalState response = new SystemTotalState();
+
+        if (resJson.getIntValue("status") == 0) {
+            response.setMessage(resJson.getString("message"));
+            response.setStatus(resJson.getIntValue("status"));
+            return response;
+        }
+
+        JSONObject dataJson = resJson.getJSONObject("message");
+
+        String jsonStr = dataJson.getString("feedback");
+
+        JSONObject nodeListJson = JSONObject.parseObject(jsonStr);
+
+        List<JSONObject> nodeList = new ArrayList<JSONObject>();
+        int nodeCount = nodeListJson.size();
+
+        response.setTotalNodeCount(nodeCount);
+        response.setSystemQueryTimeout(CalStateUtil.totalQueryTimeout / CalStateUtil.totalQuery);
+        response.setMessage("系统统计信息查询成功！");
+
         response.setStatus(1);
         return response;
     }
@@ -470,5 +498,15 @@ public class PostRequestUtil {
         HttpEntity<JSONObject> requestEntity = new HttpEntity<JSONObject>(headers);
 
         return client.exchange(url, method, requestEntity, JSONObject.class).getBody();
+    }
+
+    public static int QueryNodeIdTotal(String url, JSONObject json) throws Exception{
+        JSONObject resJson = SendPostPacket(url, json);
+
+        /**
+         * 根据北邮的提供的findAllId json格式添加json解析，提取出标识总数
+         */
+
+        return 0;
     }
 }

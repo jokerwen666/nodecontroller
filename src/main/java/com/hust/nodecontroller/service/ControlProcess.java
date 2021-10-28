@@ -10,11 +10,11 @@ public interface ControlProcess {
 
     public void enterpriseHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl, int type) throws Exception;
 
-    public QueryResult userHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl) throws Exception;
+    public QueryResult userHandle(InfoFromClient infoFromClient, String identity, String dhtUrl, String bcUrl) throws Exception;
 
     public IdentityInfo identityHandle(InfoFromClient infoFromClient, String bcUrl) throws Exception;
 
-    public BulkInfo bulkRegister(JSONArray jsonArray, String url) ;
+    public BulkInfo bulkRegister(JSONArray jsonArray, String dhtUrl, String bcUrl) ;
 
     public BulkInfo bulkQuery(JSONArray jsonArray, String url) ;
 }

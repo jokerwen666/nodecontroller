@@ -37,7 +37,7 @@ public class GetSysInfoUtil {
         return 1.0-(idle * 1.0 / totalCpu);
     }
 
-    public static double MemInfo(){
+    public static double MemInfo() {
         SystemInfo systemInfo = new SystemInfo();
         GlobalMemory memory = systemInfo.getHardware().getMemory();
         //总内存
@@ -46,4 +46,16 @@ public class GetSysInfoUtil {
         long availableByte = memory.getAvailable();
         return (totalByte-availableByte)*1.0/totalByte;
     }
+
+    public static double MemTotal() {
+        SystemInfo systemInfo = new SystemInfo();
+        GlobalMemory memory = systemInfo.getHardware().getMemory();
+        return memory.getTotal();
+    }
+
+    public static double DiskTotal() {
+        return 255;
+    }
+
+    public static double FlowTotal() {return 255;}
 }

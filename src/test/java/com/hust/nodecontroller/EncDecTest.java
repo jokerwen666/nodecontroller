@@ -17,9 +17,10 @@ public class EncDecTest {
     final static byte[] sourceData;
     static {
         json.put("status", 0);
-        json.put("message", "erp not found");
+        json.put("message", "086.001.000001/02.03.11.20210407.021010");
         String jsonString = json.toString();
-        sourceData = jsonString.getBytes();
+        String id = "086.001.000001/02.03.11.20210407.021010";
+        sourceData = id.getBytes();
     }
 
     @Test
@@ -34,15 +35,14 @@ public class EncDecTest {
     public void encryptTest() throws Exception {
         //加解密测试
         String encrypt = SM2EncDecUtils.encrypt(ConvertUtil.hexToByte(pubk), sourceData);
-        JSONObject data = new JSONObject();
+        System.out.println(encrypt);
+        String decrypt = null;
         try {
-            String decrypt = new String(SM2EncDecUtils.decrypt(ConvertUtil.hexToByte(prik), ConvertUtil.hexToByte(encrypt)));
-            data = JSONObject.parseObject(decrypt);
+            decrypt = new String(SM2EncDecUtils.decrypt(ConvertUtil.hexToByte(prik), ConvertUtil.hexToByte(encrypt)));
         } catch (Exception e) {
             System.out.println("验证失败");
         }
-        System.out.println(data.get("status"));
-        System.out.println(data.get("message"));
+        System.out.println(decrypt);
     }
 
     @Test

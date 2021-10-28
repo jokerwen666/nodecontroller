@@ -18,6 +18,9 @@ public class CalStateUtil {
     public static int successCount = 0;
     public static int totalCount = 0;
 
+    public static int totalQuery = 0;
+    public static long totalQueryTimeout = 0;
+
     public static int differQuery(){ return queryCount-preQueryCount; }
 
     public static int differRegister(){

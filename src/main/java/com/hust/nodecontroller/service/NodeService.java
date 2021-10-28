@@ -16,8 +16,10 @@ public interface NodeService {
     void register(InfoFromClient infoFromClient) throws Exception;
     void delete(InfoFromClient infoFromClient) throws Exception;
     void update(InfoFromClient infoFromClient) throws Exception;
+    int QueryNodeIdTotal() throws Exception;
     QueryResult query(InfoFromClient infoFromClient) throws Exception;
     NodeState queryNodeState() throws Exception;
+    SystemTotalState querySystemTotalState() throws Exception;
     IdentityInfo queryAllByPrefix(InfoFromClient infoFromClient) throws Exception;
     BulkInfo bulkRegister(JSONArray jsonArray);
     BulkInfo bulkQuery(JSONArray jsonArray);

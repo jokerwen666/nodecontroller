@@ -14,6 +14,15 @@ public class RuntimeState extends NormalMsg{
     private int registerCount;
     private float successRate;
     private int totalCount;
+    private double flowCount;
+
+    public double getFlowCount() {
+        return flowCount;
+    }
+
+    public void setFlowCount(double flowCount) {
+        this.flowCount = flowCount;
+    }
 
     public int getQueryCount() {
         return queryCount;

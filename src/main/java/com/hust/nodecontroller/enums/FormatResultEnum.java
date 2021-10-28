@@ -13,7 +13,8 @@ package com.hust.nodecontroller.enums;
 public enum  FormatResultEnum {
     IDENTIFICATION_PREFIX_SPLIT_ERROR("标识格式错误！无法获取标识前缀信息！"),
     BLOCKCHAIN_FORMAT_ERROR("从区块链中获得的企业信息格式错误！无法获取企业信息！"),
-    QUERY_FORMAT_ERROR("查询操作输入格式错误！输入了除标识外的多余信息！");
+    QUERY_FORMAT_ERROR("查询操作输入格式错误！输入了除标识外的多余信息！"),
+    INDETIFICATION_DOMAIN_PREFIX_ERROR("标识格式不兼容！从标识中提取域前缀错误！");
 
     private String msg;
 
