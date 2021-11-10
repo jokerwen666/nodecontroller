@@ -284,6 +284,10 @@ public class PostRequestUtil {
         JSONObject dataJson = resJson.getJSONObject("message");
         response.setDomainName("domain"+dataJson.getString("domainID"));
         response.setCity(dataJson.getString("city"));
+        response.setProvince(dataJson.getString("province"));
+        response.setEnterprise(dataJson.getString("enterprise"));
+        response.setOrgName(dataJson.getString("orgName" +
+                ""));
         response.setIdentityNum(dataJson.getString("idNums"));
         response.setNodeID(dataJson.getString("nodeID"));
         response.setLatitude(dataJson.getString("latitude"));
