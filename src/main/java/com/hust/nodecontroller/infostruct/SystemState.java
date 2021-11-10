@@ -1,6 +1,10 @@
 package com.hust.nodecontroller.infostruct;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author Zhang Bowen
@@ -11,22 +15,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SystemState extends NormalMsg{
-    private double cpuRate;
-    private double memRate;
+    List<JSONObject> data;
 
-    public double getCpuRate() {
-        return cpuRate;
+    public List<JSONObject> getData() {
+        return data;
     }
 
-    public void setCpuRate(double cpuRate) {
-        this.cpuRate = cpuRate;
-    }
-
-    public double getMemRate() {
-        return memRate;
-    }
-
-    public void setMemRate(double memRate) {
-        this.memRate = memRate;
+    public void setData(List<JSONObject> data) {
+        this.data = data;
     }
 }

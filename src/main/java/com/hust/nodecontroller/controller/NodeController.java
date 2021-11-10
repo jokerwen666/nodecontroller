@@ -60,7 +60,7 @@ public class NodeController {
     }
 
     /**
-     * @Description : 向dht网络中注册标识信息
+     * @Description : 注册标识
      * @author : Zhang Bowen
      * @date :  10:42
      * @param infoFromClient 从客户端中接收到的信息，形如<标识，hash(标识、操作类型、url、产品信息摘要、对标识操作权限)>:
@@ -88,6 +88,12 @@ public class NodeController {
         }
     }
 
+    /**
+     * 删除标识
+     * @param infoFromClient
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/delete")
     @ResponseBody
     public NormalMsg delete(@RequestBody(required = false) InfoFromClient infoFromClient) throws Exception {
@@ -108,6 +114,12 @@ public class NodeController {
         }
     }
 
+    /**
+     * 更新标识
+     * @param infoFromClient
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/update")
     @ResponseBody
     public NormalMsg update(@RequestBody InfoFromClient infoFromClient) throws Exception {
@@ -128,6 +140,12 @@ public class NodeController {
         }
     }
 
+    /**
+     * 查询标识
+     * @param infoFromClient
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/query")
     @ResponseBody
     public QueryResult query(@RequestBody InfoFromClient infoFromClient) throws Exception {
@@ -149,17 +167,31 @@ public class NodeController {
         }
     }
 
+    /**
+     * 批量注册
+     * @param jsonArray
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "bulk-register")
     @ResponseBody
     public BulkInfo bulkRegister(@RequestBody JSONArray jsonArray) throws Exception {
         return nodeService.bulkRegister(jsonArray);
     }
 
+    /**
+     * 批量查询
+     * @param jsonArray
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "bulk-query")
     @ResponseBody
     public BulkInfo bulkQuery(@RequestBody JSONArray jsonArray) throws Exception {
         return nodeService.bulkQuery(jsonArray);
     }
+
+
 
     @RequestMapping(value = "/nodeState")
     @ResponseBody
@@ -175,6 +207,13 @@ public class NodeController {
         }
     }
 
+
+    /**
+     * 根据企业前缀返回所有标识信息
+     * @param infoFromClient
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/queryAllByPrefix")
     @ResponseBody
     public IdentityInfo queryAllByPrefix(@RequestBody InfoFromClient infoFromClient) throws Exception {
@@ -190,17 +229,17 @@ public class NodeController {
     }
 
 
-
+    /**
+     * 当前服务器的解析量、注册量、总请求量、响应成功率、流量统计
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/runtime-info")
     @ResponseBody
     public RuntimeState getRuntimeInfo() throws Exception {
         RuntimeState backHtml= new RuntimeState();
         try {
-            backHtml.setQueryCount(CalStateUtil.differQuery());
-            backHtml.setRegisterCount(CalStateUtil.differRegister());
-            backHtml.setSuccessRate(CalStateUtil.getSuccessRate());
-            backHtml.setTotalCount(CalStateUtil.differTotal());
-            backHtml.setFlowCount(GetSysInfoUtil.FlowTotal());
+            backHtml.setData(CalStateUtil.getMinuteStateInfo());
             backHtml.setStatus(1);
             backHtml.setMessage("Success!");
             CalStateUtil.updateState();
@@ -214,13 +253,17 @@ public class NodeController {
         }
     }
 
+    /**
+     * 获取当前企业服务器的CPU占用率、内存占用率
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/system-info")
     @ResponseBody
     public SystemState getSystemInfo() throws Exception {
         SystemState backHtml = new SystemState();
         try {
-            backHtml.setCpuRate(GetSysInfoUtil.CpuInfo());
-            backHtml.setMemRate(GetSysInfoUtil.MemInfo());
+            backHtml.setData(GetSysInfoUtil.getMinuteSysInfo());
             backHtml.setStatus(1);
             backHtml.setMessage("Success!");
             return backHtml;
@@ -231,6 +274,11 @@ public class NodeController {
         }
     }
 
+    /**
+     * 获取当前企业服务器的资源信息（标识总数、解析总数、内存总数、磁盘总量）
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/resourceInfo")
     @ResponseBody
     public ResourceInfo getResourceInfo() throws Exception {
@@ -249,6 +297,12 @@ public class NodeController {
 
     }
 
+
+    /**
+     * 查询整个系统的节点总数、行业总数、平均解析时延
+     * @return
+     * @throws Exception
+     */
     @RequestMapping(value = "/systemState")
     @ResponseBody
     public SystemTotalState querySystemState() throws Exception {

@@ -1,5 +1,13 @@
 package com.hust.nodecontroller.utils;
 
+import com.alibaba.fastjson.JSONObject;
+import netscape.javascript.JSObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Zhang Bowen
  * @Description
@@ -45,4 +53,23 @@ public class CalStateUtil {
         preSuccessCount = successCount;
         preTotalCount = totalCount;
     }
+
+    public static List<JSONObject> getMinuteStateInfo() throws InterruptedException, IOException {
+        List<JSONObject> jsonObjectList = new ArrayList<>();
+
+        for (int i = 0; i < 6; i++) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("queryCount", differQuery());
+            jsonObject.put("registerCount", differRegister());
+            jsonObject.put("successRate", getSuccessRate());
+            jsonObject.put("totalCount", differTotal());
+            jsonObject.put("flowCount", GetSysInfoUtil.FlowTotal());
+            jsonObject.put("times", i);
+            jsonObjectList.add(jsonObject);
+            TimeUnit.SECONDS.sleep(10);
+        }
+
+        return jsonObjectList;
+    }
+
 }

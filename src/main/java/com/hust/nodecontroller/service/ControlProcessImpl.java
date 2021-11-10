@@ -147,10 +147,10 @@ public class ControlProcessImpl implements ControlProcess{
 
     }
 
-    public QueryResult userHandle(InfoFromClient infoFromClient, String identity, String dhtUrl, String bcUrl) throws Exception {
-        String client = infoFromClient.getClient();
-        String prefix = infoFromClient.getPrefix(identity);
-        String domainPrefix_ = infoFromClient.getDomainPrefix(identity);
+    public QueryResult userHandle(String identity, String client, String dhtUrl, String bcUrl, String bcQueryOwner) throws Exception {
+
+        String prefix = InfoFromClient.getPrefix(identity);
+        String domainPrefix_ = InfoFromClient.getDomainPrefix(identity);
         boolean crossDomain_flag = false;
 
         //1.进行跨域解析判断
@@ -163,7 +163,7 @@ public class ControlProcessImpl implements ControlProcess{
         Future<IMSystemInfo> dhtFlag = dhtModule.query(identity,prefix,dhtUrl,crossDomain_flag);
         Future<RVSystemInfo> bcFlag = blockchainModule.query(identity,bcUrl);
 
-        //4.判断是否完成查询
+        //4.1 判断是否完成查询
         while (true) {
             if(dhtFlag.isDone() && bcFlag.isDone()) {
                 break;
@@ -199,15 +199,22 @@ public class ControlProcessImpl implements ControlProcess{
         }
 
 
-        //4.5 查询权限校验
+        //5.1 根据前缀查找其所有者
+        String owner = "";
+        NormalMsg normalMsg = blockchainModule.queryOwnerByPrefix(prefix, bcQueryOwner);
+        if (normalMsg.getStatus() == 0) {
+            throw new Exception(normalMsg.getMessage());
+        }
+        else owner = normalMsg.getMessage();
+
+        //5.2 查询权限校验
         String permission = bcFlag.get().getPermission();
-        String owner = bcFlag.get().getOwner();
         if (permission.equals("0") && !client.equals(owner)) {
             logger.info("用户没有查看该标识的权限！！！");
             throw new Exception("用户没有查看该标识的权限！！！");
         }
 
-        //5.防篡改检验
+        //6.防篡改检验
         String url = dhtFlag.get().getMappingData();
         url = url.replace(" ", "");
 

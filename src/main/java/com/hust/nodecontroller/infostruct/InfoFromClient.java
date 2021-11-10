@@ -90,7 +90,7 @@ public class InfoFromClient {
 
      * @return : java.lang.String
      */
-    public String getPrefix(String identification) throws FormatException {
+    public static String getPrefix(String identification) throws FormatException {
         String[] idList = identification.split("/");
         if (idList.length != 2) {
             throw new FormatException(FormatResultEnum.IDENTIFICATION_PREFIX_SPLIT_ERROR);
@@ -103,7 +103,7 @@ public class InfoFromClient {
         }
     }
 
-    public String getDomainPrefix(String identification) throws FormatException {
+    public static String getDomainPrefix(String identification) throws FormatException {
         String prefix = getPrefix(identification);
         int pos = prefix.lastIndexOf(".");
         if (pos == -1) {

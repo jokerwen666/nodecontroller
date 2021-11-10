@@ -60,6 +60,7 @@ public class ScheduleService {
                 setZook(node.getDomainName());
             }
             stat = zookeeper.setData(destination, (threadNum+"/"+node.toString()).getBytes(), stat.getVersion());
+            System.out.println(threadNum+"/"+node.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }

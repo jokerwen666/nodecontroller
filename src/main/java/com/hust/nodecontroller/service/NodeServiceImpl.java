@@ -61,6 +61,8 @@ public class NodeServiceImpl implements NodeService{
     private String bcQueryUrl;
     @Value("${bc.queryPrefix.url}")
     private String bcPrefixQuery;
+    @Value("${bc.queryOwnerByPrefix.url}")
+    private String bcQueryOwner;
 
     private final ControlProcess controlProcess;
     private static final Logger logger = LoggerFactory.getLogger(NodeServiceImpl.class);
@@ -121,11 +123,18 @@ public class NodeServiceImpl implements NodeService{
     @Override
     public QueryResult query(InfoFromClient infoFromClient) throws Exception {
         String identification = infoFromClient.getIdentification();
+        String client = infoFromClient.getClient();
         String hashType = infoFromClient.getHashType();
 
         // 添加解密，解密出明文
-        if (hashType.equals("sm2")) identification = EncDecUtil.sMDecrypt(identification);
-        else if (hashType.equals("rsa")) identification = EncDecUtil.rsaDecrypt(identification);
+        if (hashType.equals("sm2")) {
+            identification = EncDecUtil.sMDecrypt(identification);
+            client = EncDecUtil.sMDecrypt(client);
+        }
+        else if (hashType.equals("rsa")) {
+            identification = EncDecUtil.rsaDecrypt(identification);
+            client = EncDecUtil.rsaDecrypt(client);
+        }
 
         QueryResult queryResult = new QueryResult();
         switch (IdTypeJudgeUtil.TypeJudge(identification)) {
@@ -139,7 +148,7 @@ public class NodeServiceImpl implements NodeService{
                 queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
                 break;
             case 4 : //创新型
-                queryResult = controlProcess.userHandle(infoFromClient, identification, dhtQueryUrl,bcQueryUrl);
+                queryResult = controlProcess.userHandle(identification, client, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
                 break;
             default:
                 throw new Exception("标识格式错误!请重新输入!");

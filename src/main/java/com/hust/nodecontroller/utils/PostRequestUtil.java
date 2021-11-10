@@ -141,6 +141,30 @@ public class PostRequestUtil {
         return response;
     }
 
+
+    public static NormalMsg getOwnerQueryResponse(String url, JSONObject json) throws Exception {
+        JSONObject resJson = SendPostPacket(url, json);
+
+        NormalMsg normalMsg = new NormalMsg();
+
+        if (resJson.getIntValue("status") == 0) {
+            normalMsg.setStatus(resJson.getIntValue("status"));
+            normalMsg.setMessage(resJson.getString("message"));
+            return normalMsg;
+        }
+
+        JSONArray jsonArray = resJson.getJSONArray("data");
+        JSONObject jsonObject = jsonArray.getJSONObject(0);
+        JSONObject jsonRecord = jsonObject.getJSONObject("Record");
+        String owner = jsonRecord.getString("owner");
+
+        normalMsg.setStatus(1);
+        normalMsg.setMessage(owner);
+
+        return normalMsg;
+
+    }
+
     /**
      * @Description : 向指定url发送json数据，返回ComQueryInfo数据，用于根据url查询对应产品的产品信息
      * @author : Zhang Bowen
@@ -284,6 +308,9 @@ public class PostRequestUtil {
         JSONObject dataJson = resJson.getJSONObject("message");
         response.setDomainName("domain"+dataJson.getString("domainID"));
         response.setCity(dataJson.getString("city"));
+        response.setProvince(dataJson.getString("province"));
+        response.setEnterprise(dataJson.getString("enterprise"));
+        response.setOrgName(dataJson.getString("orgName"));
         response.setIdentityNum(dataJson.getString("idNums"));
         response.setNodeID(dataJson.getString("nodeID"));
         response.setLatitude(dataJson.getString("latitude"));
@@ -503,10 +530,9 @@ public class PostRequestUtil {
     public static int QueryNodeIdTotal(String url, JSONObject json) throws Exception{
         JSONObject resJson = SendPostPacket(url, json);
 
-        /**
-         * 根据北邮的提供的findAllId json格式添加json解析，提取出标识总数
+        /*
+          根据北邮的提供的findAllId json格式添加json解析，提取出标识总数
          */
-
-        return 0;
+        return Integer.parseInt(resJson.getJSONObject("message").getString("idNums"));
     }
 }

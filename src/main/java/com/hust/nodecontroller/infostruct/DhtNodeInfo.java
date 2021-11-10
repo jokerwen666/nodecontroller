@@ -17,6 +17,9 @@ public class DhtNodeInfo extends NormalMsg{
     String latitude;
     String longtitude;
     String city;
+    String province;
+    String enterprise;
+    String orgName;
     String identityNum;
 
     public void setDomainName(String domainName) {
@@ -51,6 +54,30 @@ public class DhtNodeInfo extends NormalMsg{
         return longtitude;
     }
 
+    public void setOrgName(String orgName) {
+        this.orgName = orgName;
+    }
+
+    public String getOrgName() {
+        return orgName;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setEnterprise(String enterprise) {
+        this.enterprise = enterprise;
+    }
+
+    public String getEnterprise() {
+        return enterprise;
+    }
+
     public void setCity(String city) {
         this.city = city;
     }
@@ -70,7 +97,7 @@ public class DhtNodeInfo extends NormalMsg{
     @Override
     public String toString()
     {
-        return nodeID+"/"+latitude+"/"+longtitude+"/"+city+"/"+identityNum;
+        return nodeID+"/"+latitude+"/"+longtitude+"/"+city+"/"+province+"/"+enterprise+"/"+orgName+"/"+identityNum;
     }
 
 }

@@ -100,6 +100,29 @@ public class BlockchainModule implements sendInfoToModule{
         }
     }
 
+    public NormalMsg queryOwnerByPrefix(String prefix, String bcUrl) {
+        JSONObject jsonToRVSystem = new JSONObject();
+        jsonToRVSystem.put("peer_name","peer0");
+        jsonToRVSystem.put("erp_name","");
+        jsonToRVSystem.put("identity_prefix", prefix);
+        jsonToRVSystem.put("public_key","");
+        jsonToRVSystem.put("authority","");
+        jsonToRVSystem.put("owner","");
+
+        NormalMsg normalMsg = new NormalMsg();
+
+        try {
+            normalMsg = PostRequestUtil.getOwnerQueryResponse(bcUrl,jsonToRVSystem);
+            return normalMsg;
+
+        } catch (Exception e) {
+            normalMsg.setStatus(0);
+            normalMsg.setMessage(e.getMessage());
+            return normalMsg;
+        }
+
+    }
+
     private NormalMsg registerAndUpdate(String id, String hash, String url, String toUrl, String queryPermissions) {
         JSONObject jsonToRVSystem = new JSONObject();
         jsonToRVSystem.put("peer_name","peer0");
