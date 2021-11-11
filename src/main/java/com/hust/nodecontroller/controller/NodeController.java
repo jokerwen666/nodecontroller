@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -287,7 +284,7 @@ public class NodeController {
             backHtml.setMemTotal(GetSysInfoUtil.MemTotal());
             backHtml.setDiskTotal(GetSysInfoUtil.DiskTotal());
             backHtml.setQueryCount(CalStateUtil.totalQuery);
-            backHtml.setIdCount(nodeService.QueryNodeIdTotal());
+            backHtml.setIdCount(nodeService.queryNodeIdTotal());
             return backHtml;
         }catch (Exception e) {
             backHtml.setStatus(0);
@@ -311,6 +308,26 @@ public class NodeController {
             backHtml = nodeService.querySystemTotalState();
             return backHtml;
         }catch (Exception e){
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
+    }
+
+
+    /**
+     * 根据企业前缀获取该前缀下所有标识的解析排名
+     * @param prefix
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/identityRank")
+    @ResponseBody
+    public IdentityRankInfo queryIdentityRank(@RequestParam("orgPrefix") String prefix) throws Exception {
+        try {
+            return nodeService.queryIdRankByPrefix(prefix);
+        }catch (Exception e) {
+            IdentityRankInfo backHtml = new IdentityRankInfo();
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
             return backHtml;

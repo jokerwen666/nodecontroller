@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.hust.nodecontroller.controller.NodeController;
 import com.hust.nodecontroller.exception.AuthorityTestException;
@@ -49,6 +50,7 @@ public class NodeServiceImpl implements NodeService{
     private final String dhtFindAllId;
     private final String dhtBulkRegisterUrl;
     private final String dhtBulkQueryUrl;
+    private final String dhtOrgResolveNumsUrl;
 
     // 解析结果验证子系统url
     @Value("${bc.register.url}")
@@ -88,6 +90,7 @@ public class NodeServiceImpl implements NodeService{
         dhtFindAllId = "http://" + serverIp + ":" + dhtPort + "/dht/findAllId";
         dhtBulkRegisterUrl = "http://" + serverIp + ":" + dhtPort + "/dht/registers";
         dhtBulkQueryUrl = "http://" + serverIp + ":" + dhtPort + "/dht/resolves";
+        dhtOrgResolveNumsUrl = "http://" + serverIp + ":" + dhtPort + "/dht/getOrgResolveNums";
     }
 
     @Bean
@@ -181,12 +184,19 @@ public class NodeServiceImpl implements NodeService{
     }
 
     @Override
-    public int QueryNodeIdTotal() throws Exception {
+    public int queryNodeIdTotal() throws Exception {
         JSONObject callJson = new JSONObject();
         callJson.put("orgname","controller");
         callJson.put("type",0);
         return PostRequestUtil.QueryNodeIdTotal(dhtFindAllId,callJson);
+    }
 
+
+    public IdentityRankInfo queryIdRankByPrefix(String prefix) throws Exception {
+        JSONObject callJson = new JSONObject();
+        callJson.put("orgname", prefix);
+        callJson.put("type", 5);
+        return PostRequestUtil.queryIdRankByPrefix(dhtOrgResolveNumsUrl,callJson);
     }
 
 }

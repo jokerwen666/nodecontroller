@@ -143,5 +143,29 @@ public class ThreadPoolConfig {
         return taskExecutor;
     }
 
+    @Bean("calStateExecutor")
+    public Executor calStateExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        //配置核心线程池数
+        taskExecutor.setCorePoolSize(10);
+        //配置最大线程数
+        taskExecutor.setMaxPoolSize(50);
+        //配置队列大小
+        taskExecutor.setQueueCapacity(200);
+        //配置空闲线程存活时间
+        taskExecutor.setKeepAliveSeconds(60);
+        //配置线程池中的线程名称前缀
+        taskExecutor.setThreadNamePrefix("calState-");
+        //配置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
+        //用于保证异步执行时Spring容器中其他资源的安全
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        // 配置线程池中任务的等待时间，如果超过这个时候还没有销毁就强制销毁
+        // 以确保应用最后能够被关闭，而不是阻塞住
+        taskExecutor.setAwaitTerminationSeconds(60);
+        return taskExecutor;
+    }
+
+
+
 
 }

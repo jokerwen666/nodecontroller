@@ -1,10 +1,18 @@
 package com.hust.nodecontroller.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hust.nodecontroller.communication.ComInfoModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.GlobalMemory;
 import org.apache.commons.io.FileSystemUtils;
+import sun.awt.image.ImageWatched;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,7 +29,16 @@ import java.util.concurrent.TimeUnit;
  * @ClassName GetSysInfoUtil
  * @date 2020.10.18 16:18
  */
+
+
+@EnableScheduling
 public class GetSysInfoUtil {
+    public static List<JSONObject> sysInfoList = new LinkedList<>();
+
+
+
+
+
     public static double CpuInfo() {
         SystemInfo systemInfo = new SystemInfo();
         CentralProcessor processor = systemInfo.getHardware().getProcessor();
@@ -44,24 +61,6 @@ public class GetSysInfoUtil {
         long idle = ticks[CentralProcessor.TickType.IDLE.getIndex()] - prevTicks[CentralProcessor.TickType.IDLE.getIndex()];
         long totalCpu = user + nice + cSys + idle + ioWait + irq + softIrq + steal;
         return 1.0-(idle * 1.0 / totalCpu);
-    }
-
-    public static List<JSONObject> getMinuteSysInfo() throws InterruptedException {
-        List<JSONObject> jsonObjectList = new ArrayList<>();
-
-        for (int i = 0; i < 6; i++) {
-            JSONObject jsonObject = new JSONObject();
-            Double cpuRate = CpuInfo();
-            Double memRate = MemInfo();
-            jsonObject.put("cpuRate", cpuRate);
-            jsonObject.put("memRate", memRate);
-            jsonObject.put("times", i);
-            jsonObjectList.add(jsonObject);
-            TimeUnit.SECONDS.sleep(10);
-        }
-
-        return jsonObjectList;
-
     }
 
     public static double MemInfo() {
@@ -101,5 +100,9 @@ public class GetSysInfoUtil {
         }
 
         return (double)flow ;
+    }
+
+    public static List<JSONObject> getMinuteSysInfo() {
+        return sysInfoList;
     }
 }

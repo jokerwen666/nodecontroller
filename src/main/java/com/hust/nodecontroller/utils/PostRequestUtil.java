@@ -8,10 +8,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.swing.plaf.basic.BasicButtonUI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Zhang Bowen
@@ -406,6 +403,36 @@ public class PostRequestUtil {
         response.setData(data);
 
         return response;
+    }
+
+
+    public static IdentityRankInfo queryIdRankByPrefix(String url, JSONObject json) throws Exception {
+        JSONObject resJSON = SendPostPacket(url,json);
+        IdentityRankInfo idRankInfo = new IdentityRankInfo();
+        List<JSONObject> idList = new LinkedList<>();
+
+        if (resJSON.getIntValue("status") == 0)
+            throw new Exception("获取企业节点标识排行失败！");
+
+        JSONArray jsonArray = resJSON.getJSONArray("identityList");
+        int size = jsonArray.size();
+        for (int i = 0; i < size; i++) {
+            JSONObject job = jsonArray.getJSONObject(i);
+            JSONObject idInfo = new JSONObject();
+            idInfo.put("identity", job.getString("identifier"));
+            idInfo.put("goodsInfoUrl", job.getString("mappingData"));
+            idInfo.put("resolveNums", job.getString("resolveNums"));
+            idInfo.put("rankNum", i+1);
+            idList.add(idInfo);
+            idInfo.clear();
+        }
+
+        idRankInfo.setIdList(idList);
+        idRankInfo.setIdNums(size);
+        idRankInfo.setStatus(1);
+        idRankInfo.setMessage("获取企业节点标识排行成功！");
+
+        return idRankInfo;
     }
 
 
