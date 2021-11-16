@@ -59,7 +59,7 @@ public class ControlProcessImpl implements ControlProcess{
 
         String client = infoFromClient.getClient(); //请求发送的企业名称
         String identity = infoFromClient.getIdentification(); //请求标识
-        String prefix = infoFromClient.getPrefix(identity); //标识前缀
+        String prefix = InfoFromClient.getPrefix(identity); //标识前缀
         JSONObject data = infoFromClient.getData(); //注册信息
         String hashType = infoFromClient.getHashType();
 
@@ -159,7 +159,7 @@ public class ControlProcessImpl implements ControlProcess{
         //2.向权限管理子系统发送请求，接收到相关权限信息
         //Future<AMSystemInfo> amSystemInfo = authorityModule.query(client,prefix,1);
 
-        //3.向标识管理子系统发送请求获得url\向解析结果验证子系统发送请求获得两个摘要信息
+        //3.向标识管理子系统发送请求获得url向解析结果验证子系统发送请求获得两个摘要信息
         Future<IMSystemInfo> dhtFlag = dhtModule.query(identity,prefix,dhtUrl,crossDomain_flag);
         Future<RVSystemInfo> bcFlag = blockchainModule.query(identity,bcUrl);
 

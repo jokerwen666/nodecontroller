@@ -36,6 +36,7 @@ public class IdTypeJudgeUtil {
     }
 
     public static JSONObject handleResolve(String id) throws JSONException {
+        CalStateUtil.handleQueryCount++;
         URL url = null;
         HttpURLConnection httpConn = null;
         BufferedReader in = null;
@@ -73,6 +74,7 @@ public class IdTypeJudgeUtil {
     }
 
     public static JSONObject ecodeResolve(String id){
+        CalStateUtil.ecodeQueryCount++;
         Process proc;
         String[] title={" 'Ecode编码：\\u3000'"," '产品名称：\\u3000'"," '型号名称：\\u3000'"," '企业名称：\\u3000'"," '回传时间：\\u3000'"};
         String[] value=new String[title.length];
@@ -109,6 +111,7 @@ public class IdTypeJudgeUtil {
     }
 
     public static JSONObject oidResolve(String id){
+        CalStateUtil.oidQueryCount++;
         String[] title = {"站点：", "数字OID：", "中文OID：", "英文OID：", "应用范围：", "申请机构中文名：", "申请机构英文名：", "申请机构中文地址：", "申请机构英文地址：", "申请机构网址：", "申请机构邮编：", "申请机构传真："};
         String[] value = new String[title.length];
         try {

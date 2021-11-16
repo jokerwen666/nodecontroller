@@ -36,6 +36,7 @@ public class CalStateAspect {
     public void doBeforeQuery() throws Exception {
         CalStateUtil.queryCount++;
         CalStateUtil.totalCount++;
+        CalStateUtil.totalQuery++;
     }
 
 

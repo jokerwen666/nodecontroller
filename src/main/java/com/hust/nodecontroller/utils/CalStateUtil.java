@@ -5,6 +5,7 @@ import netscape.javascript.JSObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,12 @@ public class CalStateUtil {
 
     public static int totalQuery = 0;
     public static long totalQueryTimeout = 0;
+
+    public static int oidQueryCount = 0;
+    public static int ecodeQueryCount = 0;
+    public static int handleQueryCount = 0;
+
+    public static List<JSONObject> runtimeInfoList = new LinkedList<>();
 
     public static int differQuery(){ return queryCount-preQueryCount; }
 
@@ -54,22 +61,8 @@ public class CalStateUtil {
         preTotalCount = totalCount;
     }
 
-    public static List<JSONObject> getMinuteStateInfo() throws InterruptedException, IOException {
-        List<JSONObject> jsonObjectList = new ArrayList<>();
-
-        for (int i = 0; i < 6; i++) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("queryCount", differQuery());
-            jsonObject.put("registerCount", differRegister());
-            jsonObject.put("successRate", getSuccessRate());
-            jsonObject.put("totalCount", differTotal());
-            jsonObject.put("flowCount", GetSysInfoUtil.FlowTotal());
-            jsonObject.put("times", i);
-            jsonObjectList.add(jsonObject);
-            TimeUnit.SECONDS.sleep(10);
-        }
-
-        return jsonObjectList;
+    public static List<JSONObject> getMinuteStateInfo() {
+        return runtimeInfoList;
     }
 
 }

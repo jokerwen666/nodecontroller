@@ -7,6 +7,7 @@ import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.service.NodeService;
 import com.hust.nodecontroller.utils.CalStateUtil;
 import com.hust.nodecontroller.utils.GetSysInfoUtil;
+import org.omg.CORBA.BAD_CONTEXT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,7 +148,6 @@ public class NodeController {
     @ResponseBody
     public QueryResult query(@RequestBody InfoFromClient infoFromClient) throws Exception {
         QueryResult backHtml = new QueryResult();
-        CalStateUtil.totalQuery++;
         try {
             threadNum.addAndGet(1);
             backHtml = nodeService.query(infoFromClient);
@@ -314,7 +314,6 @@ public class NodeController {
         }
     }
 
-
     /**
      * 根据企业前缀获取该前缀下所有标识的解析排名
      * @param prefix
@@ -332,5 +331,18 @@ public class NodeController {
             backHtml.setMessage(e.getMessage());
             return backHtml;
         }
+    }
+
+    @RequestMapping(value = "/HidInfo")
+    @ResponseBody
+    public HidInfo queryHidInfo() {
+        HidInfo backHtml = new HidInfo();
+        backHtml.setOidCount(CalStateUtil.oidQueryCount);
+        backHtml.setEcodeCount(CalStateUtil.ecodeQueryCount);
+        backHtml.setHandleCount(CalStateUtil.handleQueryCount);
+        backHtml.setDeisCount(CalStateUtil.totalQuery);
+        backHtml.setStatus(1);
+        backHtml.setMessage("异构查询成功！");
+        return backHtml;
     }
 }
