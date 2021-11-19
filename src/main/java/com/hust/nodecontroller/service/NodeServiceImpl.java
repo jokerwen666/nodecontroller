@@ -127,7 +127,7 @@ public class NodeServiceImpl implements NodeService{
     public QueryResult query(InfoFromClient infoFromClient) throws Exception {
         String identification = infoFromClient.getIdentification();
         String client = infoFromClient.getClient();
-        String hashType = infoFromClient.getHashType();
+        String hashType = infoFromClient.getType();
 
         // 添加解密，解密出明文
         if (hashType.equals("sm2")) {

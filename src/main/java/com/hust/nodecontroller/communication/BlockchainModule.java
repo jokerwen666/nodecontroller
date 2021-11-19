@@ -107,7 +107,7 @@ public class BlockchainModule implements sendInfoToModule{
         jsonToRVSystem.put("identity_prefix", prefix);
         jsonToRVSystem.put("public_key","");
         jsonToRVSystem.put("authority","");
-        jsonToRVSystem.put("owner","");
+        jsonToRVSystem.put("onwer","");
 
         NormalMsg normalMsg = new NormalMsg();
 

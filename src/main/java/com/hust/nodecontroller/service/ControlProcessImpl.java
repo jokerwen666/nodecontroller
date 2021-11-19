@@ -61,7 +61,6 @@ public class ControlProcessImpl implements ControlProcess{
         String identity = infoFromClient.getIdentification(); //请求标识
         String prefix = InfoFromClient.getPrefix(identity); //标识前缀
         JSONObject data = infoFromClient.getData(); //注册信息
-        String hashType = infoFromClient.getHashType();
 
 //        String encryptData = infoFromClient.getEncryptData(); //加密数据
 //        String signData = infoFromClient.getSignData(); //签名信息
@@ -130,13 +129,15 @@ public class ControlProcessImpl implements ControlProcess{
         if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() != 0){
             dhtErrorHandle.errorHandle(type,identity,prefix);
             logger.info("BlockchainErrorMsg({})", bcFlag.get().getMessage());
-            throw new Exception(bcFlag.get().getMessage());
+            String errStr = "区块链节点错误信息(" + bcFlag.get().getMessage() + ") ";
+            throw new Exception(errStr);
         }
 
         if(bcFlag.get().getStatus() != 0 && dhtFlag.get().getStatus() == 0){
             bcErrorHandle.errorHandle(type,identity);
             logger.info("DHTErrorMsg({})", dhtFlag.get().getMessage());
-            throw new Exception(dhtFlag.get().getMessage());
+            String errStr = "DHT节点错误信息(" + dhtFlag.get().getMessage() + ")";
+            throw new Exception(errStr);
         }
 
         if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() == 0){

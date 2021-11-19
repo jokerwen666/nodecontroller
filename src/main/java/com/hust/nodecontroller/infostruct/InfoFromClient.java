@@ -31,9 +31,17 @@ public class InfoFromClient {
     private String client;
     private Boolean crossDomain_flag = false;
 
-    private String hashType = "sm2";
+    private String type = "sm2";
     private String signData;
     private String encryptData;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getIdentification() {
         return identification;
@@ -111,13 +119,5 @@ public class InfoFromClient {
         }
 
         return prefix.substring(0,pos);
-    }
-
-    public String getHashType() {
-        return hashType;
-    }
-
-    public void setHashType(String hashType) {
-        this.hashType = hashType;
     }
 }

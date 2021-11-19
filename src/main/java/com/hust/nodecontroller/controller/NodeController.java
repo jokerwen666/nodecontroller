@@ -285,6 +285,8 @@ public class NodeController {
             backHtml.setDiskTotal(GetSysInfoUtil.DiskTotal());
             backHtml.setQueryCount(CalStateUtil.totalQuery);
             backHtml.setIdCount(nodeService.queryNodeIdTotal());
+            backHtml.setStatus(1);
+            backHtml.setMessage("企业服务器资源信息查询成功");
             return backHtml;
         }catch (Exception e) {
             backHtml.setStatus(0);
@@ -322,7 +324,7 @@ public class NodeController {
      */
     @RequestMapping(value = "/identityRank")
     @ResponseBody
-    public IdentityRankInfo queryIdentityRank(@RequestParam("orgPrefix") String prefix) throws Exception {
+    public IdentityRankInfo queryIdentityRank(@RequestBody String prefix) throws Exception {
         try {
             return nodeService.queryIdRankByPrefix(prefix);
         }catch (Exception e) {

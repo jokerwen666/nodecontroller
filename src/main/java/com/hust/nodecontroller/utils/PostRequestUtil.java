@@ -131,7 +131,7 @@ public class PostRequestUtil {
         JSONObject dataJson = resJson.getJSONObject("data");
         response.setUrlHash(dataJson.getString("abstract"));
         response.setMappingDataHash(dataJson.getString("mappingData_hash"));
-        response.setPermission(dataJson.getString("permission"));
+        response.setPermission(dataJson.getString("permisssion"));
         response.setMessage(resJson.getString("message"));
         response.setStatus(resJson.getIntValue("status"));
 
@@ -153,7 +153,7 @@ public class PostRequestUtil {
         JSONArray jsonArray = resJson.getJSONArray("data");
         JSONObject jsonObject = jsonArray.getJSONObject(0);
         JSONObject jsonRecord = jsonObject.getJSONObject("Record");
-        String owner = jsonRecord.getString("owner");
+        String owner = jsonRecord.getString("onwer");
 
         normalMsg.setStatus(1);
         normalMsg.setMessage(owner);
@@ -376,10 +376,14 @@ public class PostRequestUtil {
                 JSONObject idData = job.getJSONObject("Record"); //从job中获取标识对应的记录
                 String urlHash = idData.getString("abstract"); //从记录中获取url哈希
                 String goodsHash = idData.getString("mappingData_hash"); //从记录中获取产品信息哈希
+                String permission = idData.getString("permisssion");
+                if (permission.equals("1")) permission = "all";
+                else permission = "only";
 
                 identityData.put("identity", identity);
                 identityData.put("urlHash", urlHash);
                 identityData.put("goodsHash", goodsHash);
+                identityData.put("queryAuthority",permission);
 
                 identityList.add(identityData);
             }

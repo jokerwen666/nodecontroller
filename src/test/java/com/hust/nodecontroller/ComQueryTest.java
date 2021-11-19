@@ -17,9 +17,11 @@ import org.junit.jupiter.api.Test;
 public class ComQueryTest {
     @Test
     public void test() throws Exception {
-        String url = "http://222.180.148.30:8666/Query/086.001.000001/01.02.09.20201102.910009";
+        String url = "http://183.67.5.170:8666/Query/086.001.000001/02.03.12.20210407.031003";
         ComQueryInfo comQueryInfo = PostRequestUtil.getComQueryInfo(url);
-        comQueryInfo.getStatus();
+        String jsonStr = comQueryInfo.getInformation().toString();
+        String hash = HashUtil.SM3Hash(jsonStr);
+        System.out.println(hash);
 
 //        String url = "http://39.107.238.25:8686/api/queryauthoritybynameandprefix";
 //        JSONObject jsonObject = new JSONObject();

@@ -76,7 +76,7 @@ public class GetSysInfoUtil {
     public static double MemTotal() {
         SystemInfo systemInfo = new SystemInfo();
         GlobalMemory memory = systemInfo.getHardware().getMemory();
-        return memory.getTotal();
+        return memory.getTotal()/1024/1024/1024;
     }
 
     public static double DiskTotal() {

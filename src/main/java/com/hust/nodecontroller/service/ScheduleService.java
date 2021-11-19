@@ -58,7 +58,9 @@ public class ScheduleService {
             {
                 setFlag=true;
                 setZook(node.getDomainName());
+                createEnterprise(node.getEnterprise());
             }
+
             stat = zookeeper.setData(destination, (threadNum+"/"+node.toString()).getBytes(), stat.getVersion());
             System.out.println(threadNum+"/"+node.toString());
         } catch (Exception e) {
@@ -85,7 +87,7 @@ public class ScheduleService {
         }
     }
 
-
+    //create folder key:/servers/Domain/ip:port  value:node.tostring
     public void setZook(String Domain) throws Exception {
         if (zookeeper.exists("/servers", null) == null) {
             zookeeper.create("/servers", ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
@@ -100,6 +102,20 @@ public class ScheduleService {
         }
         zookeeper.getData(destination, null, stat);
     }
+
+    //create key:enterprise+name  value:ip:port
+    public void createEnterprise(String enterprisename) throws Exception {
+        if (zookeeper.exists("/enterprise", null) == null) {
+            zookeeper.create("/enterprise", ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
+        }
+        if (zookeeper.exists("/enterprise/"+enterprisename, null) == null) {
+            zookeeper.create("/enterprise/"+enterprisename, (controllerAddress).getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
+        }
+
+        //System.out.println(enterprisename+"Foler created");
+        zookeeper.getData(destination, null, stat);
+    }
+
 
     @RequestMapping(value = "/zkget")
     public String zkget() {
