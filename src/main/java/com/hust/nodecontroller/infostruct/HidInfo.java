@@ -4,7 +4,7 @@ public class HidInfo extends NormalMsg{
     private int oidCount;
     private int ecodeCount;
     private int handleCount;
-    private int deisCount;
+    private int dnsCount;
 
     public int getOidCount() {
         return oidCount;
@@ -30,11 +30,11 @@ public class HidInfo extends NormalMsg{
         this.handleCount = handleCount;
     }
 
-    public int getDeisCount() {
-        return deisCount;
+    public int getDnsCount() {
+        return dnsCount;
     }
 
-    public void setDeisCount(int deisCount) {
-        this.deisCount = deisCount;
+    public void setDnsCount(int dnsCount) {
+        this.dnsCount = dnsCount;
     }
 }

@@ -44,8 +44,7 @@ public class AuthorityModule implements sendInfoToModule{
         return registerAndUpdate(erp_name, prefix, key, authority, owner, amUpdateUrl);
     }
 
-    @Async
-    public Future<AMSystemInfo> query(String client, String prefix, int type){
+    public AMSystemInfo query(String client, String prefix, int type){
         long beginTime = System.nanoTime();
         JSONObject jsonToAMSystem = new JSONObject();
         jsonToAMSystem.put("peer_name","peer0");
@@ -56,7 +55,7 @@ public class AuthorityModule implements sendInfoToModule{
             amSystemInfo = PostRequestUtil.getAMQueryResponse(amQueryUrl,jsonToAMSystem);
 
             if (amSystemInfo.getStatus() == 0){
-                return new AsyncResult<>(amSystemInfo);
+                return amSystemInfo;
             }
 
             int authority = Integer.parseInt(amSystemInfo.getAuthority(), 2);
@@ -64,15 +63,15 @@ public class AuthorityModule implements sendInfoToModule{
             if((authority & type) == 0){
                 amSystemInfo.setStatus(0);
                 amSystemInfo.setMessage(AuthorityResultEnum.OPERATION_AUTHORITY_VERIFY_ERROR.getMsg());
-                return new AsyncResult<>(amSystemInfo);
+                return amSystemInfo;
             }
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
-            return new AsyncResult<>(amSystemInfo);
+            return amSystemInfo;
         }catch (Exception e){
             amSystemInfo.setStatus(0);
             amSystemInfo.setMessage(e.getMessage());
-            return new AsyncResult<>(amSystemInfo);
+            return amSystemInfo;
         }
     }
 

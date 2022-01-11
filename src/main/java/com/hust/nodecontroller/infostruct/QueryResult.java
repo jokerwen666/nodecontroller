@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class QueryResult extends NormalMsg{
     private String url;
-    private JSONObject goodsInfo;
     private String nodeID;
+    private String goodsInfo;
 
     public String getUrl() {
         return url;
@@ -27,13 +27,7 @@ public class QueryResult extends NormalMsg{
         this.url = url;
     }
 
-    public JSONObject getGoodsInfo() {
-        return goodsInfo;
-    }
 
-    public void setGoodsInfo(JSONObject goodsInfo) {
-        this.goodsInfo = goodsInfo;
-    }
 
     public String getNodeID() {
         return nodeID;
@@ -41,5 +35,13 @@ public class QueryResult extends NormalMsg{
 
     public void setNodeID(String nodeID) {
         this.nodeID = nodeID;
+    }
+
+    public String getGoodsInfo() {
+        return goodsInfo;
+    }
+
+    public void setGoodsInfo(String goodsInfo) {
+        this.goodsInfo = goodsInfo;
     }
 }

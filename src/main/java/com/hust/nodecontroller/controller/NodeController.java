@@ -4,9 +4,12 @@ import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.*;
+import com.hust.nodecontroller.service.ControlProcess;
+import com.hust.nodecontroller.service.ControlProcessImpl;
 import com.hust.nodecontroller.service.NodeService;
 import com.hust.nodecontroller.utils.CalStateUtil;
 import com.hust.nodecontroller.utils.GetSysInfoUtil;
+import com.hust.nodecontroller.utils.IndustryQueryUtil;
 import org.omg.CORBA.BAD_CONTEXT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,46 +167,6 @@ public class NodeController {
         }
     }
 
-    /**
-     * 批量注册
-     * @param jsonArray
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "bulk-register")
-    @ResponseBody
-    public BulkInfo bulkRegister(@RequestBody JSONArray jsonArray) throws Exception {
-        return nodeService.bulkRegister(jsonArray);
-    }
-
-    /**
-     * 批量查询
-     * @param jsonArray
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "bulk-query")
-    @ResponseBody
-    public BulkInfo bulkQuery(@RequestBody JSONArray jsonArray) throws Exception {
-        return nodeService.bulkQuery(jsonArray);
-    }
-
-
-
-    @RequestMapping(value = "/nodeState")
-    @ResponseBody
-    public NodeState queryNodeState() throws Exception {
-        NodeState backHtml = new NodeState();
-        try{
-            backHtml = nodeService.queryNodeState();
-            return backHtml;
-        }catch (Exception e){
-            backHtml.setStatus(0);
-            backHtml.setMessage(e.getMessage());
-            return backHtml;
-        }
-    }
-
 
     /**
      * 根据企业前缀返回所有标识信息
@@ -221,31 +184,6 @@ public class NodeController {
         }catch (Exception e){
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
-            return backHtml;
-        }
-    }
-
-
-    /**
-     * 当前服务器的解析量、注册量、总请求量、响应成功率、流量统计
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "/runtime-info")
-    @ResponseBody
-    public RuntimeState getRuntimeInfo() throws Exception {
-        RuntimeState backHtml= new RuntimeState();
-        try {
-            backHtml.setData(CalStateUtil.getMinuteStateInfo());
-            backHtml.setStatus(1);
-            backHtml.setMessage("Success!");
-            CalStateUtil.updateState();
-            return backHtml;
-
-        }catch (Exception e) {
-            backHtml.setStatus(0);
-            backHtml.setMessage(e.getMessage());
-            CalStateUtil.updateState();
             return backHtml;
         }
     }
@@ -272,19 +210,69 @@ public class NodeController {
     }
 
     /**
+     * 当前服务器的解析量、注册量
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/runtime-info1")
+    @ResponseBody
+    public RuntimeState getRuntimeInfo1() throws Exception {
+        RuntimeState backHtml= new RuntimeState();
+        try {
+            backHtml.setData(CalStateUtil.getRuntimeInfoList1());
+            backHtml.setStatus(1);
+            backHtml.setMessage("Success!");
+            return backHtml;
+
+        }catch (Exception e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
+    }
+
+    /**
+     * 当前服务器的解析正确率、总流量以及解析时延
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/runtime-info2")
+    @ResponseBody
+    public RuntimeState getRuntimeInfo2() throws Exception {
+        RuntimeState backHtml= new RuntimeState();
+        try {
+            backHtml.setData(CalStateUtil.getRuntimeInfoList2());
+            backHtml.setStatus(1);
+            backHtml.setMessage("Success!");
+            return backHtml;
+
+        }catch (Exception e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
+    }
+
+    /**
      * 获取当前企业服务器的资源信息（标识总数、解析总数、内存总数、磁盘总量）
      * @return
      * @throws Exception
      */
-    @RequestMapping(value = "/resourceInfo")
+    @RequestMapping(value = "/resource-info")
     @ResponseBody
     public ResourceInfo getResourceInfo() throws Exception {
         ResourceInfo backHtml = new ResourceInfo();
         try {
             backHtml.setMemTotal(GetSysInfoUtil.MemTotal());
             backHtml.setDiskTotal(GetSysInfoUtil.DiskTotal());
-            backHtml.setQueryCount(CalStateUtil.totalQuery);
+            backHtml.setQueryCount(CalStateUtil.queryCount);
             backHtml.setIdCount(nodeService.queryNodeIdTotal());
+
+            if (CalStateUtil.queryCount == 0)
+                backHtml.setQueryTimeout(0);
+            else
+                backHtml.setQueryTimeout((float) CalStateUtil.queryTimeout / CalStateUtil.queryCount);
+
             backHtml.setStatus(1);
             backHtml.setMessage("企业服务器资源信息查询成功");
             return backHtml;
@@ -296,6 +284,95 @@ public class NodeController {
 
     }
 
+    /**
+     * 根据企业前缀获取该前缀下所有标识的解析排名
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/identityRank")
+    @ResponseBody
+    public IdentityRankInfo queryIdentityRank(@RequestBody JSONObject param) throws Exception {
+        try {
+            String prefix = param.getString("prefix");
+            return nodeService.queryIdRankByPrefix(prefix);
+        }catch (Exception e) {
+            IdentityRankInfo backHtml = new IdentityRankInfo();
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
+    }
+
+    @RequestMapping(value = "/hidInfo")
+    @ResponseBody
+    public HidInfo queryHidInfo() {
+        HidInfo backHtml = new HidInfo();
+        backHtml.setOidCount(CalStateUtil.differOid());
+        backHtml.setEcodeCount(CalStateUtil.differEcode());
+        backHtml.setHandleCount(CalStateUtil.differHandle());
+        backHtml.setDnsCount(CalStateUtil.differDns());
+        CalStateUtil.preOidQueryCount = CalStateUtil.oidQueryCount;
+        CalStateUtil.preEcodeQueryCount = CalStateUtil.ecodeQueryCount;
+        CalStateUtil.preHandleQueryCount = CalStateUtil.handleQueryCount;
+        CalStateUtil.preDnsQueryCount = CalStateUtil.dnsQueryCount;
+        backHtml.setStatus(1);
+        backHtml.setMessage("异构查询成功！");
+        return backHtml;
+    }
+
+    @RequestMapping(value = "/industryInfo")
+    @ResponseBody
+    public IndustryInfo queryIndustryInfo() {
+        IndustryInfo backHtml = new IndustryInfo();
+        backHtml.setIndustryName(ControlProcessImpl.domainPrefix);
+        backHtml.setDataCount(IndustryQueryUtil.calIndustryQueryInfo());
+        backHtml.setStatus(1);
+        backHtml.setMessage("行业时段解析查询成功！");
+        return backHtml;
+    }
+
+    // 以下方法弃用
+    /**
+     * 批量注册
+     * @param jsonArray
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "bulk-register")
+    @ResponseBody
+    @Deprecated
+    public BulkInfo bulkRegister(@RequestBody JSONArray jsonArray) throws Exception {
+        return nodeService.bulkRegister(jsonArray);
+    }
+
+    /**
+     * 批量查询
+     * @param jsonArray
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "bulk-query")
+    @ResponseBody
+    @Deprecated
+    public BulkInfo bulkQuery(@RequestBody JSONArray jsonArray) throws Exception {
+        return nodeService.bulkQuery(jsonArray);
+    }
+
+    @RequestMapping(value = "/nodeState")
+    @ResponseBody
+    @Deprecated
+    public NodeState queryNodeState() throws Exception {
+        NodeState backHtml = new NodeState();
+        try{
+            backHtml = nodeService.queryNodeState();
+            return backHtml;
+        }catch (Exception e){
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
+    }
 
     /**
      * 查询整个系统的节点总数、行业总数、平均解析时延
@@ -304,6 +381,7 @@ public class NodeController {
      */
     @RequestMapping(value = "/systemState")
     @ResponseBody
+    @Deprecated
     public SystemTotalState querySystemState() throws Exception {
         SystemTotalState backHtml = new SystemTotalState();
         try{
@@ -314,37 +392,5 @@ public class NodeController {
             backHtml.setMessage(e.getMessage());
             return backHtml;
         }
-    }
-
-    /**
-     * 根据企业前缀获取该前缀下所有标识的解析排名
-     * @param prefix
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "/identityRank")
-    @ResponseBody
-    public IdentityRankInfo queryIdentityRank(@RequestBody String prefix) throws Exception {
-        try {
-            return nodeService.queryIdRankByPrefix(prefix);
-        }catch (Exception e) {
-            IdentityRankInfo backHtml = new IdentityRankInfo();
-            backHtml.setStatus(0);
-            backHtml.setMessage(e.getMessage());
-            return backHtml;
-        }
-    }
-
-    @RequestMapping(value = "/HidInfo")
-    @ResponseBody
-    public HidInfo queryHidInfo() {
-        HidInfo backHtml = new HidInfo();
-        backHtml.setOidCount(CalStateUtil.oidQueryCount);
-        backHtml.setEcodeCount(CalStateUtil.ecodeQueryCount);
-        backHtml.setHandleCount(CalStateUtil.handleQueryCount);
-        backHtml.setDeisCount(CalStateUtil.totalQuery);
-        backHtml.setStatus(1);
-        backHtml.setMessage("异构查询成功！");
-        return backHtml;
     }
 }

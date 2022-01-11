@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.aop;
 
+import com.hust.nodecontroller.utils.IndustryQueryUtil;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -35,8 +36,8 @@ public class CalStateAspect {
     @Before("pointCutQuery()")
     public void doBeforeQuery() throws Exception {
         CalStateUtil.queryCount++;
+        IndustryQueryUtil.queryCount++;
         CalStateUtil.totalCount++;
-        CalStateUtil.totalQuery++;
     }
 
 

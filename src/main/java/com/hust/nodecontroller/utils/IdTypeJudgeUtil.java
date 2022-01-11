@@ -3,13 +3,17 @@ package com.hust.nodecontroller.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.hust.nodecontroller.communication.BlockchainModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.regex.Pattern;
 
 public class IdTypeJudgeUtil {
 
@@ -17,9 +21,11 @@ public class IdTypeJudgeUtil {
 
 
     public static int TypeJudge(String identification){
-        if(identification.split("\\.").length == 4)
+        boolean isContainLetter = Pattern.compile("[a-zA-Z]").matcher(identification).find();
+
+        if(identification.split("\\.").length == 4 && !isContainLetter)
             return 1;
-        else if(identification.split("\\.").length == 3)
+        else if(identification.split("\\.").length == 3 && !isContainLetter)
             return 2;
         else if(identification.startsWith("10064") || identification.startsWith("10096") || identification.startsWith("20128") || identification.startsWith("300121"))
             return 3;
@@ -32,10 +38,22 @@ public class IdTypeJudgeUtil {
                     return 4;
             }
         }
+        else return 5;
         return 0;
     }
 
-    public static JSONObject handleResolve(String id) throws JSONException {
+    public static String dnsResolve(String domain) throws JSONException, UnknownHostException {
+        CalStateUtil.dnsQueryCount++;
+        JSONObject dns = new JSONObject();
+        InetAddress[] ip = InetAddress.getAllByName(domain);
+        for (int i = 0; i < ip.length; i++) {
+            String key = "answer" + i;
+            dns.put(key, ip[i].getHostAddress());
+        }
+        return EncDecUtil.sMEncrypt(dns.toString());
+    }
+
+    public static String handleResolve(String id) throws JSONException {
         CalStateUtil.handleQueryCount++;
         URL url = null;
         HttpURLConnection httpConn = null;
@@ -70,10 +88,10 @@ public class IdTypeJudgeUtil {
             tmp.put("timestamp",values.getJSONObject(i).get("timestamp").toString());
             result.put(String.valueOf(i),tmp);
         }
-        return result;
+        return EncDecUtil.sMEncrypt(result.toString());
     }
 
-    public static JSONObject ecodeResolve(String id){
+    public static String ecodeResolve(String id){
         CalStateUtil.ecodeQueryCount++;
         Process proc;
         String[] title={" 'Ecode编码：\\u3000'"," '产品名称：\\u3000'"," '型号名称：\\u3000'"," '企业名称：\\u3000'"," '回传时间：\\u3000'"};
@@ -107,10 +125,11 @@ public class IdTypeJudgeUtil {
         jsonObject.put("model",value[2]);
         jsonObject.put("company",value[3]);
         jsonObject.put("registrationDate",value[4]);
-        return jsonObject;
+        return EncDecUtil.sMEncrypt(jsonObject.toString());
     }
 
-    public static JSONObject oidResolve(String id){
+
+    public static String oidResolve(String id){
         CalStateUtil.oidQueryCount++;
         String[] title = {"站点：", "数字OID：", "中文OID：", "英文OID：", "应用范围：", "申请机构中文名：", "申请机构英文名：", "申请机构中文地址：", "申请机构英文地址：", "申请机构网址：", "申请机构邮编：", "申请机构传真："};
         String[] value = new String[title.length];
@@ -155,6 +174,6 @@ public class IdTypeJudgeUtil {
         jsonObject.put("website",value[9]);
         jsonObject.put("zipcode",value[10]);
         jsonObject.put("fax",value[11]);
-        return jsonObject;
+        return EncDecUtil.sMEncrypt(jsonObject.toJSONString());
     }
 }

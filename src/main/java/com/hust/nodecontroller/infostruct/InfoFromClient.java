@@ -27,11 +27,12 @@ public class InfoFromClient {
 
     private String identification;
     private String orgPrefix;
+    private String matchString;
     private JSONObject data;
     private String client;
     private Boolean crossDomain_flag = false;
 
-    private String type = "sm2";
+    private String type = "none";
     private String signData;
     private String encryptData;
 
@@ -119,5 +120,13 @@ public class InfoFromClient {
         }
 
         return prefix.substring(0,pos);
+    }
+
+    public String getMatchString() {
+        return matchString;
+    }
+
+    public void setMatchString(String matchString) {
+        this.matchString = matchString;
     }
 }

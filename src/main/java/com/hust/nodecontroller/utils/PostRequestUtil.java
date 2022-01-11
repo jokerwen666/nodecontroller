@@ -269,7 +269,7 @@ public class PostRequestUtil {
         int nodeCount = nodeListJson.size();
 
         response.setTotalNodeCount(nodeCount);
-        response.setSystemQueryTimeout(CalStateUtil.totalQueryTimeout / CalStateUtil.totalQuery);
+        response.setSystemQueryTimeout(CalStateUtil.queryTimeout / CalStateUtil.queryCount);
         response.setMessage("系统统计信息查询成功！");
 
         response.setStatus(1);
@@ -325,7 +325,7 @@ public class PostRequestUtil {
      * @param prefix : 企业前缀
      * @return : com.hust.nodecontroller.infostruct.IdentityInfo
      */
-    public static IdentityInfo getAllByPrefix(String url, String prefix) throws Exception{
+    public static IdentityInfo getAllByPrefix(String url, String prefix, String matchString) throws Exception{
         //设置初值
         int pageNum = 1; //查询页面序号
         int pageQueryCount = 0; //当前页面查询返回标识总数
@@ -372,6 +372,7 @@ public class PostRequestUtil {
                 JSONObject job = jsonArray.getJSONObject(i); //job为每一个具体的标识查询信息
 
                 String identity = job.getString("Key"); //从job中获取标识
+                if (!identity.contains(matchString)) continue;
 
                 JSONObject idData = job.getJSONObject("Record"); //从job中获取标识对应的记录
                 String urlHash = idData.getString("abstract"); //从记录中获取url哈希
@@ -428,7 +429,6 @@ public class PostRequestUtil {
             idInfo.put("resolveNums", job.getString("resolveNums"));
             idInfo.put("rankNum", i+1);
             idList.add(idInfo);
-            idInfo.clear();
         }
 
         idRankInfo.setIdList(idList);

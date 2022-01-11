@@ -18,7 +18,6 @@ public class HashUtil {
      * @param data 字符串
      * @return hash结果
      */
-
     public static String SM3Hash(String data) {
         SM3Digest sm3Digest = new SM3Digest();
         byte[] dataBytes = data.getBytes();

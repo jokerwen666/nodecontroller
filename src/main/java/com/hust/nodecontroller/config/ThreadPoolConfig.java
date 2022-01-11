@@ -27,14 +27,13 @@ public class ThreadPoolConfig {
     private static final Logger logger = LoggerFactory.getLogger(ThreadPoolConfig.class);
 
     /**
-     * @Description : 定义线程池执行器，并对其相关参数进行配置
+     * @Description : 定义企业操作（增删改）的线程池
      * @author : Zhang Bowen
      * @date : 2020.09.19 19:34
      * @return : java.util.concurrent.Executor
      */
-
-    @Bean
-    public Executor dhtServiceExecutor() {
+    @Bean("enterpriseHandleExecutor")
+    public Executor enterpriseHandleExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //配置核心线程池数
         taskExecutor.setCorePoolSize(10);
@@ -45,7 +44,7 @@ public class ThreadPoolConfig {
         //配置空闲线程存活时间
         taskExecutor.setKeepAliveSeconds(60);
         //配置线程池中的线程名称前缀
-        taskExecutor.setThreadNamePrefix("dht-server-");
+        taskExecutor.setThreadNamePrefix("enterprise-handle-");
         //配置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
         //用于保证异步执行时Spring容器中其他资源的安全
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
@@ -55,52 +54,15 @@ public class ThreadPoolConfig {
         return taskExecutor;
     }
 
-    @Bean
-    public Executor bcServiceExecutor() {
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        //配置核心线程池数
-        taskExecutor.setCorePoolSize(10);
-        //配置最大线程数
-        taskExecutor.setMaxPoolSize(50);
-        //配置队列大小
-        taskExecutor.setQueueCapacity(200);
-        //配置空闲线程存活时间
-        taskExecutor.setKeepAliveSeconds(60);
-        //配置线程池中的线程名称前缀
-        taskExecutor.setThreadNamePrefix("bc-server-");
-        //配置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
-        //用于保证异步执行时Spring容器中其他资源的安全
-        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
-        // 配置线程池中任务的等待时间，如果超过这个时候还没有销毁就强制销毁
-        // 以确保应用最后能够被关闭，而不是阻塞住
-        taskExecutor.setAwaitTerminationSeconds(60);
-        return taskExecutor;
-    }
+    /**
+     * @Description : 定义用户操作（查询）的线程池
+     * @author : Zhang Bowen
+     * @date : 2021.11.24 13:55
+     * @return : java.util.concurrent.Executor
+     */
 
-    @Bean
-    public Executor authorityExecutor() {
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        //配置核心线程池数
-        taskExecutor.setCorePoolSize(10);
-        //配置最大线程数
-        taskExecutor.setMaxPoolSize(50);
-        //配置队列大小
-        taskExecutor.setQueueCapacity(200);
-        //配置空闲线程存活时间
-        taskExecutor.setKeepAliveSeconds(60);
-        //配置线程池中的线程名称前缀
-        taskExecutor.setThreadNamePrefix("authority-service");
-        //配置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
-        //用于保证异步执行时Spring容器中其他资源的安全
-        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
-        // 配置线程池中任务的等待时间，如果超过这个时候还没有销毁就强制销毁
-        // 以确保应用最后能够被关闭，而不是阻塞住
-        taskExecutor.setAwaitTerminationSeconds(60);
-        return taskExecutor;
-    }
-
-    @Bean
-    public Executor comInfoQueryExecutor() {
+    @Bean("queryHandleExecutor")
+    public Executor queryHandleExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //配置核心线程池数
         taskExecutor.setCorePoolSize(10);
@@ -143,11 +105,11 @@ public class ThreadPoolConfig {
         return taskExecutor;
     }
 
-    @Bean("calStateExecutor")
+    @Bean("scheduleExecutor")
     public Executor calStateExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //配置核心线程池数
-        taskExecutor.setCorePoolSize(10);
+        taskExecutor.setCorePoolSize(20);
         //配置最大线程数
         taskExecutor.setMaxPoolSize(50);
         //配置队列大小
@@ -155,7 +117,7 @@ public class ThreadPoolConfig {
         //配置空闲线程存活时间
         taskExecutor.setKeepAliveSeconds(60);
         //配置线程池中的线程名称前缀
-        taskExecutor.setThreadNamePrefix("calState-");
+        taskExecutor.setThreadNamePrefix("schedule-");
         //配置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
         //用于保证异步执行时Spring容器中其他资源的安全
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);

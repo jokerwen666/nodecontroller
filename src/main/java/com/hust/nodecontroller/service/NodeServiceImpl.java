@@ -19,6 +19,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -152,6 +153,9 @@ public class NodeServiceImpl implements NodeService{
                 break;
             case 4 : //创新型
                 queryResult = controlProcess.userHandle(identification, client, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
+                break;
+            case 5: // dns解析
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
                 break;
             default:
                 throw new Exception("标识格式错误!请重新输入!");

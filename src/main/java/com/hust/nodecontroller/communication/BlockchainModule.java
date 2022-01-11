@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
@@ -25,28 +26,28 @@ import java.util.concurrent.Future;
 public class BlockchainModule implements sendInfoToModule{
     private static final Logger logger = LoggerFactory.getLogger(BlockchainModule.class);
 
-    @Async
-    public Future<NormalMsg> register(String id, String hash, String url, String toUrl, String queryPermissions) {
+    @Async("enterpriseHandleExecutor")
+    public CompletableFuture<NormalMsg> register(String id, String hash, String url, String toUrl, String queryPermissions) {
         long beginTime = System.nanoTime();
         NormalMsg normalMsg;
         normalMsg = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
         long endTime = System.nanoTime();
         logger.info("Register Time({}ms)", (endTime-beginTime)/1000000);
-        return new AsyncResult<>(normalMsg);
+        return CompletableFuture.completedFuture(normalMsg);
     }
 
-    @Async
-    public Future<NormalMsg> update(String id, String hash, String url, String toUrl, String queryPermissions) {
+    @Async("enterpriseHandleExecutor")
+    public CompletableFuture<NormalMsg> update(String id, String hash, String url, String toUrl, String queryPermissions) {
         long beginTime = System.nanoTime();
         NormalMsg normalMsg;
         normalMsg = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
         long endTime = System.nanoTime();
         logger.info("Update Time({}ms)", (endTime-beginTime)/1000000);
-        return new AsyncResult<>(normalMsg);
+        return CompletableFuture.completedFuture(normalMsg);
     }
 
-    @Async
-    public Future<NormalMsg> delete(String id, String toUrl) {
+    @Async("enterpriseHandleExecutor")
+    public CompletableFuture<NormalMsg> delete(String id, String toUrl) {
         long beginTime = System.nanoTime();
         JSONObject jsonToRVSystem = new JSONObject();
         jsonToRVSystem.put("peer_name","peer0");
@@ -57,16 +58,16 @@ public class BlockchainModule implements sendInfoToModule{
             normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToRVSystem);
             long endTime = System.nanoTime();
             logger.info("Delete Time({}ms)", (endTime-beginTime)/1000000);
-            return new AsyncResult<>(normalMsg);
+            return CompletableFuture.completedFuture(normalMsg);
         }catch (Exception e){
             normalMsg.setStatus(0);
             normalMsg.setMessage(e.getMessage());
-            return new AsyncResult<>(normalMsg);
+            return CompletableFuture.completedFuture(normalMsg);
         }
     }
 
-    @Async
-    public Future<RVSystemInfo> query(String identity, String toUrl) {
+    @Async("queryHandleExecutor")
+    public CompletableFuture<RVSystemInfo> query(String identity, String toUrl) {
         long beginTime = System.nanoTime();
         JSONObject jsonToRVSystem = new JSONObject();
         jsonToRVSystem.put("peer_name", "peer0");
@@ -76,20 +77,21 @@ public class BlockchainModule implements sendInfoToModule{
             rvSystemInfo = PostRequestUtil.getRVQueryResponse(toUrl,jsonToRVSystem);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
-            return new AsyncResult<>(rvSystemInfo);
+            return CompletableFuture.completedFuture(rvSystemInfo);
         }catch (Exception e){
+            logger.info(String.valueOf(10));
             rvSystemInfo.setStatus(0);
             rvSystemInfo.setMessage(e.getMessage());
-            return new AsyncResult<>(rvSystemInfo);
+            return CompletableFuture.completedFuture(rvSystemInfo);
         }
     }
 
-    public IdentityInfo prefixQuery(String prefix, String bcUrl) {
+    public IdentityInfo prefixQuery(String prefix, String bcUrl, String matchString) {
         long beginTime = System.nanoTime();
         IdentityInfo identityInfo = new IdentityInfo();
 
         try {
-            identityInfo = PostRequestUtil.getAllByPrefix(bcUrl,prefix);
+            identityInfo = PostRequestUtil.getAllByPrefix(bcUrl,prefix,matchString);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return identityInfo;

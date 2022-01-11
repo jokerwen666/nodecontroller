@@ -4,6 +4,7 @@ package com.hust.nodecontroller.infostruct;
 public class ResourceInfo extends NormalMsg{
     private int idCount;
     private int queryCount;
+    private float queryTimeout;
     private double memTotal;
     private double diskTotal;
 
@@ -37,5 +38,13 @@ public class ResourceInfo extends NormalMsg{
 
     public void setDiskTotal(double diskTotal) {
         this.diskTotal = diskTotal;
+    }
+
+    public float getQueryTimeout() {
+        return queryTimeout;
+    }
+
+    public void setQueryTimeout(float queryTimeout) {
+        this.queryTimeout = queryTimeout;
     }
 }

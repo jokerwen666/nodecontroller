@@ -1,146 +1,102 @@
 package com.hust.nodecontroller.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.DhtNodeInfo;
-import com.hust.nodecontroller.utils.PostRequestUtil;
-import org.apache.zookeeper.*;
-import org.apache.zookeeper.data.Stat;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import com.hust.nodecontroller.utils.CalStateUtil;
+import com.hust.nodecontroller.utils.GetSysInfoUtil;
+import com.hust.nodecontroller.utils.IndustryQueryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
+import java.io.IOException;
+import java.util.Date;
 
-import javax.annotation.PostConstruct;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-@Configuration      //1.主要用于标记配置类，兼备Component的效果。
-@EnableScheduling   // 2.开启定时任务
-@RestController
-@RequestMapping(value = "/api")
+@Service
 public class ScheduleService {
-    static ZooKeeper zookeeper;
-    static Stat stat = new Stat();
-    boolean setFlag = false;
 
-    final ApplicationContext applicationContext;
-    final String dhtOwnNode;
-    final String controllerAddress;
-    final String zookeeperAddress;
-    private String destination;
+    private static final Logger logger = LoggerFactory.getLogger(ScheduleService.class);
 
-    @Autowired
-    public ScheduleService(ApplicationContext applicationContext, List<String> serverInfo) {
-        this.applicationContext = applicationContext;
-        controllerAddress = serverInfo.get(0) + ":" + serverInfo.get(2);
-        dhtOwnNode = "http://" + serverInfo.get(0) + ":" + serverInfo.get(1) + "/dht/printList";
-        zookeeperAddress = serverInfo.get(3);
+    // @Scheduled定时任务，默认在一个单线程中运行，一个定时任务若发生错误则可能导致其他任务被阻塞无法执行
+    // 这里给每个定时任务分配一个线程池，每次定时任务启动的时候，都会创建一个单独的线程来处理。也就是说同一个定时任务也会启动多个线程处理
+    // 任务1和任务2一起处理如果任务1导致线程1卡死，也不会影响到线程2
+
+    @Async("scheduleExecutor")
+    @Scheduled(cron = "0/10 * * * * ? ")
+    public void calMinuteSysInfo() {
+        long currentTime = new Date().getTime();
+        JSONObject jsonObject = new JSONObject();
+        Double cpuRate = GetSysInfoUtil.CpuInfo();
+        Double memRate = GetSysInfoUtil.MemInfo();
+        jsonObject.put("cpuRate", cpuRate);
+        jsonObject.put("memRate", memRate);
+        jsonObject.put("time", currentTime);
+        if (GetSysInfoUtil.sysInfoList.size() == 6) {
+            GetSysInfoUtil.sysInfoList.remove(0);
+        }
+        GetSysInfoUtil.sysInfoList.add(jsonObject);
+        logger.info("calculate system-info per 10s");
     }
 
-    //添加定时任务
-    @Scheduled(cron = "0/10 * * * * ?")
-    private void configureTasks() {
-        AtomicInteger threadNum = (AtomicInteger)applicationContext.getBean("threadNum");
-        try {
-            DhtNodeInfo node = queryDhtInfo();
-            if(node.getStatus()==0) {
-                if(setFlag)
-                {
-                    zookeeper.delete(destination,-1);
-                    setFlag=false;
-                }
-                return;
+    @Async("scheduleExecutor")
+    @Scheduled(cron = "0/10 * * * * ? ")
+    public void calMinuteRuntimeInfo() throws IOException {
+        long currentTime = new Date().getTime();
+        JSONObject jsonObject = new JSONObject();
+        JSONObject jsonObject1 = new JSONObject();
+
+        jsonObject.put("queryCount", CalStateUtil.differQuery());
+        jsonObject.put("registerCount", CalStateUtil.differRegister());
+        jsonObject.put("time", currentTime);
+
+        jsonObject1.put("successRate", CalStateUtil.getSuccessRate());
+        jsonObject1.put("totalCount", CalStateUtil.differTotal());
+        jsonObject1.put("queryTimeout", CalStateUtil.getQueryTimeout());
+        jsonObject1.put("time", currentTime);
+
+        CalStateUtil.preQueryCount = CalStateUtil.queryCount;
+        CalStateUtil.preRegisterCount = CalStateUtil.registerCount;
+        CalStateUtil.preSuccessCount = CalStateUtil.successCount;
+        CalStateUtil.preTotalCount = CalStateUtil.totalCount;
+        CalStateUtil.preQueryTimeout = CalStateUtil.queryTimeout;
+
+        if (CalStateUtil.runtimeInfoList1.size() == 6) {
+            CalStateUtil.runtimeInfoList1.remove(0);
+        }
+        CalStateUtil.runtimeInfoList1.add(jsonObject);
+
+        if (CalStateUtil.runtimeInfoList2.size() == 6) {
+            CalStateUtil.runtimeInfoList2.remove(0);
+        }
+        CalStateUtil.runtimeInfoList2.add(jsonObject1);
+        logger.info("calculate runtime-info per 10s");
+    }
+
+    @Async("scheduleExecutor")
+    @Scheduled(cron = "* 0/5 * * * ?")
+    public void calFiveMinuteQueryInfo() throws Exception {
+        long currentTime = new Date().getTime() / 1000;
+
+        // 当前时刻为整点时，将一小时内的数据放进json数组中，如果一小时内的数据不够12个（比如不是在整点启动系统时），向前补0
+        if (currentTime % (60 * 60) == 0) {
+             while (IndustryQueryUtil.tmpArray.size() < 12)
+                IndustryQueryUtil.tmpArray.add(0,0);
+            IndustryQueryUtil.periodData.put("recordTime", currentTime);
+            IndustryQueryUtil.periodData.put("queryInPeriod", IndustryQueryUtil.tmpArray.clone());
+
+            // json数组最多保存4个小时内的数据
+            if (IndustryQueryUtil.dataCount.size() == 4) {
+                IndustryQueryUtil.dataCount.remove(0);
             }
-            if(!setFlag)
-            {
-                setFlag=true;
-                setZook(node.getDomainName());
-                createEnterprise(node.getEnterprise());
-            }
 
-            stat = zookeeper.setData(destination, (threadNum+"/"+node.toString()).getBytes(), stat.getVersion());
-            System.out.println(threadNum+"/"+node.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
-    }
+            IndustryQueryUtil.dataCount.add((JSONObject) IndustryQueryUtil.periodData.clone());
+            IndustryQueryUtil.periodData.clear();
+            IndustryQueryUtil.tmpArray.clear();
 
-    @PostConstruct
-    public void Init()
-    {
-        try {
-            Watcher watcher= new Watcher(){
-                public void process(WatchedEvent event) {
-                    System.out.println("receive event："+event);
-                }
-            };
-            String value = null;
-            zookeeper = new ZooKeeper(zookeeperAddress, 10000, watcher);
-            Thread.sleep(20000);
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    //create folder key:/servers/Domain/ip:port  value:node.tostring
-    public void setZook(String Domain) throws Exception {
-        if (zookeeper.exists("/servers", null) == null) {
-            zookeeper.create("/servers", ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
-        }
-        if (zookeeper.exists("/servers/"+Domain, null) == null) {
-            zookeeper.create("/servers/"+Domain, ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
         }
 
-        destination="/servers/"+Domain+"/"+controllerAddress;
-        if (zookeeper.exists(destination, null) == null) {
-            zookeeper.create(destination, ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
-        }
-        zookeeper.getData(destination, null, stat);
-    }
-
-    //create key:enterprise+name  value:ip:port
-    public void createEnterprise(String enterprisename) throws Exception {
-        if (zookeeper.exists("/enterprise", null) == null) {
-            zookeeper.create("/enterprise", ("0").getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
-        }
-        if (zookeeper.exists("/enterprise/"+enterprisename, null) == null) {
-            zookeeper.create("/enterprise/"+enterprisename, (controllerAddress).getBytes("utf-8"), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);//EPHEMERAL
-        }
-
-        //System.out.println(enterprisename+"Foler created");
-        zookeeper.getData(destination, null, stat);
-    }
-
-
-    @RequestMapping(value = "/zkget")
-    public String zkget() {
-        Watcher watcher = new Watcher(){
-            public void process(WatchedEvent event) {
-                System.out.println("receive event："+event);
-            }
-        };
-
-        String value = null;
-        try {
-            final ZooKeeper zookeeper = new ZooKeeper(zookeeperAddress, 999999, watcher);
-            final byte[] data = zookeeper.getData("/servers/" + controllerAddress, watcher, null);
-            value = new String(data);
-            zookeeper.close();
-        }catch(Exception e){
-            e.printStackTrace();
-            return "Something goes wrong!";
-        }
-        return "get value from zookeeper [" + controllerAddress+":"+ value + "]";
-    }
-
-    public DhtNodeInfo queryDhtInfo() {
-        JSONObject callJson = new JSONObject();
-        callJson.put("type", 9);
-        return PostRequestUtil.getOwnNodeInfo(dhtOwnNode,callJson);
+        logger.info("calculate industry query count per 5min");
+        IndustryQueryUtil.tmpArray.add(IndustryQueryUtil.queryCount - IndustryQueryUtil.preQueryCount);
+        IndustryQueryUtil.preQueryCount = IndustryQueryUtil.queryCount;
     }
 }

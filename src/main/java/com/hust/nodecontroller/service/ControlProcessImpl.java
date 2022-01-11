@@ -16,6 +16,7 @@ import com.hust.nodecontroller.enums.AuthorityResultEnum;
 import com.hust.nodecontroller.utils.CalStateUtil;
 import com.hust.nodecontroller.utils.EncDecUtil;
 import com.hust.nodecontroller.utils.HashUtil;
+import com.hust.nodecontroller.utils.IndustryQueryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 /**
@@ -43,7 +45,7 @@ public class ControlProcessImpl implements ControlProcess{
     private final DhtErrorHandle dhtErrorHandle;
     private static final Logger logger = LoggerFactory.getLogger(ControlProcessImpl.class);
     @Value("${domain.prefix}")
-    private String domainPrefix;
+    public static String domainPrefix;
 
     @Autowired
     public ControlProcessImpl(DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule, BCErrorHandle bcErrorHandle, DhtErrorHandle dhtErrorHandle) {
@@ -62,9 +64,6 @@ public class ControlProcessImpl implements ControlProcess{
         String prefix = InfoFromClient.getPrefix(identity); //标识前缀
         JSONObject data = infoFromClient.getData(); //注册信息
 
-//        String encryptData = infoFromClient.getEncryptData(); //加密数据
-//        String signData = infoFromClient.getSignData(); //签名信息
-
         String url = null;
         String goodsHash = null;
         String queryPermissions = null;
@@ -76,73 +75,52 @@ public class ControlProcessImpl implements ControlProcess{
 
         }
 
-        //1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权
-        Future<AMSystemInfo> amSystemInfo = authorityModule.query(client,prefix,type);
-
-        while (!amSystemInfo.isDone()){
-            if (amSystemInfo.isDone())
-                break;
-        }
-        if (amSystemInfo.get().getStatus() == 0){
-            logger.info("AuthorityVerifyError({})", amSystemInfo.get().getMessage());
-            throw new Exception(amSystemInfo.get().getMessage());
+        //1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权(不需要异步)
+        AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,type);
+        if (amSystemInfo.getStatus() == 0){
+            logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
+            throw new Exception(amSystemInfo.getMessage());
         }
 
-        //2.注册/更新时需要使用公钥对注册/更新的内容进行签名验证
-//        if (type == 2 || type == 8) {
-//            String pubKey = amSystemInfo.get().getKey();
-//            JSONObject data = new JSONObject();
-//            try {
-//                String decryptData = new String(SM2EncDecUtils.decrypt(ConvertUtil.hexToByte(pubKey), ConvertUtil.hexToByte(encryptData)));
-//                data = JSONObject.parseObject(decryptData);
-//            } catch (Exception e) {
-//                throw new Exception("验证签名失败！");
-//            }
-//            url = data.getString("url");
-//            goodsHash = data.getString("goodsHash");
-//        }
-
-        //3.向解析结果验证子系统、标识管理系统发送对应的json数据
-        Future<NormalMsg> dhtFlag = null;
-        Future<NormalMsg> bcFlag = null;
+        //2.向解析结果验证子系统、标识管理系统发送对应的json数据（异步）
+        CompletableFuture<NormalMsg> dhtInfo = null;
+        CompletableFuture<NormalMsg> bcInfo = null;
         if (type == 8){
-            dhtFlag = dhtModule.register(identity,prefix,url,dhtUrl,type);
-            bcFlag = blockchainModule.register(identity,goodsHash,url,bcUrl,queryPermissions);
+            dhtInfo = dhtModule.register(identity,prefix,url,dhtUrl,type);
+            bcInfo = blockchainModule.register(identity,goodsHash,url,bcUrl,queryPermissions);
         }
 
         else if(type == 4){
-            dhtFlag = dhtModule.delete(identity,prefix,dhtUrl,type);
-            bcFlag = blockchainModule.delete(identity,bcUrl);
+            dhtInfo = dhtModule.delete(identity,prefix,dhtUrl,type);
+            bcInfo = blockchainModule.delete(identity,bcUrl);
         }
         else if (type == 2){
-            dhtFlag = dhtModule.update(identity,prefix,url,dhtUrl,type);
-            bcFlag = blockchainModule.update(identity,goodsHash,url,bcUrl,queryPermissions);
+            dhtInfo = dhtModule.update(identity,prefix,url,dhtUrl,type);
+            bcInfo = blockchainModule.update(identity,goodsHash,url,bcUrl,queryPermissions);
         }
 
-        //4.判断是否完成写入
-        while (true) {
-            if(dhtFlag.isDone() && bcFlag.isDone()) {
-                break;
-            }
-        }
+        CompletableFuture.allOf(dhtInfo, bcInfo).join();
 
-        if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() != 0){
+        assert bcInfo != null;
+        assert dhtInfo != null;
+
+        if(bcInfo.get().getStatus() == 0 && dhtInfo.get().getStatus() != 0){
             dhtErrorHandle.errorHandle(type,identity,prefix);
-            logger.info("BlockchainErrorMsg({})", bcFlag.get().getMessage());
-            String errStr = "区块链节点错误信息(" + bcFlag.get().getMessage() + ") ";
+            logger.info("BlockchainErrorMsg({})", bcInfo.get().getMessage());
+            String errStr = "区块链节点错误信息(" + bcInfo.get().getMessage() + ") ";
             throw new Exception(errStr);
         }
 
-        if(bcFlag.get().getStatus() != 0 && dhtFlag.get().getStatus() == 0){
+        if(bcInfo.get().getStatus() != 0 && dhtInfo.get().getStatus() == 0){
             bcErrorHandle.errorHandle(type,identity);
-            logger.info("DHTErrorMsg({})", dhtFlag.get().getMessage());
-            String errStr = "DHT节点错误信息(" + dhtFlag.get().getMessage() + ")";
+            logger.info("DHTErrorMsg({})", dhtInfo.get().getMessage());
+            String errStr = "DHT节点错误信息(" + dhtInfo.get().getMessage() + ")";
             throw new Exception(errStr);
         }
 
-        if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() == 0){
-            logger.info("BlockchainErrorMsg({}), DHTErrorMsg({})", bcFlag.get().getMessage(), dhtFlag.get().getMessage());
-            String errStr = "区块链节点错误信息(" + bcFlag.get().getMessage() + ") " + "DHT节点错误信息(" + dhtFlag.get().getMessage() + ")";
+        if(bcInfo.get().getStatus() == 0 && dhtInfo.get().getStatus() == 0){
+            logger.info("BlockchainErrorMsg({}), DHTErrorMsg({})", bcInfo.get().getMessage(), dhtInfo.get().getMessage());
+            String errStr = "区块链节点错误信息(" + bcInfo.get().getMessage() + ") " + "DHT节点错误信息(" + dhtInfo.get().getMessage() + ")";
             throw new Exception(errStr);
         }
 
@@ -157,50 +135,32 @@ public class ControlProcessImpl implements ControlProcess{
         //1.进行跨域解析判断
         crossDomain_flag = !domainPrefix_.equals(domainPrefix);
 
-        //2.向权限管理子系统发送请求，接收到相关权限信息
-        //Future<AMSystemInfo> amSystemInfo = authorityModule.query(client,prefix,1);
+        //2.向标识管理子系统发送请求获得url向解析结果验证子系统发送请求获得两个摘要信息
+        CompletableFuture<IMSystemInfo> dhtInfo = dhtModule.query(identity,prefix,dhtUrl,crossDomain_flag);
+        CompletableFuture<RVSystemInfo> bcInfo = blockchainModule.query(identity,bcUrl);
 
-        //3.向标识管理子系统发送请求获得url向解析结果验证子系统发送请求获得两个摘要信息
-        Future<IMSystemInfo> dhtFlag = dhtModule.query(identity,prefix,dhtUrl,crossDomain_flag);
-        Future<RVSystemInfo> bcFlag = blockchainModule.query(identity,bcUrl);
+        CompletableFuture.allOf(dhtInfo, bcInfo).join();
 
-        //4.1 判断是否完成查询
-        while (true) {
-            if(dhtFlag.isDone() && bcFlag.isDone()) {
-                break;
-            }
-        }
-
-//        while (true) {
-//            if(dhtFlag.isDone() && bcFlag.isDone() && amSystemInfo.isDone()) {
-//                break;
-//            }
-//        }
-//        if (amSystemInfo.get().getStatus() == 0){
-//            logger.info("AuthorityVerifyError({})", amSystemInfo.get().getMessage());
-//            throw new Exception(amSystemInfo.get().getMessage());
-//        }
-
-        if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() != 0){
-            logger.info("BlockchainErrorMsg({})", bcFlag.get().getMessage());
-            String errStr = "区块链节点错误信息(" + bcFlag.get().getMessage() + ")";
+        if(bcInfo.get().getStatus() == 0 && dhtInfo.get().getStatus() != 0){
+            logger.info("BlockchainErrorMsg({})", bcInfo.get().getMessage());
+            String errStr = "区块链节点错误信息(" + bcInfo.get().getMessage() + ")";
             throw new Exception(errStr);
         }
 
-        if(bcFlag.get().getStatus() != 0 && dhtFlag.get().getStatus() == 0){
-            logger.info("DHTErrorMsg({})", dhtFlag.get().getMessage());
-            String errStr = "DHT节点错误信息(" + dhtFlag.get().getMessage() + ")";
+        if(bcInfo.get().getStatus() != 0 && dhtInfo.get().getStatus() == 0){
+            logger.info("DHTErrorMsg({})", dhtInfo.get().getMessage());
+            String errStr = "DHT节点错误信息(" + dhtInfo.get().getMessage() + ")";
             throw new Exception(errStr);
         }
 
-        if(bcFlag.get().getStatus() == 0 && dhtFlag.get().getStatus() == 0){
-            logger.info("BlockchainErrorMsg({}), DHTErrorMsg({})", bcFlag.get().getMessage(), dhtFlag.get().getMessage());
-            String errStr = "区块链节点错误信息(" + bcFlag.get().getMessage() + ") " + "DHT节点错误信息(" + dhtFlag.get().getMessage() + ")";
+        if(bcInfo.get().getStatus() == 0 && dhtInfo.get().getStatus() == 0){
+            logger.info("BlockchainErrorMsg({}), DHTErrorMsg({})", bcInfo.get().getMessage(), dhtInfo.get().getMessage());
+            String errStr = "区块链节点错误信息(" + bcInfo.get().getMessage() + ") " + "DHT节点错误信息(" + dhtInfo.get().getMessage() + ")";
             throw new Exception(errStr);
         }
 
 
-        //5.1 根据前缀查找其所有者
+        //3 根据前缀查找其所有者并校验
         String owner = "";
         NormalMsg normalMsg = blockchainModule.queryOwnerByPrefix(prefix, bcQueryOwner);
         if (normalMsg.getStatus() == 0) {
@@ -208,44 +168,48 @@ public class ControlProcessImpl implements ControlProcess{
         }
         else owner = normalMsg.getMessage();
 
-        //5.2 查询权限校验
-        String permission = bcFlag.get().getPermission();
+        String permission = bcInfo.get().getPermission();
         if (permission.equals("0") && !client.equals(owner)) {
             logger.info("用户没有查看该标识的权限！！！");
-            throw new Exception("用户没有查看该标识的权限！！！");
+            throw new Exception("用户" + client + "没有查看该标识的权限！！！");
         }
 
-        //6.防篡改检验
-        String url = dhtFlag.get().getMappingData();
+        //4.防篡改检验(url校验+goodsHash校验)(可以更新为异步)
+        String url = dhtInfo.get().getMappingData();
         url = url.replace(" ", "");
 
         String urlHash_ = HashUtil.SM3Hash(url);
-        String urlHash = bcFlag.get().getUrlHash();
-        String goodsHash = bcFlag.get().getMappingDataHash();
+        String urlHash = bcInfo.get().getUrlHash();
+        String goodsHash = bcInfo.get().getMappingDataHash();
 
         if(!urlHash.equals(urlHash_)) {
             logger.info(AuthorityResultEnum.URLHASH_VERIFY_ERROR.getMsg());
             throw new Exception(AuthorityResultEnum.URLHASH_VERIFY_ERROR.getMsg());
         }
 
-        ComQueryInfo comQueryInfo = comInfoModule.query(url);
 
-        if(comQueryInfo.getStatus() == 0){
-            logger.info(comQueryInfo.getMessage());
-            throw new Exception(comQueryInfo.getMessage());
-        }
-
-        String goodsHash_ = HashUtil.SM3Hash(comQueryInfo.getInformation().toString());
-
-        if (!goodsHash.equals(goodsHash_)) {
-            logger.info(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
-            throw new Exception(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
-        }
+//        ComQueryInfo comQueryInfo = comInfoModule.query(url);
+//
+//        if(comQueryInfo.getStatus() == 0){
+//            logger.info(comQueryInfo.getMessage());
+//            throw new Exception(comQueryInfo.getMessage());
+//        }
+//        String goodsHash_ = HashUtil.SM3Hash(comQueryInfo.getInformation().toString());
+//
+//        if (!goodsHash.equals(goodsHash_)) {
+//            logger.info(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
+//            throw new Exception(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
+//        }
 
         QueryResult queryResult = new QueryResult();
         queryResult.setUrl(url);
-        queryResult.setGoodsInfo(comQueryInfo.getInformation());
-        queryResult.setNodeID(dhtFlag.get().getNodeID());
+        queryResult.setNodeID(dhtInfo.get().getNodeID());
+
+//        queryResult.setGoodsInfo(comQueryInfo.getInformation());
+        JSONObject tmpJson = new JSONObject();
+        tmpJson.put("goodsInfo", "test success");
+        String data  = tmpJson.toString();
+        queryResult.setGoodsInfo(EncDecUtil.sMEncrypt(data));
 
         return queryResult;
     }
@@ -254,20 +218,15 @@ public class ControlProcessImpl implements ControlProcess{
     public IdentityInfo identityHandle(InfoFromClient infoFromClient, String bcUrl) throws Exception {
         String prefix = infoFromClient.getOrgPrefix();
         String client = infoFromClient.getClient();
+        String matchString = infoFromClient.getMatchString();
 
-        Future<AMSystemInfo> amSystemInfo = authorityModule.query(client,prefix,1);
-
-        while (!amSystemInfo.isDone()){
-            if (amSystemInfo.isDone())
-                break;
-        }
-        if (amSystemInfo.get().getStatus() == 0){
-            logger.info("AuthorityVerifyError({})", amSystemInfo.get().getMessage());
-            throw new Exception(amSystemInfo.get().getMessage());
+        AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,1);
+        if (amSystemInfo.getStatus() == 0){
+            logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
+            throw new Exception(amSystemInfo.getMessage());
         }
 
-        IdentityInfo identityInfo = blockchainModule.prefixQuery(prefix,bcUrl);
-
+        IdentityInfo identityInfo = blockchainModule.prefixQuery(prefix,bcUrl,matchString);
         if (identityInfo.getStatus() == 0){
             logger.info(identityInfo.getMessage());
             throw new Exception(identityInfo.getMessage());
@@ -303,7 +262,8 @@ public class ControlProcessImpl implements ControlProcess{
     @Override
     public BulkInfo bulkQuery(JSONArray jsonArray, String url) {
         int idCount = jsonArray.size();
-        CalStateUtil.totalQuery += idCount;
+        CalStateUtil.queryCount += idCount;
+        IndustryQueryUtil.queryCount += idCount;
         int number = 0;
         StringBuilder identities = new StringBuilder();
 
