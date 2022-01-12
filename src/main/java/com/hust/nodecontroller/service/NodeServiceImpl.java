@@ -110,8 +110,8 @@ public class NodeServiceImpl implements NodeService{
     }
 
     @Override
-    public BulkInfo bulkRegister(JSONArray jsonArray) {
-        return controlProcess.bulkRegister(jsonArray,dhtBulkRegisterUrl,bcRegisterUrl);
+    public int bulkRegister(BulkRegister bulkRegister) throws Exception {
+        return controlProcess.bulkRegister(bulkRegister,dhtRegisterUrl,bcRegisterUrl);
     }
 
     @Override

@@ -325,27 +325,40 @@ public class NodeController {
     @ResponseBody
     public IndustryInfo queryIndustryInfo() {
         IndustryInfo backHtml = new IndustryInfo();
-        backHtml.setIndustryName(ControlProcessImpl.domainPrefix);
+        backHtml.setIndustryName("086.001");
         backHtml.setDataCount(IndustryQueryUtil.calIndustryQueryInfo());
         backHtml.setStatus(1);
         backHtml.setMessage("行业时段解析查询成功！");
         return backHtml;
     }
 
-    // 以下方法弃用
-    /**
-     * 批量注册
-     * @param jsonArray
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "bulk-register")
+    @RequestMapping(value = "bulkRegister")
     @ResponseBody
-    @Deprecated
-    public BulkInfo bulkRegister(@RequestBody JSONArray jsonArray) throws Exception {
-        return nodeService.bulkRegister(jsonArray);
+    public NormalMsg bulkRegister(@RequestBody BulkRegister bulkRegister) throws Exception {
+        NormalMsg backHtml = new NormalMsg();
+        int idCount = bulkRegister.getData().size();
+        CalStateUtil.registerCount = CalStateUtil.registerCount + idCount;
+        CalStateUtil.totalCount = CalStateUtil.totalCount + idCount;
+        try {
+            threadNum.addAndGet(idCount);
+            idCount = nodeService.bulkRegister(bulkRegister);
+            backHtml.setStatus(1);
+            backHtml.setMessage("批量注册标识信息成功!已成功注册" + idCount + "个标识");
+            threadNum.decrementAndGet();
+            return backHtml;
+
+        } catch (Exception e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            threadNum.decrementAndGet();
+            return backHtml;
+        }
     }
 
+
+
+
+    // ################################### 以下方法弃用 ################################################
     /**
      * 批量查询
      * @param jsonArray

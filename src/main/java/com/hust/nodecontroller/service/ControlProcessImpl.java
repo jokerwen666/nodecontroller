@@ -44,8 +44,13 @@ public class ControlProcessImpl implements ControlProcess{
     private final BCErrorHandle bcErrorHandle;
     private final DhtErrorHandle dhtErrorHandle;
     private static final Logger logger = LoggerFactory.getLogger(ControlProcessImpl.class);
-    @Value("${domain.prefix}")
     public static String domainPrefix;
+
+    @Value("${domain.prefix}")
+    public void setDomainPrefix(String prefix) {
+        domainPrefix = prefix;
+    }
+
 
     @Autowired
     public ControlProcessImpl(DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule, BCErrorHandle bcErrorHandle, DhtErrorHandle dhtErrorHandle) {
@@ -237,26 +242,35 @@ public class ControlProcessImpl implements ControlProcess{
 
 
     @Override
-    public BulkInfo bulkRegister(JSONArray jsonArray, String dhtUrl, String bcUrl){
-        int idCount = jsonArray.size();
+    public int bulkRegister(BulkRegister bulkRegister, String dhtUrl, String bcUrl) throws Exception {
+        int idCount = bulkRegister.getData().size();
         int number = 0;
-        StringBuilder identities = new StringBuilder();
-        StringBuilder mappingData = new StringBuilder();
+        String client = bulkRegister.getClient();
 
         do {
-            JSONObject jsonObject = jsonArray.getJSONObject(number);
-            identities.append(jsonObject.getString("identity"));
-            identities.append(';');
-            mappingData.append(jsonObject.getString("url"));
-            mappingData.append(';');
+            String identification = bulkRegister.getData().get(number).getString("identification");
+            String url = bulkRegister.getData().get(number).getString("url");
+            String goodsHash = bulkRegister.getData().get(number).getString("goodsHash");
+            String queryPermissions = bulkRegister.getData().get(number).getString("queryPermissions");
+            JSONObject data = new JSONObject();
+            data.put("url", url);
+            data.put("goodsHash", goodsHash);
+            data.put("queryPermissions", queryPermissions);
+            InfoFromClient infoFromClient = new InfoFromClient();
+            infoFromClient.setClient(client);
+            infoFromClient.setData(data);
+            infoFromClient.setIdentification(identification);
+            try {
+                enterpriseHandle(infoFromClient,dhtUrl,bcUrl,8);
+            }catch (Exception e) {
+                String errStr = String.format("已成功注册%d个标识，第%d个标识注册出错，出错原因: %s", number, number+1, e.getMessage());
+                throw new Exception(errStr);
+            }
+
             number++;
         } while (number != idCount);
 
-        /**
-         * 添加blockchain注册信息，并将注册结果返回值合并
-         */
-        return dhtModule.bulkRegister(identities,mappingData,dhtUrl);
-
+        return idCount;
     }
 
     @Override

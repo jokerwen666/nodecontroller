@@ -84,7 +84,7 @@ public class ThreadPoolConfig {
     }
 
     @Bean
-    public Executor errorHandleExecutor() {
+    public ThreadPoolTaskExecutor errorHandleExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //配置核心线程池数
         taskExecutor.setCorePoolSize(10);

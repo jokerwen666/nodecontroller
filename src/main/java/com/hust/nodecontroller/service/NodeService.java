@@ -80,11 +80,12 @@ public interface NodeService {
     public IdentityRankInfo queryIdRankByPrefix(String prefix) throws Exception;
 
     /**
-     * 通过控制节点进行批量注册
-     * @param jsonArray
-     * @return BulkInfo
+     * 批量注册标识
+     * @param bulkRegister
+     * @return
+     * @throws Exception
      */
-    BulkInfo bulkRegister(JSONArray jsonArray);
+    int bulkRegister(BulkRegister bulkRegister) throws Exception;
 
     /**
      * 通过控制节点进行批量查询

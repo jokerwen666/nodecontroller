@@ -24,8 +24,11 @@ public class IndustryQueryUtil {
             tmpPeriodData.put("recordTime", currentTime);
             tmpPeriodData.put("queryInPeriod", IndustryQueryUtil.tmpArray.clone());
 
+
             List<JSONObject> tmpDataCount = new LinkedList<>();
             for (JSONObject jsonObject : dataCount) tmpDataCount.add((JSONObject) jsonObject.clone());
+            if (tmpDataCount.size() == 4)
+                tmpDataCount.remove(0);
             tmpDataCount.add(tmpPeriodData);
             return tmpDataCount;
         }
