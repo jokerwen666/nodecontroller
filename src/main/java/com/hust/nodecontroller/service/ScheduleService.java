@@ -79,24 +79,28 @@ public class ScheduleService {
 
         // 当前时刻为整点时，将一小时内的数据放进json数组中，如果一小时内的数据不够12个（比如不是在整点启动系统时），向前补0
         if (currentTime % (60 * 60) == 0) {
-             while (IndustryQueryUtil.tmpArray.size() < 12)
-                IndustryQueryUtil.tmpArray.add(0,0);
-            IndustryQueryUtil.periodData.put("recordTime", currentTime);
-            IndustryQueryUtil.periodData.put("queryInPeriod", IndustryQueryUtil.tmpArray.clone());
+             while (IndustryQueryUtil.getTmpArray().size() < 12)
+                IndustryQueryUtil.getTmpArray().add(0,0);
+
+             // 将一小时内的查询量放入periodData中
+             JSONObject tmpPeriodData = new JSONObject();
+             tmpPeriodData.put("recordTime", currentTime);
+             tmpPeriodData.put("queryInPeriod", IndustryQueryUtil.getTmpArray().clone());
+             IndustryQueryUtil.setPeriodData(tmpPeriodData);
 
             // json数组最多保存4个小时内的数据
-            if (IndustryQueryUtil.dataCount.size() == 4) {
-                IndustryQueryUtil.dataCount.remove(0);
+            if (IndustryQueryUtil.getDataCount().size() == 4) {
+                IndustryQueryUtil.getDataCount().remove(0);
             }
-
-            IndustryQueryUtil.dataCount.add((JSONObject) IndustryQueryUtil.periodData.clone());
-            IndustryQueryUtil.periodData.clear();
-            IndustryQueryUtil.tmpArray.clear();
+            // 将periodData放入查询结果dataCount中，并清空periodData和tmpArray
+            IndustryQueryUtil.getDataCount().add((JSONObject) IndustryQueryUtil.getPeriodData().clone());
+            IndustryQueryUtil.getPeriodData().clear();
+            IndustryQueryUtil.getTmpArray().clear();
 
         }
 
         logger.info("calculate industry query count per 5min");
-        IndustryQueryUtil.tmpArray.add(IndustryQueryUtil.queryCount - IndustryQueryUtil.preQueryCount);
-        IndustryQueryUtil.preQueryCount = IndustryQueryUtil.queryCount;
+        IndustryQueryUtil.getTmpArray().add(IndustryQueryUtil.getQueryCount() - IndustryQueryUtil.getPreQueryCount());
+        IndustryQueryUtil.setPreQueryCount(IndustryQueryUtil.getQueryCount());
     }
 }

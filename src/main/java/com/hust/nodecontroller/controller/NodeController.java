@@ -323,7 +323,7 @@ public class NodeController {
 
     @RequestMapping(value = "/industryInfo")
     @ResponseBody
-    public IndustryInfo queryIndustryInfo() {
+    public IndustryInfo queryIndustryInfo() throws InterruptedException {
         IndustryInfo backHtml = new IndustryInfo();
         backHtml.setIndustryName("086.001");
         backHtml.setDataCount(IndustryQueryUtil.calIndustryQueryInfo());
