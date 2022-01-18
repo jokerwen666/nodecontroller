@@ -1,20 +1,15 @@
 package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.aop.ServiceAspect;
 import com.hust.nodecontroller.infostruct.BulkInfo;
 import com.hust.nodecontroller.infostruct.IMSystemInfo;
 import com.hust.nodecontroller.infostruct.NormalMsg;
 import com.hust.nodecontroller.utils.PostRequestUtil;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
-
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * @author Zhang Bowen
@@ -24,14 +19,13 @@ import java.util.concurrent.Future;
  */
 
 @Component
-public class DhtModule implements sendInfoToModule{
+public class DhtModule implements SendInfoToModule{
     private static final Logger logger = LoggerFactory.getLogger(DhtModule.class);
 
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> register(String id, String prefix, String url, String toUrl, int type) {
         long beginTime = System.nanoTime();
-        NormalMsg normalMsg = new NormalMsg();
-        normalMsg = registerAndUpdate(id, prefix, url, toUrl, type);
+        NormalMsg normalMsg = registerAndUpdate(id, prefix, url, toUrl, type);
         long endTime = System.nanoTime();
         logger.info("Register Time({}ms)", (endTime-beginTime)/1000000);
         return CompletableFuture.completedFuture(normalMsg);
@@ -50,16 +44,16 @@ public class DhtModule implements sendInfoToModule{
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> delete(String id, String prefix, String toUrl,int type) {
         long beginTime = System.nanoTime();
-        JSONObject jsonToIMSystem = new JSONObject();
-        jsonToIMSystem.put("orgname", prefix);
-        jsonToIMSystem.put("Identity", id);
-        jsonToIMSystem.put("type", type);
-        jsonToIMSystem.put("ip port", "112.125.88.26 10106");
+        JSONObject jsonToImSystem = new JSONObject();
+        jsonToImSystem.put("orgname", prefix);
+        jsonToImSystem.put("Identity", id);
+        jsonToImSystem.put("type", type);
+        jsonToImSystem.put("ip port", "112.125.88.26 10106");
 
         NormalMsg normalMsg = new NormalMsg();
 
         try {
-            normalMsg = PostRequestUtil.getNormalResponse_(toUrl,jsonToIMSystem);
+            normalMsg = PostRequestUtil.getNormalResponse_(toUrl,jsonToImSystem);
             long endTime = System.nanoTime();
             logger.info("Delete Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(normalMsg);
@@ -73,14 +67,14 @@ public class DhtModule implements sendInfoToModule{
     @Async("queryHandleExecutor")
     public CompletableFuture<IMSystemInfo> query(String identity, String prefix, String toUrl, Boolean crossDomain_flag) {
         long beginTime = System.nanoTime();
-        JSONObject jsonToIMSystem = new JSONObject();
-        jsonToIMSystem.put("orgname", prefix);
-        jsonToIMSystem.put("Identity", identity);
-        jsonToIMSystem.put("type", 1);
-        jsonToIMSystem.put("crossDomain_flag", crossDomain_flag);
+        JSONObject jsonToImSystem = new JSONObject();
+        jsonToImSystem.put("orgname", prefix);
+        jsonToImSystem.put("Identity", identity);
+        jsonToImSystem.put("type", 1);
+        jsonToImSystem.put("crossDomain_flag", crossDomain_flag);
         IMSystemInfo imSystemInfo = new IMSystemInfo();
         try {
-            imSystemInfo = PostRequestUtil.getIMQueryResponse(toUrl,jsonToIMSystem);
+            imSystemInfo = PostRequestUtil.getIMQueryResponse(toUrl,jsonToImSystem);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(imSystemInfo);
@@ -92,16 +86,16 @@ public class DhtModule implements sendInfoToModule{
     }
 
     private NormalMsg registerAndUpdate(String id, String prefix, String url, String toUrl, int type) {
-        JSONObject jsonToIMSystem = new JSONObject();
-        jsonToIMSystem.put("orgname", prefix);
-        jsonToIMSystem.put("Identity", id);
-        jsonToIMSystem.put("type",type);
-        jsonToIMSystem.put("mappingdata", url);
+        JSONObject jsonToImSystem = new JSONObject();
+        jsonToImSystem.put("orgname", prefix);
+        jsonToImSystem.put("Identity", id);
+        jsonToImSystem.put("type",type);
+        jsonToImSystem.put("mappingdata", url);
 
         NormalMsg normalMsg = new NormalMsg();
 
         try {
-            normalMsg = PostRequestUtil.getNormalResponse_(toUrl,jsonToIMSystem);
+            normalMsg = PostRequestUtil.getNormalResponse_(toUrl,jsonToImSystem);
             return normalMsg;
 
         }catch (Exception e){
@@ -111,16 +105,17 @@ public class DhtModule implements sendInfoToModule{
         }
     }
 
+    @Deprecated
     public BulkInfo bulkRegister(StringBuilder id, StringBuilder url, String toUrl){
-        JSONObject jsonToIMSystem = new JSONObject();
-        jsonToIMSystem.put("Identitys", id);
-        jsonToIMSystem.put("type", 8);
-        jsonToIMSystem.put("mappingdatas", url);
+        JSONObject jsonToImSystem = new JSONObject();
+        jsonToImSystem.put("Identitys", id);
+        jsonToImSystem.put("type", 8);
+        jsonToImSystem.put("mappingdatas", url);
 
         BulkInfo bulkInfo = new BulkInfo();
 
         try {
-            bulkInfo = PostRequestUtil.getBulkRegisterInfo(toUrl,jsonToIMSystem);
+            bulkInfo = PostRequestUtil.getBulkRegisterInfo(toUrl,jsonToImSystem);
             return bulkInfo;
 
         }catch (Exception e){
@@ -132,14 +127,14 @@ public class DhtModule implements sendInfoToModule{
     }
 
     public BulkInfo bulkQuery(StringBuilder id, String toUrl){
-        JSONObject jsonToIMSystem = new JSONObject();
-        jsonToIMSystem.put("Identitys", id);
-        jsonToIMSystem.put("type", 1);
+        JSONObject jsonToImSystem = new JSONObject();
+        jsonToImSystem.put("Identitys", id);
+        jsonToImSystem.put("type", 1);
 
         BulkInfo bulkInfo = new BulkInfo();
 
         try {
-            bulkInfo = PostRequestUtil.getBulkQueryInfo(toUrl,jsonToIMSystem);
+            bulkInfo = PostRequestUtil.getBulkQueryInfo(toUrl,jsonToImSystem);
             return bulkInfo;
 
         }catch (Exception e){

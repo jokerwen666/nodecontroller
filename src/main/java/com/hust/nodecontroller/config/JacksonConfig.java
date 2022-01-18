@@ -21,7 +21,6 @@ import java.io.IOException;
  * @ClassName JacksonConfig
  * @date 2020.09.14 10:44
  */
-
 @Configuration
 public class JacksonConfig {
     @Bean

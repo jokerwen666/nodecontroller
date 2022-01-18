@@ -8,9 +8,6 @@ import com.hust.nodecontroller.communication.ComInfoModule;
 import com.hust.nodecontroller.communication.DhtModule;
 import com.hust.nodecontroller.errorhandle.BCErrorHandle;
 import com.hust.nodecontroller.errorhandle.DhtErrorHandle;
-import com.hust.nodecontroller.fnlencrypt.hashutils.ApHash;
-import com.hust.nodecontroller.fnlencrypt.hashutils.HashUtils;
-import com.hust.nodecontroller.fnlencrypt.hashutils.SM3Hash;
 import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.enums.AuthorityResultEnum;
 import com.hust.nodecontroller.utils.CalStateUtil;
@@ -20,12 +17,9 @@ import com.hust.nodecontroller.utils.IndustryQueryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * @author Zhang Bowen
@@ -62,13 +56,8 @@ public class ControlProcessImpl implements ControlProcess{
         this.dhtErrorHandle = dhtErrorHandle;
     }
 
-    public void enterpriseHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl, int type) throws Exception {
-
-        String client = infoFromClient.getClient(); //请求发送的企业名称
-        String identity = infoFromClient.getIdentification(); //请求标识
-        String prefix = InfoFromClient.getPrefix(identity); //标识前缀
-        JSONObject data = infoFromClient.getData(); //注册信息
-
+    @Override
+    public void enterpriseHandle (String client, String identity, String prefix, JSONObject data, String dhtUrl, String bcUrl, int type) throws Exception {
         String url = null;
         String goodsHash = null;
         String queryPermissions = null;
@@ -131,6 +120,7 @@ public class ControlProcessImpl implements ControlProcess{
 
     }
 
+    @Override
     public QueryResult userHandle(String identity, String client, String dhtUrl, String bcUrl, String bcQueryOwner) throws Exception {
 
         String prefix = InfoFromClient.getPrefix(identity);
@@ -171,7 +161,9 @@ public class ControlProcessImpl implements ControlProcess{
         if (normalMsg.getStatus() == 0) {
             throw new Exception(normalMsg.getMessage());
         }
-        else owner = normalMsg.getMessage();
+        else {
+            owner = normalMsg.getMessage();
+        }
 
         String permission = bcInfo.get().getPermission();
         if (permission.equals("0") && !client.equals(owner)) {
@@ -256,12 +248,10 @@ public class ControlProcessImpl implements ControlProcess{
             data.put("url", url);
             data.put("goodsHash", goodsHash);
             data.put("queryPermissions", queryPermissions);
-            InfoFromClient infoFromClient = new InfoFromClient();
-            infoFromClient.setClient(client);
-            infoFromClient.setData(data);
-            infoFromClient.setIdentification(identification);
+            String prefix = InfoFromClient.getPrefix(identification);
+
             try {
-                enterpriseHandle(infoFromClient,dhtUrl,bcUrl,8);
+                enterpriseHandle(client,identification,prefix,data,dhtUrl,bcUrl,8);
             }catch (Exception e) {
                 String errStr = String.format("已成功注册%d个标识，第%d个标识注册出错，出错原因: %s", number, number+1, e.getMessage());
                 throw new Exception(errStr);

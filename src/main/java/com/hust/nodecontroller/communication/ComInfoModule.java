@@ -1,15 +1,10 @@
 package com.hust.nodecontroller.communication;
 
-import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.ComQueryInfo;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.Future;
 
 /**
  * @author Zhang Bowen
@@ -19,11 +14,10 @@ import java.util.concurrent.Future;
  */
 
 @Component
-public class ComInfoModule implements sendInfoToModule{
+public class ComInfoModule implements SendInfoToModule{
 
     private static final Logger logger = LoggerFactory.getLogger(ComInfoModule.class);
 
-    //@Async("comInfoQueryExecutor")
     public ComQueryInfo query(String toUrl){
         long beginTime = System.nanoTime();
         ComQueryInfo comQueryInfo = new ComQueryInfo();

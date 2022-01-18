@@ -106,7 +106,11 @@ public class NodeServiceImpl implements NodeService{
 
     @Override
     public void register(InfoFromClient infoFromClient) throws Exception {
-        controlProcess.enterpriseHandle(infoFromClient,dhtRegisterUrl,bcRegisterUrl,8);
+        String client = infoFromClient.getClient();
+        String identity = infoFromClient.getIdentification();
+        String prefix = InfoFromClient.getPrefix(identity);
+        JSONObject data = infoFromClient.getData();
+        controlProcess.enterpriseHandle(client,identity,prefix,data,dhtRegisterUrl,bcRegisterUrl,8);
     }
 
     @Override
@@ -116,12 +120,20 @@ public class NodeServiceImpl implements NodeService{
 
     @Override
     public void delete(InfoFromClient infoFromClient) throws Exception {
-        controlProcess.enterpriseHandle(infoFromClient,dhtDeleteUrl,bcDeleteUrl,4);
+        String client = infoFromClient.getClient();
+        String identity = infoFromClient.getIdentification();
+        String prefix = InfoFromClient.getPrefix(identity);
+        JSONObject data = infoFromClient.getData();
+        controlProcess.enterpriseHandle(client,identity,prefix,data,dhtDeleteUrl,bcDeleteUrl,4);
     }
 
     @Override
     public void update(InfoFromClient infoFromClient) throws Exception {
-        controlProcess.enterpriseHandle(infoFromClient,dhtUpdateUrl,bcUpdateUrl,2);
+        String client = infoFromClient.getClient();
+        String identity = infoFromClient.getIdentification();
+        String prefix = InfoFromClient.getPrefix(identity);
+        JSONObject data = infoFromClient.getData();
+        controlProcess.enterpriseHandle(client,identity,prefix,data,dhtUpdateUrl,bcUpdateUrl,2);
     }
 
     @Override
@@ -196,6 +208,7 @@ public class NodeServiceImpl implements NodeService{
     }
 
 
+    @Override
     public IdentityRankInfo queryIdRankByPrefix(String prefix) throws Exception {
         JSONObject callJson = new JSONObject();
         callJson.put("orgname", prefix);

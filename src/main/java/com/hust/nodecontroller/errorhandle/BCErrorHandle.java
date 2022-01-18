@@ -17,17 +17,10 @@ import org.springframework.stereotype.Component;
 public class BCErrorHandle {
     private final BlockchainModule blockchainModule;
 
-    //解析结果验证子系统url
-    @Value("${bc.register.url}")
-    private String bcRegisterUrl;
-    @Value("${bc.delete.url}")
+    /**
+     * 区块链删除接口url
+     */
     private String bcDeleteUrl;
-    @Value("${bc.update.url}")
-    private String bcUpdateUrl;
-    @Value("${bc.query.url}")
-    private String bcQueryUrl;
-    @Value("${bc.queryPrefix.url}")
-    private String bcPrefixQuery;
 
     @Autowired
     public BCErrorHandle(BlockchainModule blockchainModule) {
@@ -36,7 +29,8 @@ public class BCErrorHandle {
 
     @Async
     public void errorHandle(int type, String identity) {
-        if (type == 8)
+        if (type == 8) {
             blockchainModule.delete(identity,bcDeleteUrl);
+        }
     }
 }

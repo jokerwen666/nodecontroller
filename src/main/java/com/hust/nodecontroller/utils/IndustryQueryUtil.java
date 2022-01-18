@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+
+
 public class IndustryQueryUtil {
     public static List<JSONObject> dataCount = new LinkedList<>();
     public static ArrayList<Integer> tmpArray = new ArrayList<>();
@@ -15,12 +17,20 @@ public class IndustryQueryUtil {
     public static int queryCount = 0;
     public static int preQueryCount = 0;
 
+
+    /**
+     * @Description aAAAAA
+     * @author jokerwen666
+     * @date 2022/1/18 19:06
+     * @version 1.0.0
+     * @param
+     * @return List<JSONObject>
+     */
     public static List<JSONObject> calIndustryQueryInfo() throws InterruptedException {
-        long currentTime = new Date().getTime() / 1000;
+        long currentTime = System.currentTimeMillis() / 1000;
 
         // 如果当前请求时刻不是整点，则将tmparray中数据临时添加入dataCount后返回，如果是整点则直接返回dataCount
         if (currentTime % (60 * 60) != 0) {
-            Thread.sleep(100);
             JSONObject tmpPeriodData = new JSONObject();
             tmpPeriodData.put("recordTime", currentTime);
             tmpPeriodData.put("queryInPeriod", getTmpArray().clone());
@@ -31,8 +41,9 @@ public class IndustryQueryUtil {
                 tmpDataCount.add(jsonObject);
             }
 
-            if (tmpDataCount.size() == 4)
+            if (tmpDataCount.size() == 4) {
                 tmpDataCount.remove(0);
+            }
             tmpDataCount.add(tmpPeriodData);
             return tmpDataCount;
         }

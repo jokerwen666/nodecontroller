@@ -4,8 +4,6 @@ import com.hust.nodecontroller.utils.IndustryQueryUtil;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import com.hust.nodecontroller.utils.CalStateUtil;
 
@@ -24,7 +22,7 @@ public class CalStateAspect {
     public void pointCutRegister() {}
 
     @Before("pointCutRegister()")
-    public void doBeforeRegister() throws Exception {
+    public void doBeforeRegister() {
         CalStateUtil.registerCount++;
         CalStateUtil.totalCount++;
     }
@@ -34,7 +32,7 @@ public class CalStateAspect {
     public void pointCutQuery() {}
 
     @Before("pointCutQuery()")
-    public void doBeforeQuery() throws Exception {
+    public void doBeforeQuery() {
         CalStateUtil.queryCount++;
         IndustryQueryUtil.setQueryCount(IndustryQueryUtil.getQueryCount()+1);
         CalStateUtil.totalCount++;
@@ -45,7 +43,7 @@ public class CalStateAspect {
     public void pointCutUpdate() {}
 
     @Before("pointCutUpdate()")
-    public void doBeforeUpdate() throws Exception {
+    public void doBeforeUpdate() {
         CalStateUtil.totalCount++;
     }
 
@@ -54,7 +52,7 @@ public class CalStateAspect {
     public void pointCutDelete() {}
 
     @Before("pointCutDelete()")
-    public void doBeforeDelete() throws Exception {
+    public void doBeforeDelete() {
         CalStateUtil.totalCount++;
     }
 

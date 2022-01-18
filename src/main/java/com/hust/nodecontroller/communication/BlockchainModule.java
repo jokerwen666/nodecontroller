@@ -9,11 +9,8 @@ import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
-
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * @author Zhang Bowen
@@ -23,7 +20,7 @@ import java.util.concurrent.Future;
  */
 
 @Component
-public class BlockchainModule implements sendInfoToModule{
+public class BlockchainModule implements SendInfoToModule{
     private static final Logger logger = LoggerFactory.getLogger(BlockchainModule.class);
 
     @Async("enterpriseHandleExecutor")
@@ -49,13 +46,13 @@ public class BlockchainModule implements sendInfoToModule{
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> delete(String id, String toUrl) {
         long beginTime = System.nanoTime();
-        JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name","peer0");
-        jsonToRVSystem.put("Identifier",id);
+        JSONObject jsonToRvSystem = new JSONObject();
+        jsonToRvSystem.put("peer_name","peer0");
+        jsonToRvSystem.put("Identifier",id);
         NormalMsg normalMsg = new NormalMsg();
 
         try {
-            normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToRVSystem);
+            normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToRvSystem);
             long endTime = System.nanoTime();
             logger.info("Delete Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(normalMsg);
@@ -69,12 +66,12 @@ public class BlockchainModule implements sendInfoToModule{
     @Async("queryHandleExecutor")
     public CompletableFuture<RVSystemInfo> query(String identity, String toUrl) {
         long beginTime = System.nanoTime();
-        JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name", "peer0");
-        jsonToRVSystem.put("Identifier", identity);
+        JSONObject jsonToRvSystem = new JSONObject();
+        jsonToRvSystem.put("peer_name", "peer0");
+        jsonToRvSystem.put("Identifier", identity);
         RVSystemInfo rvSystemInfo = new RVSystemInfo();
         try {
-            rvSystemInfo = PostRequestUtil.getRVQueryResponse(toUrl,jsonToRVSystem);
+            rvSystemInfo = PostRequestUtil.getRVQueryResponse(toUrl,jsonToRvSystem);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(rvSystemInfo);
@@ -103,18 +100,18 @@ public class BlockchainModule implements sendInfoToModule{
     }
 
     public NormalMsg queryOwnerByPrefix(String prefix, String bcUrl) {
-        JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name","peer0");
-        jsonToRVSystem.put("erp_name","");
-        jsonToRVSystem.put("identity_prefix", prefix);
-        jsonToRVSystem.put("public_key","");
-        jsonToRVSystem.put("authority","");
-        jsonToRVSystem.put("onwer","");
+        JSONObject jsonToRvSystem = new JSONObject();
+        jsonToRvSystem.put("peer_name","peer0");
+        jsonToRvSystem.put("erp_name","");
+        jsonToRvSystem.put("identity_prefix", prefix);
+        jsonToRvSystem.put("public_key","");
+        jsonToRvSystem.put("authority","");
+        jsonToRvSystem.put("onwer","");
 
         NormalMsg normalMsg = new NormalMsg();
 
         try {
-            normalMsg = PostRequestUtil.getOwnerQueryResponse(bcUrl,jsonToRVSystem);
+            normalMsg = PostRequestUtil.getOwnerQueryResponse(bcUrl,jsonToRvSystem);
             return normalMsg;
 
         } catch (Exception e) {
@@ -126,17 +123,17 @@ public class BlockchainModule implements sendInfoToModule{
     }
 
     private NormalMsg registerAndUpdate(String id, String hash, String url, String toUrl, String queryPermissions) {
-        JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name","peer0");
-        jsonToRVSystem.put("Identifier",id);
-        jsonToRVSystem.put("hash",hash);
-        jsonToRVSystem.put("abstract", HashUtil.SM3Hash(url));
-        jsonToRVSystem.put("permisssion", queryPermissions);
+        JSONObject jsonToRvSystem = new JSONObject();
+        jsonToRvSystem.put("peer_name","peer0");
+        jsonToRvSystem.put("Identifier",id);
+        jsonToRvSystem.put("hash",hash);
+        jsonToRvSystem.put("abstract", HashUtil.SM3Hash(url));
+        jsonToRvSystem.put("permisssion", queryPermissions);
 
         NormalMsg normalMsg = new NormalMsg();
 
         try {
-            normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToRVSystem);
+            normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToRvSystem);
             return normalMsg;
 
         }catch (Exception e){

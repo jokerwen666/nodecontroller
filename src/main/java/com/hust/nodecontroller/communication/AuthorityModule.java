@@ -8,11 +8,7 @@ import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.Future;
 
 /**
  * @author Zhang Bowen
@@ -22,37 +18,43 @@ import java.util.concurrent.Future;
  */
 
 @Component
-public class AuthorityModule implements sendInfoToModule{
+public class AuthorityModule implements SendInfoToModule{
 
-    //鉴权子系统url
+    /** 权限校验子系统添加权限接口*/
     @Value("${am.save.url}")
     String amSaveUrl;
+
+    /** 权限校验子系统删除权限接口*/
     @Value("${am.delete.url}")
     String amDeleteUrl;
+
+    /** 权限校验子系统更新权限接口*/
     @Value("${am.update.url}")
     String amUpdateUrl;
+
+    /** 权限校验子系统查询权限接口*/
     @Value("${am.query.url}")
     String amQueryUrl;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorityModule.class);
 
-    public NormalMsg register(String erp_name, String prefix, String key, String authority, String owner) throws Exception{
-        return registerAndUpdate(erp_name, prefix, key, authority, owner, amSaveUrl);
+    public NormalMsg register(String erpName, String prefix, String key, String authority, String owner) throws Exception{
+        return registerAndUpdate(erpName, prefix, key, authority, owner, amSaveUrl);
     }
 
-    public NormalMsg update(String erp_name, String prefix, String key, String authority, String owner) throws Exception{
-        return registerAndUpdate(erp_name, prefix, key, authority, owner, amUpdateUrl);
+    public NormalMsg update(String erpName, String prefix, String key, String authority, String owner) throws Exception{
+        return registerAndUpdate(erpName, prefix, key, authority, owner, amUpdateUrl);
     }
 
     public AMSystemInfo query(String client, String prefix, int type){
         long beginTime = System.nanoTime();
-        JSONObject jsonToAMSystem = new JSONObject();
-        jsonToAMSystem.put("peer_name","peer0");
-        jsonToAMSystem.put("erp_name", client);
-        jsonToAMSystem.put("identity_prefix", prefix);
+        JSONObject jsonToAmSystem = new JSONObject();
+        jsonToAmSystem.put("peer_name","peer0");
+        jsonToAmSystem.put("erp_name", client);
+        jsonToAmSystem.put("identity_prefix", prefix);
         AMSystemInfo amSystemInfo = new AMSystemInfo();
         try {
-            amSystemInfo = PostRequestUtil.getAMQueryResponse(amQueryUrl,jsonToAMSystem);
+            amSystemInfo = PostRequestUtil.getAMQueryResponse(amQueryUrl,jsonToAmSystem);
 
             if (amSystemInfo.getStatus() == 0){
                 return amSystemInfo;
@@ -75,13 +77,13 @@ public class AuthorityModule implements sendInfoToModule{
         }
     }
 
-    public NormalMsg delete(String erp_name, String prefix) throws Exception{
-        JSONObject jsonToAMSystem = new JSONObject();
-        jsonToAMSystem.put("peer_name", "peer0");
-        jsonToAMSystem.put("erp_name", erp_name);
-        jsonToAMSystem.put("identity_prefix", prefix);
+    public NormalMsg delete(String erpName, String prefix) throws Exception{
+        JSONObject jsonToAmSystem = new JSONObject();
+        jsonToAmSystem.put("peer_name", "peer0");
+        jsonToAmSystem.put("erp_name", erpName);
+        jsonToAmSystem.put("identity_prefix", prefix);
 
-        NormalMsg normalMsg = PostRequestUtil.getNormalResponse(amDeleteUrl,jsonToAMSystem);
+        NormalMsg normalMsg = PostRequestUtil.getNormalResponse(amDeleteUrl,jsonToAmSystem);
 
         if (normalMsg.getStatus() == 0){
             logger.info("Error({})",normalMsg.getMessage());
@@ -91,16 +93,16 @@ public class AuthorityModule implements sendInfoToModule{
         return normalMsg;
     }
 
-    public NormalMsg registerAndUpdate(String erp_name, String prefix, String key, String authority, String owner, String toUrl) throws Exception{
-        JSONObject jsonToAMSystem = new JSONObject();
-        jsonToAMSystem.put("peer_name", "peer0");
-        jsonToAMSystem.put("erp_name", erp_name);
-        jsonToAMSystem.put("identity_prefix", prefix);
-        jsonToAMSystem.put("public_key", key);
-        jsonToAMSystem.put("authority", authority);
-        jsonToAMSystem.put("onwer", owner);
+    public NormalMsg registerAndUpdate(String erpName, String prefix, String key, String authority, String owner, String toUrl) throws Exception{
+        JSONObject jsonToAmSystem = new JSONObject();
+        jsonToAmSystem.put("peer_name", "peer0");
+        jsonToAmSystem.put("erp_name", erpName);
+        jsonToAmSystem.put("identity_prefix", prefix);
+        jsonToAmSystem.put("public_key", key);
+        jsonToAmSystem.put("authority", authority);
+        jsonToAmSystem.put("onwer", owner);
 
-        NormalMsg normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToAMSystem);
+        NormalMsg normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToAmSystem);
 
         if (normalMsg.getStatus() == 0){
             logger.info("Error({})",normalMsg.getMessage());

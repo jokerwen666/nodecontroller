@@ -40,7 +40,8 @@ public class DhtErrorHandle {
 
     @Async
     public void errorHandle(int type, String identity, String prefix) {
-        if (type == 8)
+        if (type == 8) {
             dhtModule.delete(identity,prefix,dhtDeleteUrl,4);
+        }
     }
 }

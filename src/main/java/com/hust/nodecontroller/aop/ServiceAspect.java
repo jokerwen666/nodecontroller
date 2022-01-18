@@ -8,8 +8,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 
@@ -24,6 +22,7 @@ import java.util.Arrays;
 @Component
 public class ServiceAspect {
     private static final Logger logger = LoggerFactory.getLogger(ServiceAspect.class);
+    private static final String QUERY_FUNCTION = "QueryResult com.hust.nodecontroller.service.NodeServiceImpl.query(InfoFromClient)";
 
     @Pointcut("execution(* com.hust.nodecontroller.service.NodeServiceImpl.*(..))")
     public void pointCutNodeService() {}
@@ -38,8 +37,9 @@ public class ServiceAspect {
         long endTime = System.nanoTime();
         logger.info("Finish the service method({}), Total time({}ms)", methodSignature, (endTime-beginTime)/1000000);
         //解析操作时，添加总查询时延
-        if (methodSignature.equals("QueryResult com.hust.nodecontroller.service.NodeServiceImpl.query(InfoFromClient)"))
-        CalStateUtil.queryTimeout += (endTime-beginTime)/1000000;
+        if (methodSignature.equals(QUERY_FUNCTION)) {
+            CalStateUtil.queryTimeout += (endTime-beginTime)/1000000;
+        }
         return result;
     }
 
