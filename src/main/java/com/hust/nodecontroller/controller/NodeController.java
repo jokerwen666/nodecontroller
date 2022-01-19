@@ -168,6 +168,30 @@ public class NodeController {
     }
 
 
+    @RequestMapping(value = "/dnsQuery")
+    @ResponseBody
+    public QueryResult dnsQuery(@RequestBody InfoFromClient infoFromClient) throws Exception {
+        QueryResult backHtml = new QueryResult();
+        try {
+            threadNum.addAndGet(1);
+            CalStateUtil.queryCount++;
+            IndustryQueryUtil.setQueryCount(IndustryQueryUtil.getQueryCount()+1);
+            CalStateUtil.totalCount++;
+            backHtml = nodeService.multipleTypeQuery(infoFromClient,true);
+            backHtml.setStatus(1);
+            backHtml.setMessage("DNS解析成功！");
+            CalStateUtil.successCount++;
+            threadNum.decrementAndGet();
+            return backHtml;
+        } catch (Exception e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            threadNum.decrementAndGet();
+            return backHtml;
+        }
+    }
+
+
     /**
      * 根据企业前缀返回所有标识信息
      * @param infoFromClient
@@ -268,10 +292,11 @@ public class NodeController {
             backHtml.setQueryCount(CalStateUtil.queryCount);
             backHtml.setIdCount(nodeService.queryNodeIdTotal());
 
-            if (CalStateUtil.queryCount == 0)
+            if (CalStateUtil.queryCount == 0) {
                 backHtml.setQueryTimeout(0);
-            else
+            } else {
                 backHtml.setQueryTimeout((float) CalStateUtil.queryTimeout / CalStateUtil.queryCount);
+            }
 
             backHtml.setStatus(1);
             backHtml.setMessage("企业服务器资源信息查询成功");
@@ -312,10 +337,12 @@ public class NodeController {
         backHtml.setEcodeCount(CalStateUtil.differEcode());
         backHtml.setHandleCount(CalStateUtil.differHandle());
         backHtml.setDnsCount(CalStateUtil.differDns());
+        backHtml.setDhtCount(CalStateUtil.differDht());
         CalStateUtil.preOidQueryCount = CalStateUtil.oidQueryCount;
         CalStateUtil.preEcodeQueryCount = CalStateUtil.ecodeQueryCount;
         CalStateUtil.preHandleQueryCount = CalStateUtil.handleQueryCount;
         CalStateUtil.preDnsQueryCount = CalStateUtil.dnsQueryCount;
+        CalStateUtil.preDhtQueryCount = CalStateUtil.dhtQueryCount;
         backHtml.setStatus(1);
         backHtml.setMessage("异构查询成功！");
         return backHtml;
@@ -332,7 +359,7 @@ public class NodeController {
         return backHtml;
     }
 
-    @RequestMapping(value = "bulkRegister")
+    @RequestMapping(value = "/bulkRegister")
     @ResponseBody
     public NormalMsg bulkRegister(@RequestBody BulkRegister bulkRegister) throws Exception {
         NormalMsg backHtml = new NormalMsg();

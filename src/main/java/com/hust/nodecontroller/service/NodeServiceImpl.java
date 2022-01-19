@@ -1,10 +1,7 @@
 package com.hust.nodecontroller.service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.hust.nodecontroller.controller.NodeController;
-import com.hust.nodecontroller.exception.AuthorityTestException;
-import com.hust.nodecontroller.exception.FormatException;
+import com.hust.nodecontroller.enums.IdentityTypeEnum;
 import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.utils.*;
 import org.slf4j.Logger;
@@ -15,14 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,13 +26,11 @@ import java.util.List;
 @Service
 public class NodeServiceImpl implements NodeService{
 
-    // 服务器地址与接口信息
     private final String serverIp;
     private final String dhtPort;
     private final String controllerPort;
     private final String zookeeperAddress;
 
-    // 标识管理子系统url
     private final String dhtRegisterUrl;
     private final String dhtDeleteUrl;
     private final String dhtUpdateUrl;
@@ -53,7 +41,6 @@ public class NodeServiceImpl implements NodeService{
     private final String dhtBulkQueryUrl;
     private final String dhtOrgResolveNumsUrl;
 
-    // 解析结果验证子系统url
     @Value("${bc.register.url}")
     private String bcRegisterUrl;
     @Value("${bc.delete.url}")
@@ -126,39 +113,47 @@ public class NodeServiceImpl implements NodeService{
 
     @Override
     public QueryResult query(InfoFromClient infoFromClient) throws Exception {
+        return multipleTypeQuery(infoFromClient,false);
+    }
+
+    @Override
+    public QueryResult multipleTypeQuery(InfoFromClient infoFromClient, boolean isDnsQuery) throws Exception {
         String identification = infoFromClient.getIdentification();
         String client = infoFromClient.getClient();
         String hashType = infoFromClient.getType();
 
         // 添加解密，解密出明文
-        if (hashType.equals("sm2")) {
+        if ("sm2".equals(hashType)) {
             identification = EncDecUtil.sMDecrypt(identification);
             client = EncDecUtil.sMDecrypt(client);
         }
-        else if (hashType.equals("rsa")) {
+        else if ("rsa".equals(hashType)) {
             identification = EncDecUtil.rsaDecrypt(identification);
             client = EncDecUtil.rsaDecrypt(client);
         }
 
         QueryResult queryResult = new QueryResult();
-        switch (IdTypeJudgeUtil.TypeJudge(identification)) {
-            case 1 : //oid
+
+        if (isDnsQuery) {
+            queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
+            return queryResult;
+        }
+
+        switch (IdTypeJudgeUtil.typeJudge(identification)) {
+            case IDENTITY_TYPE_OID:
                 queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
                 break;
-            case 2 : //handle
+            case IDENTITY_TYPE_HANDLE:
                 queryResult.setGoodsInfo(IdTypeJudgeUtil.handleResolve(identification));
                 break;
-            case 3 : //ecode
+            case IDENTITY_TYPE_ECODE:
                 queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
                 break;
-            case 4 : //创新型
+            case IDENTITY_TYPE_DHT:
                 queryResult = controlProcess.userHandle(identification, client, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
                 break;
-            case 5: // dns解析
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
-                break;
             default:
-                throw new Exception("标识格式错误!请重新输入!");
+                throw new Exception(IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT.getIdTypeMessage());
         }
         return queryResult;
     }
@@ -196,6 +191,7 @@ public class NodeServiceImpl implements NodeService{
     }
 
 
+    @Override
     public IdentityRankInfo queryIdRankByPrefix(String prefix) throws Exception {
         JSONObject callJson = new JSONObject();
         callJson.put("orgname", prefix);

@@ -3,8 +3,7 @@ package com.hust.nodecontroller.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.hust.nodecontroller.communication.BlockchainModule;
+import com.hust.nodecontroller.enums.IdentityTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,41 +15,55 @@ import java.net.UnknownHostException;
 import java.util.regex.Pattern;
 
 public class IdTypeJudgeUtil {
-
     private static final Logger logger = LoggerFactory.getLogger(IdTypeJudgeUtil.class);
+    private static final String[] OID_PREFIX = {"1.2.156", "2.13.156"};
+    private static final String[] HANDLE_PREFIX = {"10","11","20","21","22","25","27","44","77","86"};
+    private static final String[] ECODE_PREFIX = {"10064", "10096", "20128","300121"};
+    private static final String PATTERN_DHT = "086\\.[0-9]{3}\\.[0-9]{6}\\/[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]{8}\\.[0-9]{6}";
+    private static final Integer OID_PART_NUM = 4;
+    private static final Integer HANDLE_PART_NUM = 3;
+    private static final Integer ECODE_PART_NUM = 1;
 
 
-    public static int TypeJudge(String identification){
-        boolean isContainLetter = Pattern.compile("[a-zA-Z]").matcher(identification).find();
 
-        if(identification.split("\\.").length == 4 && !isContainLetter)
-            return 1;
-        else if(identification.split("\\.").length == 3 && !isContainLetter)
-            return 2;
-        else if(identification.startsWith("10064") || identification.startsWith("10096") || identification.startsWith("20128") || identification.startsWith("300121"))
-            return 3;
-        else if(identification.contains("/") && identification.split("\\/").length ==2){
-            String[] tmp = identification.split("\\/");
-            if (tmp[0].contains(".") && tmp[0].split("\\.").length == 3 && tmp[1].contains(".") && tmp[1].split("\\.").length == 5){
-                String[] prefix = tmp[0].split("\\.");
-                String[] subfix = tmp[1].split("\\.");
-                if(prefix[0].length() == 3 && prefix[1].length() == 3 && prefix[2].length() == 6 && subfix[0].length() == 2 && subfix[1].length() == 2 && subfix[2].length() == 2 && subfix[3].length() == 8 && subfix[4].length() == 6)
-                    return 4;
-            }
+    public static IdentityTypeEnum typeJudge(String identification){
+        Integer length = identification.split("\\.").length;
+        String firstPart = identification.split("\\.")[0];
+
+        if (Pattern.matches(PATTERN_DHT, identification)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_DHT;
         }
-        else return 5;
-        return 0;
+
+        else if (length.equals(OID_PART_NUM) && isStartWithString(identification, OID_PREFIX)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_OID;
+        }
+
+        else if (length.equals(HANDLE_PART_NUM) && isHaveString(HANDLE_PREFIX, firstPart)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_HANDLE;
+        }
+
+        else if (length.equals(ECODE_PART_NUM) && isStartWithString(identification, ECODE_PREFIX)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_ECODE;
+        }
+        else {
+            return IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT;
+        }
     }
 
-    public static String dnsResolve(String domain) throws JSONException, UnknownHostException {
+    public static String dnsResolve(String domain) throws Exception{
         CalStateUtil.dnsQueryCount++;
         JSONObject dns = new JSONObject();
-        InetAddress[] ip = InetAddress.getAllByName(domain);
-        for (int i = 0; i < ip.length; i++) {
-            String key = "answer" + i;
-            dns.put(key, ip[i].getHostAddress());
+        try {
+            InetAddress[] ip = InetAddress.getAllByName(domain);
+            for (int i = 0; i < ip.length; i++) {
+                String key = "answer" + i;
+                dns.put(key, ip[i].getHostAddress());
+            }
+            return EncDecUtil.sMEncrypt(dns.toString());
+        } catch (Exception e) {
+            throw new Exception("DNS解析失败");
+
         }
-        return EncDecUtil.sMEncrypt(dns.toString());
     }
 
     public static String handleResolve(String id) throws JSONException {
@@ -78,15 +91,16 @@ public class IdTypeJudgeUtil {
         String data = buffer.toString();
         JSONObject handle = JSONObject.parseObject(data);
         JSONArray values=handle.getJSONArray("values");
-        int handlelen= values.size();
+        int valueSize= values.size();
         JSONObject result = new JSONObject();
-        for(int i=0;i<handlelen;i++)
+
+        result.put("handle", handle.getString("handle"));
+
+        for(int i = 0; i < valueSize; i++)
         {
-            JSONObject tmp = new JSONObject();
-            tmp.put("type",values.getJSONObject(i).get("type").toString());
-            tmp.put("value",values.getJSONObject(i).getJSONObject("data").get("value").toString());
-            tmp.put("timestamp",values.getJSONObject(i).get("timestamp").toString());
-            result.put(String.valueOf(i),tmp);
+            String type = values.getJSONObject(i).getString("type");
+            String value = values.getJSONObject(i).getJSONObject("data").get("value").toString();
+            result.put(type, value);
         }
         return EncDecUtil.sMEncrypt(result.toString());
     }
@@ -175,5 +189,23 @@ public class IdTypeJudgeUtil {
         jsonObject.put("zipcode",value[10]);
         jsonObject.put("fax",value[11]);
         return EncDecUtil.sMEncrypt(jsonObject.toJSONString());
+    }
+
+    private static boolean isHaveString(String[] strArray, String a) {
+        for (String s : strArray) {
+            if (s.equals(a)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isStartWithString(String a, String[] strArray) {
+        for (String s: strArray) {
+            if (a.startsWith(s)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -50,6 +50,8 @@ public interface NodeService {
      */
     QueryResult query(InfoFromClient infoFromClient) throws Exception;
 
+    QueryResult multipleTypeQuery(InfoFromClient infoFromClient, boolean isDnsQuery) throws Exception;
+
     /**
      * 通过控制节点获取全部企业节点信息
      * @return NodeState

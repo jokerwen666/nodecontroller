@@ -62,6 +62,7 @@ public class ControlProcessImpl implements ControlProcess{
         this.dhtErrorHandle = dhtErrorHandle;
     }
 
+    @Override
     public void enterpriseHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl, int type) throws Exception {
 
         String client = infoFromClient.getClient(); //请求发送的企业名称
@@ -131,8 +132,9 @@ public class ControlProcessImpl implements ControlProcess{
 
     }
 
+    @Override
     public QueryResult userHandle(String identity, String client, String dhtUrl, String bcUrl, String bcQueryOwner) throws Exception {
-
+        CalStateUtil.dhtQueryCount++;
         String prefix = InfoFromClient.getPrefix(identity);
         String domainPrefix_ = InfoFromClient.getDomainPrefix(identity);
         boolean crossDomain_flag = false;
