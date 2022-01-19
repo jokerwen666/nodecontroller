@@ -11,11 +11,6 @@ import com.hust.nodecontroller.infostruct.*;
  * @Date  2022-01-18 19:28
  **/
 public interface ControlProcess {
-    int TYPE_REGISTER = 8;
-    int TYPE_DELETE = 4;
-    int TYPE_UPDATE = 2;
-    int TYPE_QUERY = 1;
-
     /**
     * 处理企业操作（增、删、改）
     * @param  client 请求用户

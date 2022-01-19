@@ -14,6 +14,11 @@ import java.util.concurrent.Future;
  * @date 2020.09.20 17:01
  */
 public interface NodeService {
+    int TYPE_REGISTER = 8;
+    int TYPE_DELETE = 4;
+    int TYPE_UPDATE = 2;
+    int TYPE_QUERY = 1;
+
     /**
      * 通过控制节点进行标识注册
      * @param infoFromClient

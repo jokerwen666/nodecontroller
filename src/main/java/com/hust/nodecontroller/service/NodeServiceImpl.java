@@ -110,7 +110,7 @@ public class NodeServiceImpl implements NodeService{
         String identity = infoFromClient.getIdentification();
         String prefix = InfoFromClient.getPrefix(identity);
         JSONObject data = infoFromClient.getData();
-        controlProcess.enterpriseHandle(client,identity,prefix,data,dhtRegisterUrl,bcRegisterUrl,8);
+        controlProcess.enterpriseHandle(client,identity,prefix,data,dhtRegisterUrl,bcRegisterUrl,TYPE_REGISTER);
     }
 
     @Override
