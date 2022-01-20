@@ -41,6 +41,11 @@ public class ServiceAspect {
         if ("QueryResult com.hust.nodecontroller.service.NodeServiceImpl.multipleTypeQuery(InfoFromClient,boolean)".equals(methodSignature)) {
             CalStateUtil.queryTimeout += (endTime-beginTime)/1000000;
         }
+
+        else if ("QueryResult com.hust.nodecontroller.service.NodeServiceImpl.query(InfoFromClient)".equals(methodSignature)) {
+            CalStateUtil.queryTimeout += (endTime-beginTime)/1000000;
+        }
+
         return result;
     }
 
