@@ -1,7 +1,9 @@
 package com.hust.nodecontroller.infostruct;
 
 
-public class ResourceInfo extends NormalMsg{
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
+
+public class ResourceInfo extends NormalMsg {
     private int idCount;
     private int queryCount;
     private float queryTimeout;

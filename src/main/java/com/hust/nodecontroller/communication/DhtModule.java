@@ -3,7 +3,7 @@ package com.hust.nodecontroller.communication;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.BulkInfo;
 import com.hust.nodecontroller.infostruct.IMSystemInfo;
-import com.hust.nodecontroller.infostruct.NormalMsg;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,13 +65,13 @@ public class DhtModule implements SendInfoToModule{
     }
 
     @Async("queryHandleExecutor")
-    public CompletableFuture<IMSystemInfo> query(String identity, String prefix, String toUrl, Boolean crossDomain_flag) {
+    public CompletableFuture<IMSystemInfo> query(String identity, String prefix, String toUrl, Boolean isCrossDomain) {
         long beginTime = System.nanoTime();
         JSONObject jsonToImSystem = new JSONObject();
         jsonToImSystem.put("orgname", prefix);
         jsonToImSystem.put("Identity", identity);
         jsonToImSystem.put("type", 1);
-        jsonToImSystem.put("crossDomain_flag", crossDomain_flag);
+        jsonToImSystem.put("crossDomain_flag", isCrossDomain);
         IMSystemInfo imSystemInfo = new IMSystemInfo();
         try {
             imSystemInfo = PostRequestUtil.getIMQueryResponse(toUrl,jsonToImSystem);

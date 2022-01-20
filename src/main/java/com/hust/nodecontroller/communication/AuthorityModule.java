@@ -1,9 +1,8 @@
 package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.enums.AuthorityResultEnum;
 import com.hust.nodecontroller.infostruct.AMSystemInfo;
-import com.hust.nodecontroller.infostruct.NormalMsg;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

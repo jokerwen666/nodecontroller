@@ -4,20 +4,14 @@ import com.hust.nodecontroller.enums.ErrorMessageEnum;
 
 /**
  * @program nodecontroller
- * @Description 记录控制子系统中的异常
+ * @Description 控制子系统异常类
  * @Author jokerwen666
- * @date 2022-01-19 00:29
+ * @date 2022-01-20 22:18
  **/
 
-public class ControlSubSystemException extends Exception{
-    private final ErrorMessageEnum errorMessageEnum;
-
-    public ControlSubSystemException(ErrorMessageEnum errorMessageEnum) {
-        this.errorMessageEnum = errorMessageEnum;
+public class ControlSubSystemException extends Exception {
+    public ControlSubSystemException (String message) {
+        super(message);
     }
 
-    @Override
-    public String getMessage() {
-        return errorMessageEnum.getMsg();
-    }
 }

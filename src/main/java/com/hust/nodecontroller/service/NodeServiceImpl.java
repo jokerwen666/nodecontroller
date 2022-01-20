@@ -1,11 +1,14 @@
 package com.hust.nodecontroller.service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.hust.nodecontroller.controller.NodeController;
-import com.hust.nodecontroller.exception.AuthorityTestException;
-import com.hust.nodecontroller.exception.FormatException;
+import com.hust.nodecontroller.enums.EncryptTypeEnum;
+import com.hust.nodecontroller.enums.IdentityTypeEnum;
+import com.hust.nodecontroller.enums.RequestTypeEnum;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
 import com.hust.nodecontroller.infostruct.*;
+import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
+import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
+import com.hust.nodecontroller.infostruct.RequestStruct.*;
 import com.hust.nodecontroller.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,16 +18,11 @@ import org.springframework.beans.factory.annotation.Value;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author Zhang Bowen
@@ -35,7 +33,6 @@ import java.util.List;
 
 @Service
 public class NodeServiceImpl implements NodeService{
-
     // 服务器地址与接口信息
     private final String serverIp;
     private final String dhtPort;
@@ -105,12 +102,73 @@ public class NodeServiceImpl implements NodeService{
     }
 
     @Override
-    public void register(InfoFromClient infoFromClient) throws Exception {
-        String client = infoFromClient.getClient();
-        String identity = infoFromClient.getIdentification();
-        String prefix = InfoFromClient.getPrefix(identity);
-        JSONObject data = infoFromClient.getData();
-        controlProcess.enterpriseHandle(client,identity,prefix,data,dhtRegisterUrl,bcRegisterUrl,TYPE_REGISTER);
+    public void register(RegisterIdRequest registerIdRequest) throws ControlSubSystemException {
+        String client = registerIdRequest.getClient();
+        String identity = registerIdRequest.getIdentification();
+        JSONObject data = registerIdRequest.getData();
+        String prefix = registerIdRequest.getPrefix();
+        controlProcess.registerAndUpdateHandle(client,identity,prefix,data,dhtRegisterUrl,bcRegisterUrl,RequestTypeEnum.REQUEST_TYPE_REGISTER);
+    }
+
+    @Override
+    public void delete(DeleteIdRequest deleteIdRequest) throws ControlSubSystemException {
+        String client = deleteIdRequest.getClient();
+        String identity = deleteIdRequest.getIdentification();
+        String prefix = deleteIdRequest.getPrefix();
+        controlProcess.deleteHandle(client,identity,prefix,dhtDeleteUrl,bcDeleteUrl,RequestTypeEnum.REQUEST_TYPE_DELETE);
+    }
+
+    @Override
+    public void update(UpdateIdRequest updateIdRequest) throws ControlSubSystemException {
+        String client = updateIdRequest.getClient();
+        String identity = updateIdRequest.getIdentification();
+        JSONObject data = updateIdRequest.getData();
+        String prefix = updateIdRequest.getPrefix();
+        controlProcess.registerAndUpdateHandle(client,identity,prefix,data,dhtUpdateUrl,bcUpdateUrl,RequestTypeEnum.REQUEST_TYPE_UPDATE);
+    }
+
+    @Override
+    public QueryResult multipleTypeQuery(QueryIdRequest queryIdRequest, boolean isDnsQuery) throws ControlSubSystemException {
+        String identification = queryIdRequest.getIdentification();
+        String client = queryIdRequest.getClient();
+        String hashType = queryIdRequest.getType();
+
+        // 添加解密，解密出明文
+        if (hashType.equals(EncryptTypeEnum.ENCRYPT_TYPE_SM2.getTypeString())) {
+            identification = EncDecUtil.sMDecrypt(identification);
+            client = EncDecUtil.sMDecrypt(client);
+        }
+        else if (hashType.equals(EncryptTypeEnum.ENCRYPT_TYPE_RSA.getTypeString())) {
+            identification = EncDecUtil.rsaDecrypt(identification);
+            client = EncDecUtil.rsaDecrypt(client);
+        }
+
+        QueryResult queryResult = new QueryResult();
+
+        if (isDnsQuery) {
+            queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
+            return queryResult;
+        }
+
+        switch (IdTypeJudgeUtil.typeJudge(identification)) {
+            case IDENTITY_TYPE_OID:
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
+                break;
+            case IDENTITY_TYPE_HANDLE:
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.handleResolve(identification));
+                break;
+            case IDENTITY_TYPE_ECODE:
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
+                break;
+            case IDENTITY_TYPE_DHT:
+                String prefix = queryIdRequest.getPrefix();
+                String domainPrefix = queryIdRequest.getDomainPrefix();
+                queryResult = controlProcess.queryHandle(client, identification, prefix, domainPrefix, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
+                break;
+            default:
+                throw new ControlSubSystemException(IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT.getIdTypeMessage());
+        }
+        return queryResult;
     }
 
     @Override
@@ -118,86 +176,15 @@ public class NodeServiceImpl implements NodeService{
         return controlProcess.bulkRegister(bulkRegister,dhtRegisterUrl,bcRegisterUrl);
     }
 
-    @Override
-    public void delete(InfoFromClient infoFromClient) throws Exception {
-        String client = infoFromClient.getClient();
-        String identity = infoFromClient.getIdentification();
-        String prefix = InfoFromClient.getPrefix(identity);
-        JSONObject data = infoFromClient.getData();
-        controlProcess.enterpriseHandle(client,identity,prefix,data,dhtDeleteUrl,bcDeleteUrl,4);
-    }
 
     @Override
-    public void update(InfoFromClient infoFromClient) throws Exception {
-        String client = infoFromClient.getClient();
-        String identity = infoFromClient.getIdentification();
-        String prefix = InfoFromClient.getPrefix(identity);
-        JSONObject data = infoFromClient.getData();
-        controlProcess.enterpriseHandle(client,identity,prefix,data,dhtUpdateUrl,bcUpdateUrl,2);
+    public AllPrefixIdAnswer queryAllByPrefix(QueryAllPrefixIdRequest queryAllPrefixIdRequest) throws ControlSubSystemException {
+        String prefix = queryAllPrefixIdRequest.getOrgPrefix();
+        String client = queryAllPrefixIdRequest.getClient();
+        String matchString = queryAllPrefixIdRequest.getMatchString();
+        return controlProcess.queryAllIdByPrefix(prefix,client,matchString,bcPrefixQuery);
     }
 
-    @Override
-    public QueryResult query(InfoFromClient infoFromClient) throws Exception {
-        String identification = infoFromClient.getIdentification();
-        String client = infoFromClient.getClient();
-        String hashType = infoFromClient.getType();
-
-        // 添加解密，解密出明文
-        if (hashType.equals("sm2")) {
-            identification = EncDecUtil.sMDecrypt(identification);
-            client = EncDecUtil.sMDecrypt(client);
-        }
-        else if (hashType.equals("rsa")) {
-            identification = EncDecUtil.rsaDecrypt(identification);
-            client = EncDecUtil.rsaDecrypt(client);
-        }
-
-        QueryResult queryResult = new QueryResult();
-        switch (IdTypeJudgeUtil.TypeJudge(identification)) {
-            case 1 : //oid
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
-                break;
-            case 2 : //handle
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.handleResolve(identification));
-                break;
-            case 3 : //ecode
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
-                break;
-            case 4 : //创新型
-                queryResult = controlProcess.userHandle(identification, client, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
-                break;
-            case 5: // dns解析
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
-                break;
-            default:
-                throw new Exception("标识格式错误!请重新输入!");
-        }
-        return queryResult;
-    }
-
-    @Override
-    public BulkInfo bulkQuery(JSONArray jsonArray) {
-        return controlProcess.bulkQuery(jsonArray,dhtBulkQueryUrl);
-    }
-
-    @Override
-    public IdentityInfo queryAllByPrefix(InfoFromClient infoFromClient) throws Exception {
-        return controlProcess.identityHandle(infoFromClient,bcPrefixQuery);
-    }
-
-    @Override
-    public NodeState queryNodeState() throws Exception {
-        JSONObject callJson = new JSONObject();
-        callJson.put("type", 9);
-        return PostRequestUtil.getAllNodeState(dhtAllNode,callJson);
-    }
-
-    @Override
-    public SystemTotalState querySystemTotalState() throws Exception {
-        JSONObject callJson = new JSONObject();
-        callJson.put("type", 9);
-        return PostRequestUtil.getSystemTotalState(dhtAllNode,callJson);
-    }
 
     @Override
     public int queryNodeIdTotal() throws Exception {

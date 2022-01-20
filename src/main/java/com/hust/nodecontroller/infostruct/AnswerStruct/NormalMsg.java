@@ -1,4 +1,4 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.AnswerStruct;
 
 import org.springframework.stereotype.Component;
 

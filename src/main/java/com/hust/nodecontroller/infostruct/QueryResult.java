@@ -1,7 +1,6 @@
 package com.hust.nodecontroller.infostruct;
 
-import com.alibaba.fastjson.JSONObject;
-import org.springframework.context.annotation.Configuration;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class QueryResult extends NormalMsg{
+public class QueryResult extends NormalMsg {
     private String url;
     private String nodeID;
     private String goodsInfo;

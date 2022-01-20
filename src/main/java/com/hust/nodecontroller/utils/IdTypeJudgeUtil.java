@@ -1,56 +1,59 @@
 package com.hust.nodecontroller.utils;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.hust.nodecontroller.communication.BlockchainModule;
+import com.hust.nodecontroller.enums.IdentityTypeEnum;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.regex.Pattern;
 
 public class IdTypeJudgeUtil {
-
     private static final Logger logger = LoggerFactory.getLogger(IdTypeJudgeUtil.class);
+    private static final String[] OID_PREFIX = {"1.2.156", "2.13.156"};
+    private static final String[] HANDLE_PREFIX = {"10", "11", "20", "21", "22", "25", "27", "44", "77", "86"};
+    private static final String[] ECODE_PREFIX = {"10064", "10096", "20128", "300121"};
+    private static final String PATTERN_DHT = "086\\.[0-9]{3}\\.[0-9]{6}\\/[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]{8}\\.[0-9]{6}";
+    private static final Integer OID_PART_NUM = 4;
+    private static final Integer HANDLE_PART_NUM = 3;
+    private static final Integer ECODE_PART_NUM = 1;
 
 
-    public static int TypeJudge(String identification){
-        boolean isContainLetter = Pattern.compile("[a-zA-Z]").matcher(identification).find();
+    public static IdentityTypeEnum typeJudge(String identification) {
+        Integer length = identification.split("\\.").length;
+        String firstPart = identification.split("\\.")[0];
 
-        if(identification.split("\\.").length == 4 && !isContainLetter)
-            return 1;
-        else if(identification.split("\\.").length == 3 && !isContainLetter)
-            return 2;
-        else if(identification.startsWith("10064") || identification.startsWith("10096") || identification.startsWith("20128") || identification.startsWith("300121"))
-            return 3;
-        else if(identification.contains("/") && identification.split("\\/").length ==2){
-            String[] tmp = identification.split("\\/");
-            if (tmp[0].contains(".") && tmp[0].split("\\.").length == 3 && tmp[1].contains(".") && tmp[1].split("\\.").length == 5){
-                String[] prefix = tmp[0].split("\\.");
-                String[] subfix = tmp[1].split("\\.");
-                if(prefix[0].length() == 3 && prefix[1].length() == 3 && prefix[2].length() == 6 && subfix[0].length() == 2 && subfix[1].length() == 2 && subfix[2].length() == 2 && subfix[3].length() == 8 && subfix[4].length() == 6)
-                    return 4;
-            }
+        if (Pattern.matches(PATTERN_DHT, identification)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_DHT;
+        } else if (length.equals(OID_PART_NUM) && isStartWithString(identification, OID_PREFIX)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_OID;
+        } else if (length.equals(HANDLE_PART_NUM) && isHaveString(HANDLE_PREFIX, firstPart)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_HANDLE;
+        } else if (length.equals(ECODE_PART_NUM) && isStartWithString(identification, ECODE_PREFIX)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_ECODE;
+        } else {
+            return IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT;
         }
-        else return 5;
-        return 0;
     }
 
-    public static String dnsResolve(String domain) throws JSONException, UnknownHostException {
+    public static String dnsResolve(String domain) throws ControlSubSystemException {
         CalStateUtil.dnsQueryCount++;
         JSONObject dns = new JSONObject();
-        InetAddress[] ip = InetAddress.getAllByName(domain);
-        for (int i = 0; i < ip.length; i++) {
-            String key = "answer" + i;
-            dns.put(key, ip[i].getHostAddress());
+        try {
+            InetAddress[] ip = InetAddress.getAllByName(domain);
+            for (int i = 0; i < ip.length; i++) {
+                String key = "answer" + i;
+                dns.put(key, ip[i].getHostAddress());
+            }
+            return EncDecUtil.sMEncrypt(dns.toString());
+        } catch (Exception e) {
+            throw new ControlSubSystemException("DNS解析失败");
+
         }
-        return EncDecUtil.sMEncrypt(dns.toString());
     }
 
     public static String handleResolve(String id) throws JSONException {
@@ -59,57 +62,54 @@ public class IdTypeJudgeUtil {
         HttpURLConnection httpConn = null;
         BufferedReader in = null;
         StringBuffer buffer = new StringBuffer();
-        try{
-            url = new URL("http://hdl.handle.net/api/handles/"+id);
-            in = new BufferedReader(new InputStreamReader(url.openStream(),"utf-8") );
+        try {
+            url = new URL("http://hdl.handle.net/api/handles/" + id);
+            in = new BufferedReader(new InputStreamReader(url.openStream(), "utf-8"));
             String str = null;
-            while((str = in.readLine()) != null) {
-                buffer.append( str );
+            while ((str = in.readLine()) != null) {
+                buffer.append(str);
             }
         } catch (Exception ex) {
-        } finally{
-            try{
-                if(in!=null) {
+        } finally {
+            try {
+                if (in != null) {
                     in.close();
                 }
-            }catch(IOException ex) {
+            } catch (IOException ex) {
             }
         }
         String data = buffer.toString();
         JSONObject handle = JSONObject.parseObject(data);
-        JSONArray values=handle.getJSONArray("values");
-        int handlelen= values.size();
+        JSONArray values = handle.getJSONArray("values");
+        int valueSize = values.size();
         JSONObject result = new JSONObject();
-        for(int i=0;i<handlelen;i++)
-        {
-            JSONObject tmp = new JSONObject();
-            tmp.put("type",values.getJSONObject(i).get("type").toString());
-            tmp.put("value",values.getJSONObject(i).getJSONObject("data").get("value").toString());
-            tmp.put("timestamp",values.getJSONObject(i).get("timestamp").toString());
-            result.put(String.valueOf(i),tmp);
+
+        result.put("handle", handle.getString("handle"));
+
+        for (int i = 0; i < valueSize; i++) {
+            String type = values.getJSONObject(i).getString("type");
+            String value = values.getJSONObject(i).getJSONObject("data").get("value").toString();
+            result.put(type, value);
         }
         return EncDecUtil.sMEncrypt(result.toString());
     }
 
-    public static String ecodeResolve(String id){
+    public static String ecodeResolve(String id) {
         CalStateUtil.ecodeQueryCount++;
         Process proc;
-        String[] title={" 'Ecode编码：\\u3000'"," '产品名称：\\u3000'"," '型号名称：\\u3000'"," '企业名称：\\u3000'"," '回传时间：\\u3000'"};
-        String[] value=new String[title.length];
+        String[] title = {" 'Ecode编码：\\u3000'", " '产品名称：\\u3000'", " '型号名称：\\u3000'", " '企业名称：\\u3000'", " '回传时间：\\u3000'"};
+        String[] value = new String[title.length];
         try {
 
             proc = Runtime.getRuntime().exec("python /root/hust/Ecode.py " + id);
             BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line = null;
             line = in.readLine();
-            String[] ecode=line.split(",");
-            for(int i=0;i< 12;i++)
-            {
-                for(int j=0;j<title.length;j++)
-                {
-                    if(ecode[i+8].equals(title[j]))
-                    {
-                        value[j]=ecode[i+9];
+            String[] ecode = line.split(",");
+            for (int i = 0; i < 12; i++) {
+                for (int j = 0; j < title.length; j++) {
+                    if (ecode[i + 8].equals(title[j])) {
+                        value[j] = ecode[i + 9];
                         break;
                     }
                 }
@@ -120,16 +120,16 @@ public class IdTypeJudgeUtil {
             e.printStackTrace();
         }
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("encoding",value[0]);
-        jsonObject.put("name",value[1]);
-        jsonObject.put("model",value[2]);
-        jsonObject.put("company",value[3]);
-        jsonObject.put("registrationDate",value[4]);
+        jsonObject.put("encoding", value[0]);
+        jsonObject.put("name", value[1]);
+        jsonObject.put("model", value[2]);
+        jsonObject.put("company", value[3]);
+        jsonObject.put("registrationDate", value[4]);
         return EncDecUtil.sMEncrypt(jsonObject.toString());
     }
 
 
-    public static String oidResolve(String id){
+    public static String oidResolve(String id) {
         CalStateUtil.oidQueryCount++;
         String[] title = {"站点：", "数字OID：", "中文OID：", "英文OID：", "应用范围：", "申请机构中文名：", "申请机构英文名：", "申请机构中文地址：", "申请机构英文地址：", "申请机构网址：", "申请机构邮编：", "申请机构传真："};
         String[] value = new String[title.length];
@@ -162,18 +162,36 @@ public class IdTypeJudgeUtil {
             e.printStackTrace();
         }
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("site",value[0]);
-        jsonObject.put("numberOID",value[1]);
-        jsonObject.put("chineseOID",value[2]);
-        jsonObject.put("englishOID",value[3]);
-        jsonObject.put("application",value[4]);
-        jsonObject.put("chinesename",value[5]);
-        jsonObject.put("englishname",value[6]);
-        jsonObject.put("chineseaddress",value[7]);
-        jsonObject.put("englishaddress",value[8]);
-        jsonObject.put("website",value[9]);
-        jsonObject.put("zipcode",value[10]);
-        jsonObject.put("fax",value[11]);
+        jsonObject.put("site", value[0]);
+        jsonObject.put("numberOID", value[1]);
+        jsonObject.put("chineseOID", value[2]);
+        jsonObject.put("englishOID", value[3]);
+        jsonObject.put("application", value[4]);
+        jsonObject.put("chinesename", value[5]);
+        jsonObject.put("englishname", value[6]);
+        jsonObject.put("chineseaddress", value[7]);
+        jsonObject.put("englishaddress", value[8]);
+        jsonObject.put("website", value[9]);
+        jsonObject.put("zipcode", value[10]);
+        jsonObject.put("fax", value[11]);
         return EncDecUtil.sMEncrypt(jsonObject.toJSONString());
+    }
+
+    private static boolean isHaveString(String[] strArray, String a) {
+        for (String s : strArray) {
+            if (s.equals(a)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isStartWithString(String a, String[] strArray) {
+        for (String s : strArray) {
+            if (a.startsWith(s)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

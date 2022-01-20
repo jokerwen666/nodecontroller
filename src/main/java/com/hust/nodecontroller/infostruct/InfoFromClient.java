@@ -1,8 +1,6 @@
 package com.hust.nodecontroller.infostruct;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.exception.FormatException;
-import com.hust.nodecontroller.enums.FormatResultEnum;
 import org.springframework.stereotype.Component;
 
 /**
@@ -99,28 +97,6 @@ public class InfoFromClient {
 
      * @return : java.lang.String
      */
-    public static String getPrefix(String identification) throws FormatException {
-        String[] idList = identification.split("/");
-        if (idList.length != 2) {
-            throw new FormatException(FormatResultEnum.IDENTIFICATION_PREFIX_SPLIT_ERROR);
-        }
-
-        else {
-            String prefix = idList[0];
-            String suffix = idList[1];
-            return prefix;
-        }
-    }
-
-    public static String getDomainPrefix(String identification) throws FormatException {
-        String prefix = getPrefix(identification);
-        int pos = prefix.lastIndexOf(".");
-        if (pos == -1) {
-            throw new FormatException(FormatResultEnum.INDETIFICATION_DOMAIN_PREFIX_ERROR);
-        }
-
-        return prefix.substring(0,pos);
-    }
 
     public String getMatchString() {
         return matchString;

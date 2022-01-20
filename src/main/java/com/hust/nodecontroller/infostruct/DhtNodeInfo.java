@@ -1,8 +1,7 @@
 package com.hust.nodecontroller.infostruct;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author ：xxx
@@ -11,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 
 @Component
-public class DhtNodeInfo extends NormalMsg{
+public class DhtNodeInfo extends NormalMsg {
     String domainName;
     String nodeID;
     String latitude;

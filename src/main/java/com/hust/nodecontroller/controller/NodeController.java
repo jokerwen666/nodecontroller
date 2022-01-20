@@ -2,7 +2,12 @@ package com.hust.nodecontroller.controller;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.fastjson.JSONObject;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
 import com.hust.nodecontroller.infostruct.*;
+import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
+import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
+import com.hust.nodecontroller.infostruct.RequestStruct.*;
 import com.hust.nodecontroller.service.NodeService;
 import com.hust.nodecontroller.utils.CalStateUtil;
 import com.hust.nodecontroller.utils.GetSysInfoUtil;
@@ -42,27 +47,28 @@ public class NodeController {
         this.nodeService = nodeService;
     }
 
+
     /**
-    * @Description 标识注册接口
-    * @Param  infoFromClient
-    * @return com.hust.nodecontroller.infostruct.NormalMsg
+    * 控制子系统标识注册接口
+    * @param  registerIdRequest 标识注册请求信息
+    * @return com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg
     * @Author jokerwen666
-    * @Date   2022/1/18
+    * @Date   2022/1/20
     */
     @SentinelResource("DHT Register")
     @RequestMapping(value = "/register")
     @ResponseBody
-    public NormalMsg register(@RequestBody(required = false) InfoFromClient infoFromClient) {
+    public NormalMsg register(@RequestBody(required = false) RegisterIdRequest registerIdRequest) {
         NormalMsg backHtml = new NormalMsg();
         try {
             threadNum.addAndGet(1);
-            nodeService.register(infoFromClient);
+            nodeService.register(registerIdRequest);
             backHtml.setStatus(1);
             backHtml.setMessage("注册标识信息成功！");
             threadNum.decrementAndGet();
             return backHtml;
 
-        } catch (Exception e) {
+        } catch (ControlSubSystemException e) {
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
             threadNum.decrementAndGet();
@@ -71,25 +77,25 @@ public class NodeController {
     }
 
     /**
-    * @Description 标识删除接口
-    * @Param  infoFromClient
-    * @return com.hust.nodecontroller.infostruct.NormalMsg
+    * 控制子系统标识删除接口
+    * @param  deleteIdRequest 标识删除请求信息
+    * @return com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg
     * @Author jokerwen666
-    * @Date   2022/1/18
+    * @Date   2022/1/20
     */
     @RequestMapping(value = "/delete")
     @ResponseBody
-    public NormalMsg delete(@RequestBody(required = false) InfoFromClient infoFromClient) {
+    public NormalMsg delete(@RequestBody(required = false) DeleteIdRequest deleteIdRequest) {
         NormalMsg backHtml = new NormalMsg();
         try {
             threadNum.addAndGet(1);
-            nodeService.delete(infoFromClient);
+            nodeService.delete(deleteIdRequest);
             backHtml.setStatus(1);
             backHtml.setMessage("删除标识信息成功！");
             threadNum.decrementAndGet();
             return backHtml;
 
-        } catch (Exception e) {
+        } catch (ControlSubSystemException e) {
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
             threadNum.decrementAndGet();
@@ -98,25 +104,25 @@ public class NodeController {
     }
 
     /**
-    * @Description 标识更新接口
-    * @Param  infoFromClient
-    * @return com.hust.nodecontroller.infostruct.NormalMsg
+    * 控制子系统标识更新接口
+    * @param  updateIdRequest 标识更新请求信息
+    * @return com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg
     * @Author jokerwen666
-    * @Date   2022/1/18
+    * @Date   2022/1/20
     */
     @RequestMapping(value = "/update")
     @ResponseBody
-    public NormalMsg update(@RequestBody InfoFromClient infoFromClient) {
+    public NormalMsg update(@RequestBody UpdateIdRequest updateIdRequest) {
         NormalMsg backHtml = new NormalMsg();
         try {
             threadNum.addAndGet(1);
-            nodeService.update(infoFromClient);
+            nodeService.update(updateIdRequest);
             backHtml.setStatus(1);
             backHtml.setMessage("更新标识信息成功！");
             threadNum.decrementAndGet();
             return backHtml;
 
-        } catch (Exception e) {
+        } catch (ControlSubSystemException e) {
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
             threadNum.decrementAndGet();
@@ -125,19 +131,19 @@ public class NodeController {
     }
 
     /**
-    * @Description 标识解析接口
-    * @Param  infoFromClient
+    * 控制子系统标识解析接口
+    * @param  queryIdRequest 标识解析请求信息
     * @return com.hust.nodecontroller.infostruct.QueryResult
     * @Author jokerwen666
-    * @Date   2022/1/18
+    * @Date   2022/1/20
     */
     @RequestMapping(value = "/query")
     @ResponseBody
-    public QueryResult query(@RequestBody InfoFromClient infoFromClient) {
+    public QueryResult query(@RequestBody QueryIdRequest queryIdRequest) {
         QueryResult backHtml = new QueryResult();
         try {
             threadNum.addAndGet(1);
-            backHtml = nodeService.query(infoFromClient);
+            backHtml = nodeService.multipleTypeQuery(queryIdRequest,false);
             backHtml.setStatus(1);
             backHtml.setMessage("查询标识信息成功！");
             CalStateUtil.successCount++;
@@ -152,20 +158,44 @@ public class NodeController {
     }
 
     /**
-    * @Description 根据企业前缀返回该企业下所有的标识信息
-    * @Param  infoFromClient
-    * @return com.hust.nodecontroller.infostruct.IdentityInfo
+    * 控制子系统DNS解析请求接口
+    * @param  queryIdRequest 标识解析请求信息
+    * @return com.hust.nodecontroller.infostruct.QueryResult
     * @Author jokerwen666
-    * @Date   2022/1/18
+    * @Date   2022/1/20
     */
+    @RequestMapping(value = "/dnsQuery")
+    @ResponseBody
+    public QueryResult dnsQuery(@RequestBody QueryIdRequest queryIdRequest) {
+        QueryResult backHtml = new QueryResult();
+        try {
+            threadNum.addAndGet(1);
+            CalStateUtil.queryCount++;
+            IndustryQueryUtil.setQueryCount(IndustryQueryUtil.getQueryCount() + 1);
+            CalStateUtil.totalCount++;
+            backHtml = nodeService.multipleTypeQuery(queryIdRequest, true);
+            backHtml.setStatus(1);
+            backHtml.setMessage("DNS解析成功！");
+            CalStateUtil.successCount++;
+            threadNum.decrementAndGet();
+            return backHtml;
+        } catch (ControlSubSystemException e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            threadNum.decrementAndGet();
+            return backHtml;
+        }
+    }
+
+
     @RequestMapping(value = "/queryAllByPrefix")
     @ResponseBody
-    public IdentityInfo queryAllByPrefix(@RequestBody InfoFromClient infoFromClient) {
-        IdentityInfo backHtml = new IdentityInfo();
+    public AllPrefixIdAnswer queryAllByPrefix(@RequestBody QueryAllPrefixIdRequest queryAllPrefixIdRequest) {
+        AllPrefixIdAnswer backHtml = new AllPrefixIdAnswer();
         try{
-            backHtml = nodeService.queryAllByPrefix(infoFromClient);
+            backHtml = nodeService.queryAllByPrefix(queryAllPrefixIdRequest);
             return backHtml;
-        }catch (Exception e){
+        }catch (ControlSubSystemException e){
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
             return backHtml;

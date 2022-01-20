@@ -1,6 +1,7 @@
 package com.hust.nodecontroller.utils;
 
 import com.antherd.smcrypto.sm2.Sm2;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
 import com.hust.nodecontroller.fnlencrypt.RSAUtil;
 import com.hust.nodecontroller.fnlencrypt.SM2EncDecUtils;
 
@@ -16,13 +17,13 @@ public class EncDecUtil {
         return Sm2.doEncrypt(sourceData, pubkSM);
     }
 
-    public static String sMDecrypt(String encryptData) throws Exception {
+    public static String sMDecrypt(String encryptData) throws ControlSubSystemException {
         String decrypt = null;
 
         try {
             decrypt = Sm2.doDecrypt(encryptData, prikSM);
         } catch (Exception e) {
-            throw new Exception("加解密验证失败！");
+            throw new ControlSubSystemException("SM2加解密验证失败！");
         }
         return decrypt;
     }
@@ -31,13 +32,13 @@ public class EncDecUtil {
         return RSAUtil.encrypt(sourceData, pubkRSA);
     }
 
-    public static String rsaDecrypt(String encryptData) throws Exception {
+    public static String rsaDecrypt(String encryptData) throws ControlSubSystemException {
         String decrypt = null;
 
         try {
             decrypt = RSAUtil.decrypt(encryptData,prikRSA);
         } catch (Exception e) {
-            throw new Exception("加解密验证失败！");
+            throw new ControlSubSystemException("RSA加解密验证失败！");
         }
         return decrypt;
     }

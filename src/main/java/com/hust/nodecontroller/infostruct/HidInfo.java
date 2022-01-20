@@ -1,6 +1,8 @@
 package com.hust.nodecontroller.infostruct;
 
-public class HidInfo extends NormalMsg{
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
+
+public class HidInfo extends NormalMsg {
     private int oidCount;
     private int ecodeCount;
     private int handleCount;

@@ -1,6 +1,8 @@
 package com.hust.nodecontroller.infostruct;
 
-public class SystemTotalState extends NormalMsg{
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
+
+public class SystemTotalState extends NormalMsg {
     private int totalNodeCount;
     private int totalIndustryCount;
     private long systemQueryTimeout;

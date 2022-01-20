@@ -3,11 +3,12 @@ package com.hust.nodecontroller.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.hust.nodecontroller.infostruct.*;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.zookeeper.data.Id;
+import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
+import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import javax.swing.plaf.basic.BasicButtonUI;
 import java.util.*;
 
 /**
@@ -28,7 +29,7 @@ public class PostRequestUtil {
      * @date :  2020.10.12 17:12
      * @param url : 目的服务器url
      * @param json : 要发送的json数据
-     * @return : com.hust.nodecontroller.infostruct.NormalMsg
+     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg
      */
     public static NormalMsg getNormalResponse(String url, JSONObject json) throws Exception {
 
@@ -323,9 +324,9 @@ public class PostRequestUtil {
      * @date : 2020.10.30 18:18
      * @param url : 目的服务器url
      * @param prefix : 企业前缀
-     * @return : com.hust.nodecontroller.infostruct.IdentityInfo
+     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo
      */
-    public static IdentityInfo getAllByPrefix(String url, String prefix, String matchString) throws Exception{
+    public static AllPrefixIdAnswer getAllByPrefix(String url, String prefix, String matchString) throws Exception{
         //设置初值
         int pageNum = 1; //查询页面序号
         int pageQueryCount = 0; //当前页面查询返回标识总数
@@ -333,7 +334,7 @@ public class PostRequestUtil {
         String bookmark = ""; //页面标记（用于翻页使用）
 
         List<JSONObject> data = new ArrayList<>();
-        IdentityInfo response = new IdentityInfo();
+        AllPrefixIdAnswer response = new AllPrefixIdAnswer();
 
         //当检索到第一页或者当前页查询总数不为0是进入循环
         while(true){

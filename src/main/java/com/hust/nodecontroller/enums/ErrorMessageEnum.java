@@ -13,7 +13,17 @@ public enum ErrorMessageEnum {
     URLHASH_VERIFY_ERROR("标识对应的URL可能被篡改！"),
 
     /** 解析标识时如果企业节点上存储的产品信息与区块链上存储的产品信息不相等时抛出 */
-    GOODSHASH_VERIFY_ERROR("标识对应的产品信息可能被篡改！");
+    GOODSHASH_VERIFY_ERROR("标识对应的产品信息可能被篡改！"),
+
+    /** 标识格式错误，无法获得标识前缀信息*/
+    IDENTIFICATION_PREFIX_SPLIT_ERROR("标识格式错误！无法获取标识前缀信息！"),
+
+    /** 标识格式错误，无法获得标识行业域信息*/
+    IDENTIFICATION_DOMAIN_PREFIX_ERROR("标识格式错误！无法获取标识行业域信息！"),
+
+    /** 企业信息解析出错*/
+    BLOCKCHAIN_FORMAT_ERROR("从区块链中获得的企业信息格式错误！无法获取企业信息！"),
+    ;
 
     private String msg;
 

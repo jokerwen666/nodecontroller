@@ -1,7 +1,6 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.AnswerStruct;
 
 import com.alibaba.fastjson.JSONObject;
-import netscape.javascript.JSObject;
 
 import java.util.List;
 
@@ -11,7 +10,7 @@ import java.util.List;
  * @ClassName IdentityInfo
  * @date 2020.10.30 17:21
  */
-public class IdentityInfo extends NormalMsg{
+public class IdentityInfo extends NormalMsg {
     int totalCount;
     int pageCount;
     List<JSONObject> data;

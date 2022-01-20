@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class DhtErrorHandle {
 
-    //标识管理子系统url
     @Value("${dht.register.url}")
     private String dhtRegisterUrl;
     @Value("${dht.delete.url}")

@@ -1,8 +1,9 @@
 package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.IdentityInfo;
-import com.hust.nodecontroller.infostruct.NormalMsg;
+import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
+import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import com.hust.nodecontroller.infostruct.RVSystemInfo;
 import com.hust.nodecontroller.utils.HashUtil;
 import com.hust.nodecontroller.utils.PostRequestUtil;
@@ -83,19 +84,19 @@ public class BlockchainModule implements SendInfoToModule{
         }
     }
 
-    public IdentityInfo prefixQuery(String prefix, String bcUrl, String matchString) {
+    public AllPrefixIdAnswer prefixQuery(String prefix, String bcUrl, String matchString) {
         long beginTime = System.nanoTime();
-        IdentityInfo identityInfo = new IdentityInfo();
+        AllPrefixIdAnswer allPrefixIdAnswer = new AllPrefixIdAnswer();
 
         try {
-            identityInfo = PostRequestUtil.getAllByPrefix(bcUrl,prefix,matchString);
+            allPrefixIdAnswer = PostRequestUtil.getAllByPrefix(bcUrl,prefix,matchString);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
-            return identityInfo;
+            return allPrefixIdAnswer;
         }catch (Exception e){
-            identityInfo.setStatus(0);
-            identityInfo.setMessage(e.getMessage());
-            return identityInfo;
+            allPrefixIdAnswer.setStatus(0);
+            allPrefixIdAnswer.setMessage(e.getMessage());
+            return allPrefixIdAnswer;
         }
     }
 

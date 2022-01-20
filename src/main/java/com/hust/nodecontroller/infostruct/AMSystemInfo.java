@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.infostruct;
 
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class AMSystemInfo extends NormalMsg{
+public class AMSystemInfo extends NormalMsg {
     private String prefix;
     private String authority;
     private String owner;

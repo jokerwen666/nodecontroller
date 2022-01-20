@@ -1,6 +1,7 @@
 package com.hust.nodecontroller.infostruct;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * @ClassName NodeState
  * @date 2020.10.28 18:16
  */
-public class NodeState extends NormalMsg{
+public class NodeState extends NormalMsg {
     int nodeCount;
 
     int boundaryID;
