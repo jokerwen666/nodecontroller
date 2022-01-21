@@ -1,19 +1,15 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.AnswerStruct;
 
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import org.springframework.stereotype.Component;
 
 /**
- * @author Zhang Bowen
- * @Description
- * 该类用于存储从解析结果验证子系统中获得的查询结果
- *
- * @ClassName RVSystemInfo
- * @date 2020.10.12 17:40
- */
-
+ * @program nodecontroller
+ * @Description 结果验证子系统响应类
+ * @Author jokerwen666
+ * @date 2022-01-20 23:39
+ **/
 @Component
-public class RVSystemInfo extends NormalMsg {
+public class ResultVerifySystemAnswer extends NormalAnswer {
     private String urlHash;
     private String mappingDataHash;
     private String permission;

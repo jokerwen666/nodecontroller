@@ -1,8 +1,9 @@
 package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AMSystemInfo;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
+import com.hust.nodecontroller.enums.ErrorMessageEnum;
+import com.hust.nodecontroller.infostruct.AnswerStruct.AuthorityManagementSystemAnswer;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,62 +38,62 @@ public class AuthorityModule implements SendInfoToModule{
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorityModule.class);
 
-    public NormalMsg register(String erpName, String prefix, String key, String authority, String owner) throws Exception{
+    public NormalAnswer register(String erpName, String prefix, String key, String authority, String owner) throws Exception{
         return registerAndUpdate(erpName, prefix, key, authority, owner, amSaveUrl);
     }
 
-    public NormalMsg update(String erpName, String prefix, String key, String authority, String owner) throws Exception{
+    public NormalAnswer update(String erpName, String prefix, String key, String authority, String owner) throws Exception{
         return registerAndUpdate(erpName, prefix, key, authority, owner, amUpdateUrl);
     }
 
-    public AMSystemInfo query(String client, String prefix, int type){
+    public AuthorityManagementSystemAnswer query(String client, String prefix, int type){
         long beginTime = System.nanoTime();
         JSONObject jsonToAmSystem = new JSONObject();
         jsonToAmSystem.put("peer_name","peer0");
         jsonToAmSystem.put("erp_name", client);
         jsonToAmSystem.put("identity_prefix", prefix);
-        AMSystemInfo amSystemInfo = new AMSystemInfo();
+        AuthorityManagementSystemAnswer authorityManagementSystemAnswer = new AuthorityManagementSystemAnswer();
         try {
-            amSystemInfo = PostRequestUtil.getAMQueryResponse(amQueryUrl,jsonToAmSystem);
+            authorityManagementSystemAnswer = PostRequestUtil.getAMQueryResponse(amQueryUrl,jsonToAmSystem);
 
-            if (amSystemInfo.getStatus() == 0){
-                return amSystemInfo;
+            if (authorityManagementSystemAnswer.getStatus() == 0){
+                return authorityManagementSystemAnswer;
             }
 
-            int authority = Integer.parseInt(amSystemInfo.getAuthority(), 2);
+            int authority = Integer.parseInt(authorityManagementSystemAnswer.getAuthority(), 2);
 
             if((authority & type) == 0){
-                amSystemInfo.setStatus(0);
-                amSystemInfo.setMessage(AuthorityResultEnum.OPERATION_AUTHORITY_VERIFY_ERROR.getMsg());
-                return amSystemInfo;
+                authorityManagementSystemAnswer.setStatus(0);
+                authorityManagementSystemAnswer.setMessage(ErrorMessageEnum.OPERATION_AUTHORITY_VERIFY_ERROR.getMsg());
+                return authorityManagementSystemAnswer;
             }
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
-            return amSystemInfo;
+            return authorityManagementSystemAnswer;
         }catch (Exception e){
-            amSystemInfo.setStatus(0);
-            amSystemInfo.setMessage(e.getMessage());
-            return amSystemInfo;
+            authorityManagementSystemAnswer.setStatus(0);
+            authorityManagementSystemAnswer.setMessage(e.getMessage());
+            return authorityManagementSystemAnswer;
         }
     }
 
-    public NormalMsg delete(String erpName, String prefix) throws Exception{
+    public NormalAnswer delete(String erpName, String prefix) throws Exception{
         JSONObject jsonToAmSystem = new JSONObject();
         jsonToAmSystem.put("peer_name", "peer0");
         jsonToAmSystem.put("erp_name", erpName);
         jsonToAmSystem.put("identity_prefix", prefix);
 
-        NormalMsg normalMsg = PostRequestUtil.getNormalResponse(amDeleteUrl,jsonToAmSystem);
+        NormalAnswer normalAnswer = PostRequestUtil.getNormalResponse(amDeleteUrl,jsonToAmSystem);
 
-        if (normalMsg.getStatus() == 0){
-            logger.info("Error({})",normalMsg.getMessage());
-            throw  new Exception(normalMsg.getMessage());
+        if (normalAnswer.getStatus() == 0){
+            logger.info("Error({})", normalAnswer.getMessage());
+            throw  new Exception(normalAnswer.getMessage());
         }
 
-        return normalMsg;
+        return normalAnswer;
     }
 
-    public NormalMsg registerAndUpdate(String erpName, String prefix, String key, String authority, String owner, String toUrl) throws Exception{
+    public NormalAnswer registerAndUpdate(String erpName, String prefix, String key, String authority, String owner, String toUrl) throws Exception{
         JSONObject jsonToAmSystem = new JSONObject();
         jsonToAmSystem.put("peer_name", "peer0");
         jsonToAmSystem.put("erp_name", erpName);
@@ -101,13 +102,13 @@ public class AuthorityModule implements SendInfoToModule{
         jsonToAmSystem.put("authority", authority);
         jsonToAmSystem.put("onwer", owner);
 
-        NormalMsg normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToAmSystem);
+        NormalAnswer normalAnswer = PostRequestUtil.getNormalResponse(toUrl,jsonToAmSystem);
 
-        if (normalMsg.getStatus() == 0){
-            logger.info("Error({})",normalMsg.getMessage());
-            throw  new Exception(normalMsg.getMessage());
+        if (normalAnswer.getStatus() == 0){
+            logger.info("Error({})", normalAnswer.getMessage());
+            throw  new Exception(normalAnswer.getMessage());
         }
 
-        return normalMsg;
+        return normalAnswer;
     }
 }

@@ -1,6 +1,5 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.AnswerStruct;
 
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,8 +11,14 @@ import org.springframework.stereotype.Component;
  * @date 2020.10.12 17:38
  */
 
+/**
+ * @program nodecontroller
+ * @Description 标识管理子系统响应类
+ * @Author jokerwen666
+ * @date 2022-01-20 23:39
+ **/
 @Component
-public class IMSystemInfo extends NormalMsg {
+public class IdentityManagementSystemAnswer extends NormalAnswer {
     String mappingData;
     String nodeID;
 

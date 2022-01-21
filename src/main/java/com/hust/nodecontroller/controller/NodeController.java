@@ -5,8 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.exception.ControlSubSystemException;
 import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
 import com.hust.nodecontroller.infostruct.RequestStruct.*;
 import com.hust.nodecontroller.service.NodeService;
 import com.hust.nodecontroller.utils.CalStateUtil;
@@ -58,8 +57,8 @@ public class NodeController {
     @SentinelResource("DHT Register")
     @RequestMapping(value = "/register")
     @ResponseBody
-    public NormalMsg register(@RequestBody(required = false) RegisterIdRequest registerIdRequest) {
-        NormalMsg backHtml = new NormalMsg();
+    public NormalAnswer register(@RequestBody(required = false) RegisterIdRequest registerIdRequest) {
+        NormalAnswer backHtml = new NormalAnswer();
         try {
             threadNum.addAndGet(1);
             nodeService.register(registerIdRequest);
@@ -85,8 +84,8 @@ public class NodeController {
     */
     @RequestMapping(value = "/delete")
     @ResponseBody
-    public NormalMsg delete(@RequestBody(required = false) DeleteIdRequest deleteIdRequest) {
-        NormalMsg backHtml = new NormalMsg();
+    public NormalAnswer delete(@RequestBody(required = false) DeleteIdRequest deleteIdRequest) {
+        NormalAnswer backHtml = new NormalAnswer();
         try {
             threadNum.addAndGet(1);
             nodeService.delete(deleteIdRequest);
@@ -112,8 +111,8 @@ public class NodeController {
     */
     @RequestMapping(value = "/update")
     @ResponseBody
-    public NormalMsg update(@RequestBody UpdateIdRequest updateIdRequest) {
-        NormalMsg backHtml = new NormalMsg();
+    public NormalAnswer update(@RequestBody UpdateIdRequest updateIdRequest) {
+        NormalAnswer backHtml = new NormalAnswer();
         try {
             threadNum.addAndGet(1);
             nodeService.update(updateIdRequest);
@@ -187,7 +186,13 @@ public class NodeController {
         }
     }
 
-
+    /**
+    * 控制子系统查找企业前缀下所有标识信息接口
+    * @param  queryAllPrefixIdRequest 查找企业前缀所有标识信息
+    * @return com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer
+    * @Author jokerwen666
+    * @Date   2022/1/21
+    */
     @RequestMapping(value = "/queryAllByPrefix")
     @ResponseBody
     public AllPrefixIdAnswer queryAllByPrefix(@RequestBody QueryAllPrefixIdRequest queryAllPrefixIdRequest) {
@@ -358,8 +363,8 @@ public class NodeController {
 
     @RequestMapping(value = "bulkRegister")
     @ResponseBody
-    public NormalMsg bulkRegister(@RequestBody BulkRegister bulkRegister) {
-        NormalMsg backHtml = new NormalMsg();
+    public NormalAnswer bulkRegister(@RequestBody BulkRegister bulkRegister) {
+        NormalAnswer backHtml = new NormalAnswer();
         int idCount = bulkRegister.getData().size();
         CalStateUtil.registerCount = CalStateUtil.registerCount + idCount;
         CalStateUtil.totalCount = CalStateUtil.totalCount + idCount;

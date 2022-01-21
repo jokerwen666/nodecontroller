@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class NormalMsg {
+public class NormalAnswer {
 
     private int status;
     private String message;
 
-    public NormalMsg(){};
+    public NormalAnswer(){};
 
-    public NormalMsg(int status, String message) {
+    public NormalAnswer(int status, String message) {
         this.status = status;
         this.message = message;
     }

@@ -3,9 +3,7 @@ package com.hust.nodecontroller.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.hust.nodecontroller.infostruct.*;
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
+import com.hust.nodecontroller.infostruct.AnswerStruct.*;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,19 +29,19 @@ public class PostRequestUtil {
      * @param json : 要发送的json数据
      * @return : com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg
      */
-    public static NormalMsg getNormalResponse(String url, JSONObject json) throws Exception {
+    public static NormalAnswer getNormalResponse(String url, JSONObject json) throws Exception {
 
         JSONObject resJson = SendPostPacket(url, json);
-        NormalMsg response = new NormalMsg();
+        NormalAnswer response = new NormalAnswer();
         response.setMessage(resJson.getString("message"));
         response.setStatus(resJson.getIntValue("status"));
         return response;
     }
 
-    public static NormalMsg getNormalResponse_(String url, JSONObject json) throws Exception {
+    public static NormalAnswer getNormalResponse_(String url, JSONObject json) throws Exception {
 
         JSONObject resJson = SendPostPacket(url, json);
-        NormalMsg response = new NormalMsg();
+        NormalAnswer response = new NormalAnswer();
         response.setStatus(resJson.getIntValue("status"));
         if (resJson.getIntValue("status") == 0)
             response.setMessage(resJson.getString("wrongInformation"));
@@ -59,11 +57,11 @@ public class PostRequestUtil {
      * @date : 2020.10.12 17:13
      * @param url : 目的服务器url
      * @param json : 要发送的url
-     * @return : com.hust.nodecontroller.infostruct.AMSystemInfo
+     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.AMSystemInfo
      */
-    public static AMSystemInfo getAMQueryResponse(String url, JSONObject json) throws Exception {
+    public static AuthorityManagementSystemAnswer getAMQueryResponse(String url, JSONObject json) throws Exception {
         JSONObject resJson = SendPostPacket(url, json);
-        AMSystemInfo response = new AMSystemInfo();
+        AuthorityManagementSystemAnswer response = new AuthorityManagementSystemAnswer();
 
         if (resJson.getIntValue("status") == 0) {
             response.setMessage(resJson.getString("message"));
@@ -90,11 +88,11 @@ public class PostRequestUtil {
      * @date : 2020.10.12 19:47
      * @param url : 目的服务器url
      * @param json : 要发送的json数据
-     * @return : com.hust.nodecontroller.infostruct.IMSystemInfo
+     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.IMSystemInfo
      */
-    public static IMSystemInfo getIMQueryResponse(String url, JSONObject json) throws Exception {
+    public static IdentityManagementSystemAnswer getIMQueryResponse(String url, JSONObject json) throws Exception {
         JSONObject resJson = SendPostPacket(url, json);
-        IMSystemInfo response = new IMSystemInfo();
+        IdentityManagementSystemAnswer response = new IdentityManagementSystemAnswer();
 
         if (resJson.getIntValue("status") == 0) {
             response.setMessage(resJson.getString("wrongInformation"));
@@ -117,11 +115,11 @@ public class PostRequestUtil {
      * @date : 2020.10.12 19:50
      * @param url : 目的服务器url
      * @param json : 要发送的json数据
-     * @return : com.hust.nodecontroller.infostruct.RVSystemInfo
+     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.RVSystemInfo
      */
-    public static RVSystemInfo getRVQueryResponse(String url, JSONObject json) throws Exception {
+    public static ResultVerifySystemAnswer getRVQueryResponse(String url, JSONObject json) throws Exception {
         JSONObject resJson = SendPostPacket(url, json);
-        RVSystemInfo response = new RVSystemInfo();
+        ResultVerifySystemAnswer response = new ResultVerifySystemAnswer();
 
         if (resJson.getIntValue("status") == 0) {
             response.setMessage(resJson.getString("message"));
@@ -140,15 +138,15 @@ public class PostRequestUtil {
     }
 
 
-    public static NormalMsg getOwnerQueryResponse(String url, JSONObject json) throws Exception {
+    public static NormalAnswer getOwnerQueryResponse(String url, JSONObject json) throws Exception {
         JSONObject resJson = SendPostPacket(url, json);
 
-        NormalMsg normalMsg = new NormalMsg();
+        NormalAnswer normalAnswer = new NormalAnswer();
 
         if (resJson.getIntValue("status") == 0) {
-            normalMsg.setStatus(resJson.getIntValue("status"));
-            normalMsg.setMessage(resJson.getString("message"));
-            return normalMsg;
+            normalAnswer.setStatus(resJson.getIntValue("status"));
+            normalAnswer.setMessage(resJson.getString("message"));
+            return normalAnswer;
         }
 
         JSONArray jsonArray = resJson.getJSONArray("data");
@@ -156,10 +154,10 @@ public class PostRequestUtil {
         JSONObject jsonRecord = jsonObject.getJSONObject("Record");
         String owner = jsonRecord.getString("onwer");
 
-        normalMsg.setStatus(1);
-        normalMsg.setMessage(owner);
+        normalAnswer.setStatus(1);
+        normalAnswer.setMessage(owner);
 
-        return normalMsg;
+        return normalAnswer;
 
     }
 

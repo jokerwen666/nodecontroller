@@ -11,7 +11,7 @@ import java.util.List;
  * @date 2022-01-20 23:39
  **/
 
-public class AllPrefixIdAnswer extends NormalMsg {
+public class AllPrefixIdAnswer extends NormalAnswer {
     int totalCount;
     int pageCount;
     List<JSONObject> data;

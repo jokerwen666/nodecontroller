@@ -1,6 +1,5 @@
 package com.hust.nodecontroller.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.communication.AuthorityModule;
 import com.hust.nodecontroller.communication.BlockchainModule;
@@ -12,13 +11,9 @@ import com.hust.nodecontroller.errorhandle.BCErrorHandle;
 import com.hust.nodecontroller.errorhandle.DhtErrorHandle;
 import com.hust.nodecontroller.exception.ControlSubSystemException;
 import com.hust.nodecontroller.infostruct.*;
-import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
-import com.hust.nodecontroller.utils.CalStateUtil;
+import com.hust.nodecontroller.infostruct.AnswerStruct.*;
 import com.hust.nodecontroller.utils.EncDecUtil;
 import com.hust.nodecontroller.utils.HashUtil;
-import com.hust.nodecontroller.utils.IndustryQueryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,15 +67,15 @@ public class ControlProcessImpl implements ControlProcess{
         String queryPermissions = data.getString("queryPermissions");
 
         // 1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权(不需要异步)
-        AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,type.getRequestCode());
-        if (amSystemInfo.getStatus() == 0){
-            logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
-            throw new ControlSubSystemException(amSystemInfo.getMessage());
+        AuthorityManagementSystemAnswer authorityManagementSystemAnswer = authorityModule.query(client,prefix,type.getRequestCode());
+        if (authorityManagementSystemAnswer.getStatus() == 0){
+            logger.info("AuthorityVerifyError({})", authorityManagementSystemAnswer.getMessage());
+            throw new ControlSubSystemException(authorityManagementSystemAnswer.getMessage());
         }
 
         // 2.向解析结果验证子系统、标识管理系统发送对应的json数据（异步）
-        CompletableFuture<NormalMsg> dhtAnswer = null;
-        CompletableFuture<NormalMsg> bcAnswer = null;
+        CompletableFuture<NormalAnswer> dhtAnswer = null;
+        CompletableFuture<NormalAnswer> bcAnswer = null;
         switch (type) {
             case REQUEST_TYPE_REGISTER:
                 dhtAnswer = dhtModule.register(identity,prefix,url,dhtUrl,type.getRequestCode());
@@ -111,15 +106,15 @@ public class ControlProcessImpl implements ControlProcess{
     @Override
     public void deleteHandle(String client, String identity, String prefix, String dhtUrl, String bcUrl, RequestTypeEnum type) throws ControlSubSystemException {
         //1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权(不需要异步)
-        AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,type.getRequestCode());
-        if (amSystemInfo.getStatus() == 0){
-            logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
-            throw new ControlSubSystemException(amSystemInfo.getMessage());
+        AuthorityManagementSystemAnswer authorityManagementSystemAnswer = authorityModule.query(client,prefix,type.getRequestCode());
+        if (authorityManagementSystemAnswer.getStatus() == 0){
+            logger.info("AuthorityVerifyError({})", authorityManagementSystemAnswer.getMessage());
+            throw new ControlSubSystemException(authorityManagementSystemAnswer.getMessage());
         }
 
         // 2.向解析结果验证子系统、标识管理系统发送对应的json数据（异步）
-        CompletableFuture<NormalMsg> dhtAnswer = dhtModule.delete(identity,prefix,dhtUrl,type.getRequestCode());
-        CompletableFuture<NormalMsg> bcAnswer = blockchainModule.delete(identity,bcUrl);
+        CompletableFuture<NormalAnswer> dhtAnswer = dhtModule.delete(identity,prefix,dhtUrl,type.getRequestCode());
+        CompletableFuture<NormalAnswer> bcAnswer = blockchainModule.delete(identity,bcUrl);
         CompletableFuture.allOf(dhtAnswer, bcAnswer).join();
 
         // 3.检查注册/更新是否成功
@@ -137,9 +132,9 @@ public class ControlProcessImpl implements ControlProcess{
         // 1.进行跨域解析判断
         isCrossDomain = !domainPrefix.equals(ownDomainPrefix);
 
-        // 2.向标识管理子系统发送请求获得url向解析结果验证子系统发送请求获得两个摘要信息
-        CompletableFuture<IMSystemInfo> dhtAnswer = dhtModule.query(identity,prefix,dhtUrl,isCrossDomain);
-        CompletableFuture<RVSystemInfo> bcAnswer = blockchainModule.query(identity,bcUrl);
+        // 2.向标识管理子系统发送请求获得url向解析结果验证子系统发送请求获得两个摘要信息（异步）
+        CompletableFuture<IdentityManagementSystemAnswer> dhtAnswer = dhtModule.query(identity,prefix,dhtUrl,isCrossDomain);
+        CompletableFuture<ResultVerifySystemAnswer> bcAnswer = blockchainModule.query(identity,bcUrl);
         CompletableFuture.allOf(dhtAnswer, bcAnswer).join();
         try {
             checkRequestStatus(dhtAnswer, bcAnswer);
@@ -147,7 +142,6 @@ public class ControlProcessImpl implements ControlProcess{
             throw new ControlSubSystemException("解析标识失败 " + e.getMessage());
         }
 
-        // 3.提取摘要信息和权限信息
         try {
             String queryPermission = bcAnswer.get().getPermission();
             String goodsHashInBc = bcAnswer.get().getMappingDataHash();
@@ -155,6 +149,7 @@ public class ControlProcessImpl implements ControlProcess{
             String urlInDht = dhtAnswer.get().getMappingData();
             String nodeId = dhtAnswer.get().getNodeID();
 
+            // 3.进行权限校验和防篡改校验
             checkQueryPermission(client,prefix,bcQueryOwner,queryPermission);
             checkUrlHash(urlInDht,urlHashInBc);
             checkGoodsHash(urlInDht,goodsHashInBc);
@@ -175,10 +170,10 @@ public class ControlProcessImpl implements ControlProcess{
 
     @Override
     public AllPrefixIdAnswer queryAllIdByPrefix(String prefix, String client, String matchString, String bcUrl) throws ControlSubSystemException {
-        AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,1);
-        if (amSystemInfo.getStatus() == 0){
-            logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
-            throw new ControlSubSystemException(amSystemInfo.getMessage());
+        AuthorityManagementSystemAnswer authorityManagementSystemAnswer = authorityModule.query(client,prefix,1);
+        if (authorityManagementSystemAnswer.getStatus() == 0){
+            logger.info("AuthorityVerifyError({})", authorityManagementSystemAnswer.getMessage());
+            throw new ControlSubSystemException(authorityManagementSystemAnswer.getMessage());
         }
 
         AllPrefixIdAnswer allPrefixIdAnswer = blockchainModule.prefixQuery(prefix,bcUrl,matchString);
@@ -221,7 +216,7 @@ public class ControlProcessImpl implements ControlProcess{
         return idCount;
     }
 
-    private void checkRequestStatus(CompletableFuture<? extends NormalMsg> dhtAnswer, CompletableFuture<? extends NormalMsg> bcAnswer) throws InterruptedException, ExecutionException, ControlSubSystemException {
+    private void checkRequestStatus(CompletableFuture<? extends NormalAnswer> dhtAnswer, CompletableFuture<? extends NormalAnswer> bcAnswer) throws InterruptedException, ExecutionException, ControlSubSystemException {
         int bcStatus = bcAnswer != null ? bcAnswer.get().getStatus() : 0;
         int dhtStatus = dhtAnswer != null ? dhtAnswer.get().getStatus() : 0;
         String bcMessage = bcAnswer != null ? bcAnswer.get().getMessage() : null;
@@ -251,12 +246,12 @@ public class ControlProcessImpl implements ControlProcess{
     private void checkQueryPermission(String client, String prefix, String bcQueryOwner, String queryPermission) throws ControlSubSystemException {
         String owner = "";
         final String onlyOwner = "0";
-        NormalMsg normalMsg = blockchainModule.queryOwnerByPrefix(prefix, bcQueryOwner);
-        if (normalMsg.getStatus() == 0) {
-            throw new ControlSubSystemException(normalMsg.getMessage());
+        NormalAnswer normalAnswer = blockchainModule.queryOwnerByPrefix(prefix, bcQueryOwner);
+        if (normalAnswer.getStatus() == 0) {
+            throw new ControlSubSystemException(normalAnswer.getMessage());
         }
         else {
-            owner = normalMsg.getMessage();
+            owner = normalAnswer.getMessage();
         }
         if (queryPermission.equals(onlyOwner) && !client.equals(owner)) {
             logger.info("用户没有查看该标识的权限！！！");

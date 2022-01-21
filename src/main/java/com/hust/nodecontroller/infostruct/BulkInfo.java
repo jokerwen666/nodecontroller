@@ -1,7 +1,7 @@
 package com.hust.nodecontroller.infostruct;
 
 import com.alibaba.fastjson.JSONArray;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
 
 /**
  * @author Zhang Bowen
@@ -9,7 +9,7 @@ import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
  * @ClassName BulkInfo
  * @date 2020.12.01 16:39
  */
-public class BulkInfo extends NormalMsg {
+public class BulkInfo extends NormalAnswer {
     private String beginTime;
     private String endTime;
     private String costTime;

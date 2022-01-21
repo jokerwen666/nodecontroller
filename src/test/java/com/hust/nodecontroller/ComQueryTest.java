@@ -1,9 +1,6 @@
 package com.hust.nodecontroller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AMSystemInfo;
 import com.hust.nodecontroller.infostruct.ComQueryInfo;
-import com.hust.nodecontroller.infostruct.RVSystemInfo;
 import com.hust.nodecontroller.utils.HashUtil;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.junit.jupiter.api.Test;

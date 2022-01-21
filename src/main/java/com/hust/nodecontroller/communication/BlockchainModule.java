@@ -2,9 +2,8 @@ package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg;
-import com.hust.nodecontroller.infostruct.RVSystemInfo;
+import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
+import com.hust.nodecontroller.infostruct.AnswerStruct.ResultVerifySystemAnswer;
 import com.hust.nodecontroller.utils.HashUtil;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
@@ -25,62 +24,62 @@ public class BlockchainModule implements SendInfoToModule{
     private static final Logger logger = LoggerFactory.getLogger(BlockchainModule.class);
 
     @Async("enterpriseHandleExecutor")
-    public CompletableFuture<NormalMsg> register(String id, String hash, String url, String toUrl, String queryPermissions) {
+    public CompletableFuture<NormalAnswer> register(String id, String hash, String url, String toUrl, String queryPermissions) {
         long beginTime = System.nanoTime();
-        NormalMsg normalMsg;
-        normalMsg = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
+        NormalAnswer normalAnswer;
+        normalAnswer = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
         long endTime = System.nanoTime();
         logger.info("Register Time({}ms)", (endTime-beginTime)/1000000);
-        return CompletableFuture.completedFuture(normalMsg);
+        return CompletableFuture.completedFuture(normalAnswer);
     }
 
     @Async("enterpriseHandleExecutor")
-    public CompletableFuture<NormalMsg> update(String id, String hash, String url, String toUrl, String queryPermissions) {
+    public CompletableFuture<NormalAnswer> update(String id, String hash, String url, String toUrl, String queryPermissions) {
         long beginTime = System.nanoTime();
-        NormalMsg normalMsg;
-        normalMsg = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
+        NormalAnswer normalAnswer;
+        normalAnswer = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
         long endTime = System.nanoTime();
         logger.info("Update Time({}ms)", (endTime-beginTime)/1000000);
-        return CompletableFuture.completedFuture(normalMsg);
+        return CompletableFuture.completedFuture(normalAnswer);
     }
 
     @Async("enterpriseHandleExecutor")
-    public CompletableFuture<NormalMsg> delete(String id, String toUrl) {
+    public CompletableFuture<NormalAnswer> delete(String id, String toUrl) {
         long beginTime = System.nanoTime();
         JSONObject jsonToRvSystem = new JSONObject();
         jsonToRvSystem.put("peer_name","peer0");
         jsonToRvSystem.put("Identifier",id);
-        NormalMsg normalMsg = new NormalMsg();
+        NormalAnswer normalAnswer = new NormalAnswer();
 
         try {
-            normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToRvSystem);
+            normalAnswer = PostRequestUtil.getNormalResponse(toUrl,jsonToRvSystem);
             long endTime = System.nanoTime();
             logger.info("Delete Time({}ms)", (endTime-beginTime)/1000000);
-            return CompletableFuture.completedFuture(normalMsg);
+            return CompletableFuture.completedFuture(normalAnswer);
         }catch (Exception e){
-            normalMsg.setStatus(0);
-            normalMsg.setMessage(e.getMessage());
-            return CompletableFuture.completedFuture(normalMsg);
+            normalAnswer.setStatus(0);
+            normalAnswer.setMessage(e.getMessage());
+            return CompletableFuture.completedFuture(normalAnswer);
         }
     }
 
     @Async("queryHandleExecutor")
-    public CompletableFuture<RVSystemInfo> query(String identity, String toUrl) {
+    public CompletableFuture<ResultVerifySystemAnswer> query(String identity, String toUrl) {
         long beginTime = System.nanoTime();
         JSONObject jsonToRvSystem = new JSONObject();
         jsonToRvSystem.put("peer_name", "peer0");
         jsonToRvSystem.put("Identifier", identity);
-        RVSystemInfo rvSystemInfo = new RVSystemInfo();
+        ResultVerifySystemAnswer resultVerifySystemAnswer = new ResultVerifySystemAnswer();
         try {
-            rvSystemInfo = PostRequestUtil.getRVQueryResponse(toUrl,jsonToRvSystem);
+            resultVerifySystemAnswer = PostRequestUtil.getRVQueryResponse(toUrl,jsonToRvSystem);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
-            return CompletableFuture.completedFuture(rvSystemInfo);
+            return CompletableFuture.completedFuture(resultVerifySystemAnswer);
         }catch (Exception e){
             logger.info(String.valueOf(10));
-            rvSystemInfo.setStatus(0);
-            rvSystemInfo.setMessage(e.getMessage());
-            return CompletableFuture.completedFuture(rvSystemInfo);
+            resultVerifySystemAnswer.setStatus(0);
+            resultVerifySystemAnswer.setMessage(e.getMessage());
+            return CompletableFuture.completedFuture(resultVerifySystemAnswer);
         }
     }
 
@@ -100,7 +99,7 @@ public class BlockchainModule implements SendInfoToModule{
         }
     }
 
-    public NormalMsg queryOwnerByPrefix(String prefix, String bcUrl) {
+    public NormalAnswer queryOwnerByPrefix(String prefix, String bcUrl) {
         JSONObject jsonToRvSystem = new JSONObject();
         jsonToRvSystem.put("peer_name","peer0");
         jsonToRvSystem.put("erp_name","");
@@ -109,21 +108,21 @@ public class BlockchainModule implements SendInfoToModule{
         jsonToRvSystem.put("authority","");
         jsonToRvSystem.put("onwer","");
 
-        NormalMsg normalMsg = new NormalMsg();
+        NormalAnswer normalAnswer = new NormalAnswer();
 
         try {
-            normalMsg = PostRequestUtil.getOwnerQueryResponse(bcUrl,jsonToRvSystem);
-            return normalMsg;
+            normalAnswer = PostRequestUtil.getOwnerQueryResponse(bcUrl,jsonToRvSystem);
+            return normalAnswer;
 
         } catch (Exception e) {
-            normalMsg.setStatus(0);
-            normalMsg.setMessage(e.getMessage());
-            return normalMsg;
+            normalAnswer.setStatus(0);
+            normalAnswer.setMessage(e.getMessage());
+            return normalAnswer;
         }
 
     }
 
-    private NormalMsg registerAndUpdate(String id, String hash, String url, String toUrl, String queryPermissions) {
+    private NormalAnswer registerAndUpdate(String id, String hash, String url, String toUrl, String queryPermissions) {
         JSONObject jsonToRvSystem = new JSONObject();
         jsonToRvSystem.put("peer_name","peer0");
         jsonToRvSystem.put("Identifier",id);
@@ -131,16 +130,16 @@ public class BlockchainModule implements SendInfoToModule{
         jsonToRvSystem.put("abstract", HashUtil.SM3Hash(url));
         jsonToRvSystem.put("permisssion", queryPermissions);
 
-        NormalMsg normalMsg = new NormalMsg();
+        NormalAnswer normalAnswer = new NormalAnswer();
 
         try {
-            normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToRvSystem);
-            return normalMsg;
+            normalAnswer = PostRequestUtil.getNormalResponse(toUrl,jsonToRvSystem);
+            return normalAnswer;
 
         }catch (Exception e){
-            normalMsg.setStatus(0);
-            normalMsg.setMessage(e.getMessage());
-            return normalMsg;
+            normalAnswer.setStatus(0);
+            normalAnswer.setMessage(e.getMessage());
+            return normalAnswer;
         }
     }
 }
