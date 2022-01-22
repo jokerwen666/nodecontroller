@@ -1,4 +1,4 @@
-package com.hust.nodecontroller.infostruct.RequestStruct;
+package com.hust.nodecontroller.infostruct.requestrequest;
 
 /**
  * @program nodecontroller

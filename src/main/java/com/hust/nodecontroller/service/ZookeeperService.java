@@ -1,7 +1,8 @@
 package com.hust.nodecontroller.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.DhtNodeInfo;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
+import com.hust.nodecontroller.infostruct.answerstruct.GetDhtNodeInfoAnswer;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
@@ -47,7 +48,7 @@ public class ZookeeperService {
     public void configureTasks() {
         AtomicInteger threadNum = (AtomicInteger)applicationContext.getBean("threadNum");
         try {
-            DhtNodeInfo node = queryDhtInfo();
+            GetDhtNodeInfoAnswer node = queryDhtInfo();
             if(node.getStatus()==0) {
                 if(setFlag)
                 {
@@ -75,6 +76,7 @@ public class ZookeeperService {
     {
         try {
             Watcher watcher= new Watcher(){
+                @Override
                 public void process(WatchedEvent event) {
                     System.out.println("receive event："+event);
                 }
@@ -121,6 +123,7 @@ public class ZookeeperService {
     @RequestMapping(value = "/zkget")
     public String zkget() {
         Watcher watcher = new Watcher(){
+            @Override
             public void process(WatchedEvent event) {
                 System.out.println("receive event："+event);
             }
@@ -139,7 +142,7 @@ public class ZookeeperService {
         return "get value from zookeeper [" + controllerAddress+":"+ value + "]";
     }
 
-    public DhtNodeInfo queryDhtInfo() {
+    public GetDhtNodeInfoAnswer queryDhtInfo() throws ControlSubSystemException {
         JSONObject callJson = new JSONObject();
         callJson.put("type", 9);
         return PostRequestUtil.getOwnNodeInfo(dhtOwnNode,callJson);

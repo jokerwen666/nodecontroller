@@ -10,8 +10,9 @@ import com.hust.nodecontroller.enums.RequestTypeEnum;
 import com.hust.nodecontroller.errorhandle.BCErrorHandle;
 import com.hust.nodecontroller.errorhandle.DhtErrorHandle;
 import com.hust.nodecontroller.exception.ControlSubSystemException;
-import com.hust.nodecontroller.infostruct.*;
-import com.hust.nodecontroller.infostruct.AnswerStruct.*;
+import com.hust.nodecontroller.infostruct.answerstruct.*;
+import com.hust.nodecontroller.infostruct.requestrequest.BulkRegisterRequest;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryGoodsInfoAnswer;
 import com.hust.nodecontroller.utils.EncDecUtil;
 import com.hust.nodecontroller.utils.HashUtil;
 import org.slf4j.Logger;
@@ -48,7 +49,6 @@ public class ControlProcessImpl implements ControlProcess{
         ownDomainPrefix = prefix;
     }
 
-
     @Autowired
     public ControlProcessImpl(DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule, BCErrorHandle bcErrorHandle, DhtErrorHandle dhtErrorHandle) {
         this.dhtModule = dhtModule;
@@ -58,7 +58,6 @@ public class ControlProcessImpl implements ControlProcess{
         this.bcErrorHandle = bcErrorHandle;
         this.dhtErrorHandle = dhtErrorHandle;
     }
-
 
     @Override
     public void registerAndUpdateHandle (String client, String identity, String prefix, JSONObject data, String dhtUrl, String bcUrl, RequestTypeEnum type) throws ControlSubSystemException {
@@ -126,11 +125,9 @@ public class ControlProcessImpl implements ControlProcess{
     }
 
     @Override
-    public QueryResult queryHandle(String client, String identity, String prefix, String domainPrefix, String dhtUrl, String bcUrl, String bcQueryOwner) throws ControlSubSystemException {
-        boolean isCrossDomain = false;
-
+    public QueryIdAnswer queryHandle(String client, String identity, String prefix, String domainPrefix, String dhtUrl, String bcUrl, String bcQueryOwner) throws ControlSubSystemException {
         // 1.进行跨域解析判断
-        isCrossDomain = !domainPrefix.equals(ownDomainPrefix);
+        boolean isCrossDomain = !domainPrefix.equals(ownDomainPrefix);
 
         // 2.向标识管理子系统发送请求获得url向解析结果验证子系统发送请求获得两个摘要信息（异步）
         CompletableFuture<IdentityManagementSystemAnswer> dhtAnswer = dhtModule.query(identity,prefix,dhtUrl,isCrossDomain);
@@ -154,14 +151,14 @@ public class ControlProcessImpl implements ControlProcess{
             checkUrlHash(urlInDht,urlHashInBc);
             checkGoodsHash(urlInDht,goodsHashInBc);
 
-            QueryResult queryResult = new QueryResult();
-            queryResult.setUrl(urlInDht);
-            queryResult.setNodeID(nodeId);
+            QueryIdAnswer queryIdAnswer = new QueryIdAnswer();
+            queryIdAnswer.setUrl(urlInDht);
+            queryIdAnswer.setNodeID(nodeId);
             JSONObject tmpJson = new JSONObject();
             tmpJson.put("goodsInfo", "test success");
             String data  = tmpJson.toString();
-            queryResult.setGoodsInfo(EncDecUtil.sMEncrypt(data));
-            return queryResult;
+            queryIdAnswer.setGoodsInfo(EncDecUtil.sMEncrypt(data));
+            return queryIdAnswer;
         } catch (InterruptedException | ExecutionException e) {
             throw new ControlSubSystemException("解析标识失败 " + e.getMessage());
         }
@@ -169,45 +166,44 @@ public class ControlProcessImpl implements ControlProcess{
     }
 
     @Override
-    public AllPrefixIdAnswer queryAllIdByPrefix(String prefix, String client, String matchString, String bcUrl) throws ControlSubSystemException {
+    public QueryAllByPrefixAnswer queryAllIdByPrefix(String prefix, String client, String matchString, String bcUrl) throws ControlSubSystemException {
         AuthorityManagementSystemAnswer authorityManagementSystemAnswer = authorityModule.query(client,prefix,1);
         if (authorityManagementSystemAnswer.getStatus() == 0){
             logger.info("AuthorityVerifyError({})", authorityManagementSystemAnswer.getMessage());
             throw new ControlSubSystemException(authorityManagementSystemAnswer.getMessage());
         }
 
-        AllPrefixIdAnswer allPrefixIdAnswer = blockchainModule.prefixQuery(prefix,bcUrl,matchString);
-        if (allPrefixIdAnswer.getStatus() == 0){
-            logger.info(allPrefixIdAnswer.getMessage());
-            throw new ControlSubSystemException(allPrefixIdAnswer.getMessage());
+        QueryAllByPrefixAnswer queryAllByPrefixAnswer = blockchainModule.prefixQuery(prefix,bcUrl,matchString);
+        if (queryAllByPrefixAnswer.getStatus() == 0){
+            logger.info(queryAllByPrefixAnswer.getMessage());
+            throw new ControlSubSystemException(queryAllByPrefixAnswer.getMessage());
         }
 
-        return allPrefixIdAnswer;
+        return queryAllByPrefixAnswer;
     }
 
-
     @Override
-    public int bulkRegister(BulkRegister bulkRegister, String dhtUrl, String bcUrl) throws Exception {
-        int idCount = bulkRegister.getData().size();
+    public int bulkRegister(BulkRegisterRequest bulkRegisterRequest, String dhtUrl, String bcUrl) throws ControlSubSystemException {
+        int idCount = bulkRegisterRequest.getData().size();
         int number = 0;
-        String client = bulkRegister.getClient();
+        String client = bulkRegisterRequest.getClient();
 
         do {
-            String identification = bulkRegister.getData().get(number).getString("identification");
-            String url = bulkRegister.getData().get(number).getString("url");
-            String goodsHash = bulkRegister.getData().get(number).getString("goodsHash");
-            String queryPermissions = bulkRegister.getData().get(number).getString("queryPermissions");
+            String identification = bulkRegisterRequest.getData().get(number).getString("identification");
+            String url = bulkRegisterRequest.getData().get(number).getString("url");
+            String goodsHash = bulkRegisterRequest.getData().get(number).getString("goodsHash");
+            String queryPermissions = bulkRegisterRequest.getData().get(number).getString("queryPermissions");
             JSONObject data = new JSONObject();
             data.put("url", url);
             data.put("goodsHash", goodsHash);
             data.put("queryPermissions", queryPermissions);
-            String prefix = InfoFromClient.getPrefix(identification);
+            String prefix = getPrefix(identification);
 
             try {
                 registerAndUpdateHandle(client,identification,prefix,data,dhtUrl,bcUrl,RequestTypeEnum.REQUEST_TYPE_REGISTER);
-            }catch (Exception e) {
+            }catch (ControlSubSystemException e) {
                 String errStr = String.format("已成功注册%d个标识，第%d个标识注册出错，出错原因: %s", number, number+1, e.getMessage());
-                throw new Exception(errStr);
+                throw new ControlSubSystemException(errStr);
             }
 
             number++;
@@ -216,16 +212,15 @@ public class ControlProcessImpl implements ControlProcess{
         return idCount;
     }
 
-    private void checkRequestStatus(CompletableFuture<? extends NormalAnswer> dhtAnswer, CompletableFuture<? extends NormalAnswer> bcAnswer) throws InterruptedException, ExecutionException, ControlSubSystemException {
-        int bcStatus = bcAnswer != null ? bcAnswer.get().getStatus() : 0;
-        int dhtStatus = dhtAnswer != null ? dhtAnswer.get().getStatus() : 0;
-        String bcMessage = bcAnswer != null ? bcAnswer.get().getMessage() : null;
-        String dhtMessage = dhtAnswer != null ? dhtAnswer.get().getMessage() : null;
+    private String getPrefix(String identification) throws ControlSubSystemException {
+        String[] idList = identification.split("/");
+        int idPartNum = 2;
+        if (idList.length != idPartNum) {
+            throw new ControlSubSystemException(ErrorMessageEnum.IDENTIFICATION_PREFIX_SPLIT_ERROR.getMsg());
+        }
 
-        if (bcStatus == 0 || dhtStatus == 0) {
-            String errorMessageBc = getErrorMessage(bcStatus,MODULE_TYPE_BC,bcMessage);
-            String errorMessageDht = getErrorMessage(dhtStatus,MODULE_TYPE_DHT,dhtMessage);
-            throw new ControlSubSystemException(errorMessageBc + errorMessageDht);
+        else {
+            return idList[0];
         }
     }
 
@@ -243,8 +238,21 @@ public class ControlProcessImpl implements ControlProcess{
         }
     }
 
+    private void checkRequestStatus(CompletableFuture<? extends NormalAnswer> dhtAnswer, CompletableFuture<? extends NormalAnswer> bcAnswer) throws InterruptedException, ExecutionException, ControlSubSystemException {
+        int bcStatus = bcAnswer != null ? bcAnswer.get().getStatus() : 0;
+        int dhtStatus = dhtAnswer != null ? dhtAnswer.get().getStatus() : 0;
+        String bcMessage = bcAnswer != null ? bcAnswer.get().getMessage() : null;
+        String dhtMessage = dhtAnswer != null ? dhtAnswer.get().getMessage() : null;
+
+        if (bcStatus == 0 || dhtStatus == 0) {
+            String errorMessageBc = getErrorMessage(bcStatus,MODULE_TYPE_BC,bcMessage);
+            String errorMessageDht = getErrorMessage(dhtStatus,MODULE_TYPE_DHT,dhtMessage);
+            throw new ControlSubSystemException(errorMessageBc + errorMessageDht);
+        }
+    }
+
     private void checkQueryPermission(String client, String prefix, String bcQueryOwner, String queryPermission) throws ControlSubSystemException {
-        String owner = "";
+        String owner;
         final String onlyOwner = "0";
         NormalAnswer normalAnswer = blockchainModule.queryOwnerByPrefix(prefix, bcQueryOwner);
         if (normalAnswer.getStatus() == 0) {
@@ -270,13 +278,13 @@ public class ControlProcessImpl implements ControlProcess{
     }
 
     private void checkGoodsHash(String urlInDht, String goodsHashInBc) throws ControlSubSystemException {
-        ComQueryInfo comQueryInfo = comInfoModule.query(urlInDht);
+        QueryGoodsInfoAnswer queryGoodsInfoAnswer = comInfoModule.query(urlInDht);
 
-        if(comQueryInfo.getStatus() == 0){
-            logger.info(comQueryInfo.getMessage());
-            throw new ControlSubSystemException(comQueryInfo.getMessage());
+        if(queryGoodsInfoAnswer.getStatus() == 0){
+            logger.info(queryGoodsInfoAnswer.getMessage());
+            throw new ControlSubSystemException(queryGoodsInfoAnswer.getMessage());
         }
-        String goodsHash = HashUtil.SM3Hash(comQueryInfo.getInformation().toString());
+        String goodsHash = HashUtil.SM3Hash(queryGoodsInfoAnswer.getInformation().toString());
 
         if (!goodsHashInBc.equals(goodsHash)) {
             logger.info(ErrorMessageEnum.GOODSHASH_VERIFY_ERROR.getMsg());

@@ -1,16 +1,11 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.answerstruct;
 
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.NormalAnswer;
 import org.springframework.stereotype.Component;
 
-/**
- * @author ：xxx
- * @description：TODO
- * @date ：2020/10/29 11:15
- */
 
 @Component
-public class DhtNodeInfo extends NormalAnswer {
+public class GetDhtNodeInfoAnswer extends NormalAnswer {
     String domainName;
     String nodeID;
     String latitude;

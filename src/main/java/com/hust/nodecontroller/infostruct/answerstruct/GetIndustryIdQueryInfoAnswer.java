@@ -1,11 +1,10 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.answerstruct;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
 
 import java.util.List;
 
-public class IndustryInfo extends NormalAnswer {
+public class GetIndustryIdQueryInfoAnswer extends NormalAnswer {
     private String industryName;
     private List<JSONObject> dataCount;
 

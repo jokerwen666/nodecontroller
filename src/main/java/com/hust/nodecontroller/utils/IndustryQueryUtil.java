@@ -26,7 +26,7 @@ public class IndustryQueryUtil {
      * @param
      * @return List<JSONObject>
      */
-    public static List<JSONObject> calIndustryQueryInfo() throws InterruptedException {
+    public static List<JSONObject> calIndustryQueryInfo() {
         long currentTime = System.currentTimeMillis() / 1000;
 
         // 如果当前请求时刻不是整点，则将tmparray中数据临时添加入dataCount后返回，如果是整点则直接返回dataCount
@@ -51,7 +51,6 @@ public class IndustryQueryUtil {
         return getDataCount();
     }
 
-    // 使用synchronized修饰静态方法，相当于对类上锁，保证只能有一个线程执行该静态方法
     public static synchronized List<JSONObject> getDataCount() {
         return dataCount;
     }

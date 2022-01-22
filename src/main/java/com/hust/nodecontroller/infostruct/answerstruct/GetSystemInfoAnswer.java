@@ -1,7 +1,6 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.answerstruct;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.List;
  */
 
 @Component
-public class SystemState extends NormalAnswer {
+public class GetSystemInfoAnswer extends NormalAnswer {
     List<JSONObject> data;
 
     public List<JSONObject> getData() {

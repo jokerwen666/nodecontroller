@@ -1,19 +1,18 @@
-package com.hust.nodecontroller.infostruct.RequestStruct;
+package com.hust.nodecontroller.infostruct.requestrequest;
 
-import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.enums.ErrorMessageEnum;
 import com.hust.nodecontroller.exception.ControlSubSystemException;
 
 /**
  * @program nodecontroller
- * @Description 更新标识请求类
+ * @Description 解析标识请求类
  * @Author jokerwen666
- * @date 2022-01-20 22:02
+ * @date 2022-01-20 22:06
  **/
 
-public class UpdateIdRequest extends ClientRequest{
+public class QueryIdRequest extends ClientRequest {
     private String identification;
-    private JSONObject data;
+    private String type;
 
     public String getIdentification() {
         return identification;
@@ -23,12 +22,12 @@ public class UpdateIdRequest extends ClientRequest{
         this.identification = identification;
     }
 
-    public JSONObject getData() {
-        return data;
+    public String getType() {
+        return type;
     }
 
-    public void setData(JSONObject data) {
-        this.data = data;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getPrefix() throws ControlSubSystemException {
@@ -43,5 +42,15 @@ public class UpdateIdRequest extends ClientRequest{
             String suffix = idList[1];
             return prefix;
         }
+    }
+
+    public  String getDomainPrefix() throws ControlSubSystemException {
+        String prefix = getPrefix();
+        int pos = prefix.lastIndexOf(".");
+        if (pos == -1) {
+            throw new ControlSubSystemException(ErrorMessageEnum.IDENTIFICATION_DOMAIN_PREFIX_ERROR.getMsg());
+        }
+
+        return prefix.substring(0,pos);
     }
 }

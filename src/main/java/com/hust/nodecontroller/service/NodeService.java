@@ -1,13 +1,10 @@
 package com.hust.nodecontroller.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.hust.nodecontroller.exception.ControlSubSystemException;
-import com.hust.nodecontroller.infostruct.*;
-import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
-import com.hust.nodecontroller.infostruct.RequestStruct.*;
-
-import java.util.concurrent.ExecutionException;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryIdentityRankAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryAllByPrefixAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryIdAnswer;
+import com.hust.nodecontroller.infostruct.requestrequest.*;
 
 /**
  * @author Zhang Bowen
@@ -55,14 +52,14 @@ public interface NodeService {
     * @Author jokerwen666
     * @Date   2022/1/20
     */
-    QueryResult multipleTypeQuery(QueryIdRequest queryIdRequest, boolean isDnsQuery) throws ControlSubSystemException;
+    QueryIdAnswer multipleTypeQuery(QueryIdRequest queryIdRequest, boolean isDnsQuery) throws ControlSubSystemException;
 
     /**
      * 通过控制节点查询某企业前缀下（也即某企业拥有的）全部标识信息
      * @return SystemTotalState
      * @throws Exception
      */
-    AllPrefixIdAnswer queryAllByPrefix(QueryAllPrefixIdRequest queryAllPrefixIdRequest) throws ControlSubSystemException;
+    QueryAllByPrefixAnswer queryAllByPrefix(QueryAllByPrefixRequest queryAllByPrefixRequest) throws ControlSubSystemException;
 
 
     /**
@@ -70,7 +67,7 @@ public interface NodeService {
      * @return int
      * @throws Exception
      */
-    int queryNodeIdTotal() throws Exception;
+    int queryNodeIdTotal() throws ControlSubSystemException;
 
     /**
      * 通过控制节点获取某企业前缀下（也即某企业拥有的）全部标识排行（解析次数排行）
@@ -78,13 +75,13 @@ public interface NodeService {
      * @return
      * @throws Exception
      */
-    IdentityRankInfo queryIdRankByPrefix(String prefix) throws Exception;
+    QueryIdentityRankAnswer queryIdRankByPrefix(String prefix) throws ControlSubSystemException;
 
     /**
      * 批量注册标识
-     * @param bulkRegister
+     * @param bulkRegisterRequest
      * @return
      * @throws Exception
      */
-    int bulkRegister(BulkRegister bulkRegister) throws Exception;
+    int bulkRegister(BulkRegisterRequest bulkRegisterRequest) throws ControlSubSystemException;
 }

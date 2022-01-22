@@ -1,71 +1,64 @@
 package com.hust.nodecontroller.utils;
 
 import com.alibaba.fastjson.JSONArray;
-import com.hust.nodecontroller.infostruct.*;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AnswerStruct.*;
+import com.hust.nodecontroller.infostruct.answerstruct.*;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryGoodsInfoAnswer;
 import org.springframework.http.*;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
 /**
- * @author Zhang Bowen
- * @Description
- *  该类属于辅助工具类
- *  用于封装post请求
- *
- * @ClassName PostRequestUtil
- * @date 2020.09.13 17:45
- */
+ * @program nodecontroller
+ * @Description HTTP请求封装类，当POST和GET请求调用出现异常时向上层调用函数继续抛出异常
+ * @Author jokerwen666
+ * @Date  2022-01-18 19:28
+ **/
 public class PostRequestUtil {
-
-
-    /**
-     * @Description : 向目的url发送json数据，返回normalmsg类型
-     * @author : Zhang Bowen
-     * @date :  2020.10.12 17:12
-     * @param url : 目的服务器url
-     * @param json : 要发送的json数据
-     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.NormalMsg
-     */
-    public static NormalAnswer getNormalResponse(String url, JSONObject json) throws Exception {
-
-        JSONObject resJson = SendPostPacket(url, json);
+    public static NormalAnswer getBlockChainAnswer(String url, JSONObject json) throws ControlSubSystemException {
+        JSONObject resJson = sendPostPacket(url, json);
         NormalAnswer response = new NormalAnswer();
         response.setMessage(resJson.getString("message"));
         response.setStatus(resJson.getIntValue("status"));
+
+        if (response.getMessage() == null) {
+            response.setMessage("区块链节点请求失败！");
+        }
+
         return response;
     }
 
-    public static NormalAnswer getNormalResponse_(String url, JSONObject json) throws Exception {
-
-        JSONObject resJson = SendPostPacket(url, json);
+    public static NormalAnswer getDhtAnswer(String url, JSONObject json) throws ControlSubSystemException {
+        JSONObject resJson = sendPostPacket(url, json);
         NormalAnswer response = new NormalAnswer();
         response.setStatus(resJson.getIntValue("status"));
-        if (resJson.getIntValue("status") == 0)
+        if (resJson.getIntValue("status") == 0) {
             response.setMessage(resJson.getString("wrongInformation"));
-        else
+        } else {
             response.setMessage(resJson.getString("message"));
+        }
+
+        if (response.getMessage() == null) {
+            response.setMessage("区块链节点请求失败！");
+        }
+
         return response;
     }
 
 
-    /**
-     * @Description : 向指定url发送json数据，返回amsysteminfo数据，用于返回鉴权子系统查询结果
-     * @author : Zhang Bowen
-     * @date : 2020.10.12 17:13
-     * @param url : 目的服务器url
-     * @param json : 要发送的url
-     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.AMSystemInfo
-     */
-    public static AuthorityManagementSystemAnswer getAMQueryResponse(String url, JSONObject json) throws Exception {
-        JSONObject resJson = SendPostPacket(url, json);
+    public static AuthorityManagementSystemAnswer getAuthorityManagementAnswer(String url, JSONObject json) throws ControlSubSystemException {
+        JSONObject resJson = sendPostPacket(url, json);
         AuthorityManagementSystemAnswer response = new AuthorityManagementSystemAnswer();
 
         if (resJson.getIntValue("status") == 0) {
             response.setMessage(resJson.getString("message"));
             response.setStatus(resJson.getIntValue("status"));
+            if (response.getMessage() == null) {
+                response.setMessage("区块链节点（权限管理子系统）请求失败！");
+            }
             return response;
         }
 
@@ -81,17 +74,8 @@ public class PostRequestUtil {
         return response;
     }
 
-
-    /**
-     * @Description : 向指定url发送json数据，返回imsysteminfo数据，用于返回标识管理子系统查询结果
-     * @author : Zhang Bowen
-     * @date : 2020.10.12 19:47
-     * @param url : 目的服务器url
-     * @param json : 要发送的json数据
-     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.IMSystemInfo
-     */
-    public static IdentityManagementSystemAnswer getIMQueryResponse(String url, JSONObject json) throws Exception {
-        JSONObject resJson = SendPostPacket(url, json);
+    public static IdentityManagementSystemAnswer getIdentityManagementAnswer(String url, JSONObject json) throws ControlSubSystemException {
+        JSONObject resJson = sendPostPacket(url, json);
         IdentityManagementSystemAnswer response = new IdentityManagementSystemAnswer();
 
         if (resJson.getIntValue("status") == 0) {
@@ -109,21 +93,16 @@ public class PostRequestUtil {
         return response;
     }
 
-    /**
-     * @Description : 向指定url发送json数据，返回rvsysteminfo数据，用于返回解析结果验证子系统查询结果
-     * @author : Zhang Bowen
-     * @date : 2020.10.12 19:50
-     * @param url : 目的服务器url
-     * @param json : 要发送的json数据
-     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.RVSystemInfo
-     */
-    public static ResultVerifySystemAnswer getRVQueryResponse(String url, JSONObject json) throws Exception {
-        JSONObject resJson = SendPostPacket(url, json);
+    public static ResultVerifySystemAnswer getResultVerifyAnswer(String url, JSONObject json) throws ControlSubSystemException {
+        JSONObject resJson = sendPostPacket(url, json);
         ResultVerifySystemAnswer response = new ResultVerifySystemAnswer();
 
         if (resJson.getIntValue("status") == 0) {
             response.setMessage(resJson.getString("message"));
             response.setStatus(resJson.getIntValue("status"));
+            if (response.getMessage() == null) {
+                response.setMessage("区块链节点（结果校验子系统）请求失败！");
+            }
             return response;
         }
 
@@ -137,44 +116,16 @@ public class PostRequestUtil {
         return response;
     }
 
-
-    public static NormalAnswer getOwnerQueryResponse(String url, JSONObject json) throws Exception {
-        JSONObject resJson = SendPostPacket(url, json);
-
-        NormalAnswer normalAnswer = new NormalAnswer();
-
-        if (resJson.getIntValue("status") == 0) {
-            normalAnswer.setStatus(resJson.getIntValue("status"));
-            normalAnswer.setMessage(resJson.getString("message"));
-            return normalAnswer;
-        }
-
-        JSONArray jsonArray = resJson.getJSONArray("data");
-        JSONObject jsonObject = jsonArray.getJSONObject(0);
-        JSONObject jsonRecord = jsonObject.getJSONObject("Record");
-        String owner = jsonRecord.getString("onwer");
-
-        normalAnswer.setStatus(1);
-        normalAnswer.setMessage(owner);
-
-        return normalAnswer;
-
-    }
-
-    /**
-     * @Description : 向指定url发送json数据，返回ComQueryInfo数据，用于根据url查询对应产品的产品信息
-     * @author : Zhang Bowen
-     * @date : 2020.10.31 21:46
-     * @param url : 目的服务器url
-     * @return : com.hust.nodecontroller.infostruct.ComQueryInfo
-     */
-    public static ComQueryInfo getComQueryInfo(String url) throws Exception{
-        JSONObject resJson = SendGetPacket(url);
-        ComQueryInfo response = new ComQueryInfo();
+    public static QueryGoodsInfoAnswer queryGoodsInfoAnswer(String url) throws ControlSubSystemException {
+        JSONObject resJson = sendGetPacket(url);
+        QueryGoodsInfoAnswer response = new QueryGoodsInfoAnswer();
 
         if(!resJson.getBoolean("IsSuccess")){
             response.setMessage(resJson.getString("Message"));
             response.setStatus(0);
+            if (response.getMessage() == null) {
+                response.setMessage("企业产品信息查询请求失败！");
+            }
             return response;
         }
 
@@ -188,116 +139,42 @@ public class PostRequestUtil {
         return response;
     }
 
-    /**
-     * @Description : 向指定url发送json数据，返回NodeState数据，用于查询所有的dht解析结点状态
-     * @author : Zhang Bowen
-     * @date : 2020.10.30 18:06
-     * @param url : 目的服务器url
-     * @param json : 要发送的json数据
-     * @return : com.hust.nodecontroller.infostruct.NodeState
-     */
-    public static NodeState getAllNodeState(String url, JSONObject json) throws Exception{
-        JSONObject resJson = SendPostPacket(url, json);
-        NodeState response = new NodeState();
+    public static NormalAnswer queryIdentityOwnerAnswer(String url, JSONObject json) throws ControlSubSystemException {
+        JSONObject resJson = sendPostPacket(url, json);
+        NormalAnswer response = new NormalAnswer();
 
         if (resJson.getIntValue("status") == 0) {
-            response.setMessage(resJson.getString("message"));
             response.setStatus(resJson.getIntValue("status"));
+            response.setMessage(resJson.getString("message"));
+            if (response.getMessage() == null) {
+                response.setMessage("查询产品标识所有者请求失败！");
+            }
             return response;
         }
 
-        JSONObject dataJson = resJson.getJSONObject("message");
-
-        String jsonStr = dataJson.getString("feedback");
-
-        JSONObject nodeListJson = JSONObject.parseObject(jsonStr);
-
-        int nodeCount = 0;
-        List<JSONObject> nodeList = new ArrayList<JSONObject>();
-
-        for (Map.Entry<String,Object> entry : nodeListJson.entrySet()) {
-            JSONObject dhtNode = new JSONObject();
-
-            String dhtNodeID = entry.getKey();
-            dhtNodeID = dhtNodeID.replace("node","");
-
-            JSONObject dhtNodeInfo = (JSONObject) entry.getValue();
-            String latitude = dhtNodeInfo.getString("latitude");
-            String longitude = dhtNodeInfo.getString("longtitude");
-            String city = dhtNodeInfo.getString("city");
-            int nodeNums = dhtNode.getIntValue("idNums");
-
-            dhtNode.put("nodeID",Integer.parseInt(dhtNodeID));
-            dhtNode.put("latitude",latitude);
-            dhtNode.put("longitude",longitude);
-            dhtNode.put("city",city);
-            dhtNode.put("nodeNums",nodeNums);
-
-            nodeList.add(dhtNode);
-            nodeCount++;
-
-        }
-
-        response.setNodeCount(nodeCount);
-        response.setDomainID(dataJson.getString("domainID"));
-        response.setBoundaryID(dataJson.getIntValue("bNodeID"));
-        response.setMessage("全部DHT节点信息查询成功！");
-
-        response.setNodeList(nodeList);
-        response.setStatus(1);
-        return response;
-    }
-
-    public static SystemTotalState getSystemTotalState(String url, JSONObject json) throws Exception {
-        JSONObject resJson = SendPostPacket(url, json);
-        SystemTotalState response = new SystemTotalState();
-
-        if (resJson.getIntValue("status") == 0) {
-            response.setMessage(resJson.getString("message"));
-            response.setStatus(resJson.getIntValue("status"));
-            return response;
-        }
-
-        JSONObject dataJson = resJson.getJSONObject("message");
-
-        String jsonStr = dataJson.getString("feedback");
-
-        JSONObject nodeListJson = JSONObject.parseObject(jsonStr);
-
-        List<JSONObject> nodeList = new ArrayList<JSONObject>();
-        int nodeCount = nodeListJson.size();
-
-        response.setTotalNodeCount(nodeCount);
-        response.setSystemQueryTimeout(CalStateUtil.queryTimeout / CalStateUtil.queryCount);
-        response.setMessage("系统统计信息查询成功！");
+        JSONArray jsonArray = resJson.getJSONArray("data");
+        JSONObject jsonObject = jsonArray.getJSONObject(0);
+        JSONObject jsonRecord = jsonObject.getJSONObject("Record");
+        String owner = jsonRecord.getString("onwer");
 
         response.setStatus(1);
+        response.setMessage(owner);
+
         return response;
+
     }
 
-    /**
-     * @Description : 向指定url发送json数据，返回DhtNodeInfo数据，用于查询本节点的DHT信息
-     * @author : Zhang Bowen
-     * @date : 2020.10.30 18:06
-     * @param url : 目的服务器url
-     * @param json : 要发送的json数据
-     * @return : com.hust.nodecontroller.infostruct.DhtNodeInfo
-     */
-    public static DhtNodeInfo getOwnNodeInfo(String url, JSONObject json){
+    public static GetDhtNodeInfoAnswer getOwnNodeInfo(String url, JSONObject json) throws ControlSubSystemException {
         JSONObject resJson;
-        DhtNodeInfo response = new DhtNodeInfo();
-        try {
-            resJson = SendPostPacket(url, json);
-        }catch (Exception e)
-        {
-            response.setStatus(0);
-            response.setMessage("Dht not ready!");
-            return response;
-        }
+        GetDhtNodeInfoAnswer response = new GetDhtNodeInfoAnswer();
+        resJson = sendPostPacket(url, json);
 
         if (resJson.getIntValue("status") == 0) {
             response.setMessage(resJson.getString("message"));
             response.setStatus(resJson.getIntValue("status"));
+            if (response.getMessage() == null) {
+                response.setMessage("查询自身DHT节点信息请求失败！");
+            }
             return response;
         }
 
@@ -316,45 +193,45 @@ public class PostRequestUtil {
         return response;
     }
 
-    /**
-     * @Description : 向指定url发送json数据，返回IdentityInfo数据，用于查询某企业前缀下所有的标识信息
-     * @author : Zhang Bowen
-     * @date : 2020.10.30 18:18
-     * @param url : 目的服务器url
-     * @param prefix : 企业前缀
-     * @return : com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo
-     */
-    public static AllPrefixIdAnswer getAllByPrefix(String url, String prefix, String matchString) throws Exception{
-        //设置初值
-        int pageNum = 1; //查询页面序号
-        int pageQueryCount = 0; //当前页面查询返回标识总数
-        int totalQueryCount = 0; //所有页面查询返回标识总数
-        String bookmark = ""; //页面标记（用于翻页使用）
+    public static QueryAllByPrefixAnswer getAllByPrefix(String url, String prefix, String matchString) throws ControlSubSystemException {
+        //查询页面序号
+        int pageNum = 1;
+        //当前页面查询返回标识总数
+        int pageQueryCount = 0;
+        //所有页面查询返回标识总数
+        int totalQueryCount = 0;
+        //页面标记（用于翻页使用）
+        String bookmark = "";
 
         List<JSONObject> data = new ArrayList<>();
-        AllPrefixIdAnswer response = new AllPrefixIdAnswer();
+        QueryAllByPrefixAnswer response = new QueryAllByPrefixAnswer();
 
         //当检索到第一页或者当前页查询总数不为0是进入循环
         while(true){
-            JSONObject jsonToBC = new JSONObject();
-            jsonToBC.put("prefix",prefix);
-            jsonToBC.put("pageNum",bookmark);
-            jsonToBC.put("pageSize",10);
-            jsonToBC.put("peer_name","peer0");
+            JSONObject jsonToBc = new JSONObject();
+            jsonToBc.put("prefix",prefix);
+            jsonToBc.put("pageNum",bookmark);
+            jsonToBc.put("pageSize",10);
+            jsonToBc.put("peer_name","peer0");
 
-            JSONObject resJson = SendPostPacket(url,jsonToBC);
+            JSONObject resJson = sendPostPacket(url,jsonToBc);
 
             //当查询信息报错时，直接返回查询错误
             if (resJson.getIntValue("status") == 0) {
                 response.setMessage(resJson.getString("message"));
                 response.setStatus(resJson.getIntValue("status"));
+                if (response.getMessage() == null) {
+                    response.setMessage("根据企业前缀查询标识请求失败！");
+                }
                 return response;
             }
 
             JSONArray jsonArray = resJson.getJSONArray("data");
             //data为空时，说明查找到的标识数为0，跳出循环
             pageQueryCount = jsonArray.size();
-            if (pageQueryCount == 0) break;
+            if (pageQueryCount == 0) {
+                break;
+            }
 
             JSONArray recordArray = resJson.getJSONArray("ResponseMetadata");
             //获取页面标记，用于翻页
@@ -365,20 +242,27 @@ public class PostRequestUtil {
 
             //在该页中遍历每个查询返回标识信息
             for (int i = 0; i < pageQueryCount; i++){
-
-                JSONObject identityData = new JSONObject(); //identityData为存储当前查询标识的json数据
-
-                JSONObject job = jsonArray.getJSONObject(i); //job为每一个具体的标识查询信息
-
-                String identity = job.getString("Key"); //从job中获取标识
-                if (!identity.contains(matchString)) continue;
-
-                JSONObject idData = job.getJSONObject("Record"); //从job中获取标识对应的记录
-                String urlHash = idData.getString("abstract"); //从记录中获取url哈希
-                String goodsHash = idData.getString("mappingData_hash"); //从记录中获取产品信息哈希
+                //identityData为存储当前查询标识的json数据
+                JSONObject identityData = new JSONObject();
+                //job为每一个具体的标识查询信息
+                JSONObject job = jsonArray.getJSONObject(i);
+                //从job中获取标识
+                String identity = job.getString("Key");
+                if (!identity.contains(matchString)) {
+                    continue;
+                }
+                //从job中获取标识对应的记录
+                JSONObject idData = job.getJSONObject("Record");
+                //从记录中获取url哈希
+                String urlHash = idData.getString("abstract");
+                //从记录中获取产品信息哈希
+                String goodsHash = idData.getString("mappingData_hash");
                 String permission = idData.getString("permisssion");
-                if (permission.equals("1")) permission = "all";
-                else permission = "only";
+                if (permission.equals("1")) {
+                    permission = "all";
+                } else {
+                    permission = "only";
+                }
 
                 identityData.put("identity", identity);
                 identityData.put("urlHash", urlHash);
@@ -394,10 +278,11 @@ public class PostRequestUtil {
             totalQueryCount = totalQueryCount + pageQueryCount;
 
             //如果当前页的查询总数小于10条，说明下一页必定没有内容，直接跳出循环
-            if (pageQueryCount < 10)
+            if (pageQueryCount < 10) {
                 break;
-            else
+            } else {
                 pageNum++;
+            }
         }
 
         response.setStatus(1);
@@ -410,15 +295,17 @@ public class PostRequestUtil {
     }
 
 
-    public static IdentityRankInfo queryIdRankByPrefix(String url, JSONObject json) throws Exception {
-        JSONObject resJSON = SendPostPacket(url,json);
-        IdentityRankInfo idRankInfo = new IdentityRankInfo();
+    public static QueryIdentityRankAnswer queryIdRankByPrefix(String url, JSONObject json) throws ControlSubSystemException {
+        JSONObject resJson = sendPostPacket(url,json);
+        QueryIdentityRankAnswer idRankInfo = new QueryIdentityRankAnswer();
         List<JSONObject> idList = new LinkedList<>();
 
-        if (resJSON.getIntValue("status") == 0)
-            throw new Exception("获取企业节点标识排行失败！");
+        if (resJson.getIntValue("status") == 0) {
+            idRankInfo.setStatus(0);
+            idRankInfo.setMessage("获取企业节点标识排行失败！");
+        }
 
-        JSONArray jsonArray = resJSON.getJSONArray("identityList");
+        JSONArray jsonArray = resJson.getJSONArray("identityList");
         int size = jsonArray.size();
         for (int i = 0; i < size; i++) {
             JSONObject job = jsonArray.getJSONObject(i);
@@ -438,80 +325,17 @@ public class PostRequestUtil {
         return idRankInfo;
     }
 
+    public static int queryNodeIdentityNum(String url, JSONObject json) throws ControlSubSystemException{
+        JSONObject resJson = sendPostPacket(url, json);
 
-    public static BulkInfo getBulkQueryInfo(String url, JSONObject json) throws Exception{
-        JSONArray resJson = SendPostPacket_(url, json);
-        int jsonCount = resJson.size();
-        BulkInfo bulkInfo = new BulkInfo();
-        JSONArray data = new JSONArray();
-        JSONObject idJson = new JSONObject();
-
-        for (int i = 0; i < jsonCount - 1; i++){
-            JSONObject idData = new JSONObject();
-            idJson = resJson.getJSONObject(i);
-            if (idJson.getIntValue("status") == 0)
-                idData.put("message", idJson.getString("wrongInformation"));
-            else{
-                idData.put("identity", idJson.getJSONObject("message").getString("identity"));
-                idData.put("url", idJson.getJSONObject("message").getString("mappingData"));
-                idData.put("message","标识查询成功！");
-            }
-            data.add(idData);
+        if (resJson.getIntValue("status") == 0) {
+            throw new ControlSubSystemException("查询节点存储标识个数失败！");
         }
-        idJson = resJson.getJSONObject(jsonCount-1);
 
-        bulkInfo.setData(data);
-        bulkInfo.setStatus(1);
-        bulkInfo.setMessage("批量查询操作执行完成！");
-        bulkInfo.setBeginTime(idJson.getString("startTime"));
-        bulkInfo.setEndTime(idJson.getString("endTime"));
-        bulkInfo.setCostTime(idJson.getString("costTime"));
-        bulkInfo.setRate(idJson.getString("qps"));
-
-        return bulkInfo;
+        return Integer.parseInt(resJson.getJSONObject("message").getString("idNums"));
     }
 
-    public static BulkInfo getBulkRegisterInfo(String url, JSONObject json) throws Exception{
-        JSONArray resJson = SendPostPacket_(url, json);
-        int jsonCount = resJson.size();
-        BulkInfo bulkInfo = new BulkInfo();
-        JSONArray data = new JSONArray();
-        JSONObject idJson = new JSONObject();
-
-        for (int i = 0; i < jsonCount - 1; i++){
-            JSONObject idData = new JSONObject();
-            idJson = resJson.getJSONObject(i);
-            if (idJson.getIntValue("status") == 0)
-                idData.put("message", idJson.getString("wrongInformation"));
-            else{
-                idData.put("message","标识注册成功！");
-            }
-            data.add(idData);
-        }
-        idJson = resJson.getJSONObject(jsonCount-1);
-
-        bulkInfo.setData(data);
-        bulkInfo.setStatus(1);
-        bulkInfo.setMessage("批量注册操作执行完成！");
-        bulkInfo.setBeginTime(idJson.getString("startTime"));
-        bulkInfo.setEndTime(idJson.getString("endTime"));
-        bulkInfo.setCostTime(idJson.getString("costTime"));
-        bulkInfo.setRate(idJson.getString("qps"));
-
-        return bulkInfo;
-    }
-
-    /**
-     * @Description : 设定向指定url发送json数据
-     * @author : Zhang Bowen
-     * @date : 2020.10.12 19:51
-     * @param url :
-     * @param json :
-     * @return : com.alibaba.fastjson.JSONObject
-     */
-    private static JSONObject SendPostPacket(String url, JSONObject json) throws Exception{
-
-
+    private static JSONObject sendPostPacket(String url, JSONObject json) throws ControlSubSystemException {
         RestTemplate client = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         HttpMethod method = HttpMethod.POST;
@@ -521,29 +345,15 @@ public class PostRequestUtil {
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
 
         HttpEntity<String> requestEntity = new HttpEntity<String>(json.toString(), headers);
-
-        String res = client.exchange(url, method, requestEntity, String.class).getBody();
-        return JSONObject.parseObject(res);
+        try {
+            String res = client.exchange(url, method, requestEntity, String.class).getBody();
+            return JSONObject.parseObject(res);
+        } catch (RestClientException e) {
+            throw new ControlSubSystemException(e.getMessage());
+        }
     }
 
-    private static JSONArray SendPostPacket_(String url, JSONObject json) throws Exception{
-
-
-        RestTemplate client = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        HttpMethod method = HttpMethod.POST;
-        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
-
-        headers.setContentType(type);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-
-        HttpEntity<String> requestEntity = new HttpEntity<String>(json.toString(), headers);
-
-        String res = client.exchange(url, method, requestEntity, String.class).getBody();
-        return JSONArray.parseArray(res);
-    }
-
-    private static JSONObject SendGetPacket(String url) throws Exception {
+    private static JSONObject sendGetPacket(String url) throws ControlSubSystemException{
         RestTemplate client = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         HttpMethod method = HttpMethod.GET;
@@ -554,15 +364,10 @@ public class PostRequestUtil {
 
         HttpEntity<JSONObject> requestEntity = new HttpEntity<JSONObject>(headers);
 
-        return client.exchange(url, method, requestEntity, JSONObject.class).getBody();
-    }
-
-    public static int QueryNodeIdTotal(String url, JSONObject json) throws Exception{
-        JSONObject resJson = SendPostPacket(url, json);
-
-        /*
-          根据北邮的提供的findAllId json格式添加json解析，提取出标识总数
-         */
-        return Integer.parseInt(resJson.getJSONObject("message").getString("idNums"));
+        try {
+            return client.exchange(url, method, requestEntity, JSONObject.class).getBody();
+        } catch (RestClientException e) {
+            throw new ControlSubSystemException(e.getMessage());
+        }
     }
 }

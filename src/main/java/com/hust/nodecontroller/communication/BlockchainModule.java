@@ -1,9 +1,10 @@
 package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.ResultVerifySystemAnswer;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryAllByPrefixAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.NormalAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.ResultVerifySystemAnswer;
 import com.hust.nodecontroller.utils.HashUtil;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Zhang Bowen
- * @Description
+ * @Description 结果验证子系统（区块链）交互类
  * @ClassName BlockchainModule
  * @date 2020.10.18 12:28
  */
@@ -52,11 +53,11 @@ public class BlockchainModule implements SendInfoToModule{
         NormalAnswer normalAnswer = new NormalAnswer();
 
         try {
-            normalAnswer = PostRequestUtil.getNormalResponse(toUrl,jsonToRvSystem);
+            normalAnswer = PostRequestUtil.getBlockChainAnswer(toUrl,jsonToRvSystem);
             long endTime = System.nanoTime();
             logger.info("Delete Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(normalAnswer);
-        }catch (Exception e){
+        }catch (ControlSubSystemException e){
             normalAnswer.setStatus(0);
             normalAnswer.setMessage(e.getMessage());
             return CompletableFuture.completedFuture(normalAnswer);
@@ -71,11 +72,11 @@ public class BlockchainModule implements SendInfoToModule{
         jsonToRvSystem.put("Identifier", identity);
         ResultVerifySystemAnswer resultVerifySystemAnswer = new ResultVerifySystemAnswer();
         try {
-            resultVerifySystemAnswer = PostRequestUtil.getRVQueryResponse(toUrl,jsonToRvSystem);
+            resultVerifySystemAnswer = PostRequestUtil.getResultVerifyAnswer(toUrl,jsonToRvSystem);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(resultVerifySystemAnswer);
-        }catch (Exception e){
+        }catch (ControlSubSystemException e){
             logger.info(String.valueOf(10));
             resultVerifySystemAnswer.setStatus(0);
             resultVerifySystemAnswer.setMessage(e.getMessage());
@@ -83,19 +84,19 @@ public class BlockchainModule implements SendInfoToModule{
         }
     }
 
-    public AllPrefixIdAnswer prefixQuery(String prefix, String bcUrl, String matchString) {
+    public QueryAllByPrefixAnswer prefixQuery(String prefix, String bcUrl, String matchString) {
         long beginTime = System.nanoTime();
-        AllPrefixIdAnswer allPrefixIdAnswer = new AllPrefixIdAnswer();
+        QueryAllByPrefixAnswer queryAllByPrefixAnswer = new QueryAllByPrefixAnswer();
 
         try {
-            allPrefixIdAnswer = PostRequestUtil.getAllByPrefix(bcUrl,prefix,matchString);
+            queryAllByPrefixAnswer = PostRequestUtil.getAllByPrefix(bcUrl,prefix,matchString);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
-            return allPrefixIdAnswer;
-        }catch (Exception e){
-            allPrefixIdAnswer.setStatus(0);
-            allPrefixIdAnswer.setMessage(e.getMessage());
-            return allPrefixIdAnswer;
+            return queryAllByPrefixAnswer;
+        }catch (ControlSubSystemException e){
+            queryAllByPrefixAnswer.setStatus(0);
+            queryAllByPrefixAnswer.setMessage(e.getMessage());
+            return queryAllByPrefixAnswer;
         }
     }
 
@@ -111,10 +112,10 @@ public class BlockchainModule implements SendInfoToModule{
         NormalAnswer normalAnswer = new NormalAnswer();
 
         try {
-            normalAnswer = PostRequestUtil.getOwnerQueryResponse(bcUrl,jsonToRvSystem);
+            normalAnswer = PostRequestUtil.queryIdentityOwnerAnswer(bcUrl,jsonToRvSystem);
             return normalAnswer;
 
-        } catch (Exception e) {
+        } catch (ControlSubSystemException e) {
             normalAnswer.setStatus(0);
             normalAnswer.setMessage(e.getMessage());
             return normalAnswer;
@@ -133,7 +134,7 @@ public class BlockchainModule implements SendInfoToModule{
         NormalAnswer normalAnswer = new NormalAnswer();
 
         try {
-            normalAnswer = PostRequestUtil.getNormalResponse(toUrl,jsonToRvSystem);
+            normalAnswer = PostRequestUtil.getBlockChainAnswer(toUrl,jsonToRvSystem);
             return normalAnswer;
 
         }catch (Exception e){

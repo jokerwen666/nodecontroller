@@ -1,14 +1,13 @@
 package com.hust.nodecontroller.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.hust.nodecontroller.enums.EncryptTypeEnum;
 import com.hust.nodecontroller.enums.IdentityTypeEnum;
 import com.hust.nodecontroller.enums.RequestTypeEnum;
 import com.hust.nodecontroller.exception.ControlSubSystemException;
-import com.hust.nodecontroller.infostruct.*;
-import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
-import com.hust.nodecontroller.infostruct.RequestStruct.*;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryIdentityRankAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryAllByPrefixAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryIdAnswer;
+import com.hust.nodecontroller.infostruct.requestrequest.*;
 import com.hust.nodecontroller.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Zhang Bowen
@@ -33,24 +31,18 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class NodeServiceImpl implements NodeService{
-    // 服务器地址与接口信息
     private final String serverIp;
     private final String dhtPort;
     private final String controllerPort;
     private final String zookeeperAddress;
 
-    // 标识管理子系统url
     private final String dhtRegisterUrl;
     private final String dhtDeleteUrl;
     private final String dhtUpdateUrl;
     private final String dhtQueryUrl;
-    private final String dhtAllNode;
     private final String dhtFindAllId;
-    private final String dhtBulkRegisterUrl;
-    private final String dhtBulkQueryUrl;
     private final String dhtOrgResolveNumsUrl;
 
-    // 解析结果验证子系统url
     @Value("${bc.register.url}")
     private String bcRegisterUrl;
     @Value("${bc.delete.url}")
@@ -84,10 +76,7 @@ public class NodeServiceImpl implements NodeService{
         dhtDeleteUrl = "http://" + serverIp + ":" + dhtPort + "/dht/delete";
         dhtUpdateUrl = "http://" + serverIp + ":" + dhtPort + "/dht/modify";
         dhtQueryUrl = "http://" + serverIp + ":" + dhtPort + "/dht/resolve";
-        dhtAllNode = "http://" + serverIp + ":" + dhtPort + "/dht/printList";
         dhtFindAllId = "http://" + serverIp + ":" + dhtPort + "/dht/findAllId";
-        dhtBulkRegisterUrl = "http://" + serverIp + ":" + dhtPort + "/dht/registers";
-        dhtBulkQueryUrl = "http://" + serverIp + ":" + dhtPort + "/dht/resolves";
         dhtOrgResolveNumsUrl = "http://" + serverIp + ":" + dhtPort + "/dht/getOrgResolveNums";
     }
 
@@ -128,7 +117,7 @@ public class NodeServiceImpl implements NodeService{
     }
 
     @Override
-    public QueryResult multipleTypeQuery(QueryIdRequest queryIdRequest, boolean isDnsQuery) throws ControlSubSystemException {
+    public QueryIdAnswer multipleTypeQuery(QueryIdRequest queryIdRequest, boolean isDnsQuery) throws ControlSubSystemException {
         String identification = queryIdRequest.getIdentification();
         String client = queryIdRequest.getClient();
         String hashType = queryIdRequest.getType();
@@ -143,60 +132,57 @@ public class NodeServiceImpl implements NodeService{
             client = EncDecUtil.rsaDecrypt(client);
         }
 
-        QueryResult queryResult = new QueryResult();
+        QueryIdAnswer queryIdAnswer = new QueryIdAnswer();
 
         if (isDnsQuery) {
-            queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
-            return queryResult;
+            queryIdAnswer.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
+            return queryIdAnswer;
         }
 
         switch (IdTypeJudgeUtil.typeJudge(identification)) {
             case IDENTITY_TYPE_OID:
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
+                queryIdAnswer.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
                 break;
             case IDENTITY_TYPE_HANDLE:
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.handleResolve(identification));
+                queryIdAnswer.setGoodsInfo(IdTypeJudgeUtil.handleResolve(identification));
                 break;
             case IDENTITY_TYPE_ECODE:
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
+                queryIdAnswer.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
                 break;
             case IDENTITY_TYPE_DHT:
                 String prefix = queryIdRequest.getPrefix();
                 String domainPrefix = queryIdRequest.getDomainPrefix();
-                queryResult = controlProcess.queryHandle(client, identification, prefix, domainPrefix, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
+                queryIdAnswer = controlProcess.queryHandle(client, identification, prefix, domainPrefix, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
                 break;
             default:
                 throw new ControlSubSystemException(IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT.getIdTypeMessage());
         }
-        return queryResult;
+        return queryIdAnswer;
     }
 
     @Override
-    public int bulkRegister(BulkRegister bulkRegister) throws Exception {
-        return controlProcess.bulkRegister(bulkRegister,dhtRegisterUrl,bcRegisterUrl);
+    public int bulkRegister(BulkRegisterRequest bulkRegisterRequest) throws ControlSubSystemException{
+        return controlProcess.bulkRegister(bulkRegisterRequest,dhtRegisterUrl,bcRegisterUrl);
     }
 
-
     @Override
-    public AllPrefixIdAnswer queryAllByPrefix(QueryAllPrefixIdRequest queryAllPrefixIdRequest) throws ControlSubSystemException {
-        String prefix = queryAllPrefixIdRequest.getOrgPrefix();
-        String client = queryAllPrefixIdRequest.getClient();
-        String matchString = queryAllPrefixIdRequest.getMatchString();
+    public QueryAllByPrefixAnswer queryAllByPrefix(QueryAllByPrefixRequest queryAllByPrefixRequest) throws ControlSubSystemException {
+        String prefix = queryAllByPrefixRequest.getOrgPrefix();
+        String client = queryAllByPrefixRequest.getClient();
+        String matchString = queryAllByPrefixRequest.getMatchString();
         return controlProcess.queryAllIdByPrefix(prefix,client,matchString,bcPrefixQuery);
     }
 
-
     @Override
-    public int queryNodeIdTotal() throws Exception {
+    public int queryNodeIdTotal() throws ControlSubSystemException {
         JSONObject callJson = new JSONObject();
         callJson.put("orgname","controller");
         callJson.put("type",0);
-        return PostRequestUtil.QueryNodeIdTotal(dhtFindAllId,callJson);
+        return PostRequestUtil.queryNodeIdentityNum(dhtFindAllId,callJson);
     }
 
-
     @Override
-    public IdentityRankInfo queryIdRankByPrefix(String prefix) throws Exception {
+    public QueryIdentityRankAnswer queryIdRankByPrefix(String prefix) throws ControlSubSystemException {
         JSONObject callJson = new JSONObject();
         callJson.put("orgname", prefix);
         callJson.put("type", 5);

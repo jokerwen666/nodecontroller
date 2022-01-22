@@ -2,8 +2,9 @@ package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.enums.ErrorMessageEnum;
-import com.hust.nodecontroller.infostruct.AnswerStruct.AuthorityManagementSystemAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
+import com.hust.nodecontroller.infostruct.answerstruct.AuthorityManagementSystemAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.NormalAnswer;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author Zhang Bowen
- * @Description
+ * @Description 权限校验子系统（区块链）交互类
  * @ClassName AuthorityModule
  * @date 2020.10.18 12:42
  */
@@ -54,7 +55,7 @@ public class AuthorityModule implements SendInfoToModule{
         jsonToAmSystem.put("identity_prefix", prefix);
         AuthorityManagementSystemAnswer authorityManagementSystemAnswer = new AuthorityManagementSystemAnswer();
         try {
-            authorityManagementSystemAnswer = PostRequestUtil.getAMQueryResponse(amQueryUrl,jsonToAmSystem);
+            authorityManagementSystemAnswer = PostRequestUtil.getAuthorityManagementAnswer(amQueryUrl,jsonToAmSystem);
 
             if (authorityManagementSystemAnswer.getStatus() == 0){
                 return authorityManagementSystemAnswer;
@@ -70,30 +71,29 @@ public class AuthorityModule implements SendInfoToModule{
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return authorityManagementSystemAnswer;
-        }catch (Exception e){
+        }catch (ControlSubSystemException e){
             authorityManagementSystemAnswer.setStatus(0);
             authorityManagementSystemAnswer.setMessage(e.getMessage());
             return authorityManagementSystemAnswer;
         }
     }
 
-    public NormalAnswer delete(String erpName, String prefix) throws Exception{
+    public NormalAnswer delete(String erpName, String prefix) {
         JSONObject jsonToAmSystem = new JSONObject();
         jsonToAmSystem.put("peer_name", "peer0");
         jsonToAmSystem.put("erp_name", erpName);
         jsonToAmSystem.put("identity_prefix", prefix);
-
-        NormalAnswer normalAnswer = PostRequestUtil.getNormalResponse(amDeleteUrl,jsonToAmSystem);
-
-        if (normalAnswer.getStatus() == 0){
-            logger.info("Error({})", normalAnswer.getMessage());
-            throw  new Exception(normalAnswer.getMessage());
+        try {
+            return PostRequestUtil.getBlockChainAnswer(amDeleteUrl,jsonToAmSystem);
+        } catch (ControlSubSystemException e) {
+            NormalAnswer normalAnswer = new NormalAnswer();
+            normalAnswer.setStatus(0);
+            normalAnswer.setMessage(e.getMessage());
+            return normalAnswer;
         }
-
-        return normalAnswer;
     }
 
-    public NormalAnswer registerAndUpdate(String erpName, String prefix, String key, String authority, String owner, String toUrl) throws Exception{
+    public NormalAnswer registerAndUpdate(String erpName, String prefix, String key, String authority, String owner, String toUrl) {
         JSONObject jsonToAmSystem = new JSONObject();
         jsonToAmSystem.put("peer_name", "peer0");
         jsonToAmSystem.put("erp_name", erpName);
@@ -102,13 +102,13 @@ public class AuthorityModule implements SendInfoToModule{
         jsonToAmSystem.put("authority", authority);
         jsonToAmSystem.put("onwer", owner);
 
-        NormalAnswer normalAnswer = PostRequestUtil.getNormalResponse(toUrl,jsonToAmSystem);
-
-        if (normalAnswer.getStatus() == 0){
-            logger.info("Error({})", normalAnswer.getMessage());
-            throw  new Exception(normalAnswer.getMessage());
+        try {
+            return PostRequestUtil.getBlockChainAnswer(toUrl,jsonToAmSystem);
+        } catch (ControlSubSystemException e) {
+            NormalAnswer normalAnswer = new NormalAnswer();
+            normalAnswer.setStatus(0);
+            normalAnswer.setMessage(e.getMessage());
+            return normalAnswer;
         }
-
-        return normalAnswer;
     }
 }

@@ -1,11 +1,10 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.requestrequest;
 
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.boot.context.event.SpringApplicationEvent;
 
 import java.util.List;
 
-public class BulkRegister {
+public class BulkRegisterRequest {
     private String client;
     private List<JSONObject> data;
 

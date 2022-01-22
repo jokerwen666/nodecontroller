@@ -1,6 +1,5 @@
 package com.hust.nodecontroller.aop;
 
-import com.hust.nodecontroller.utils.CalStateUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,17 +11,16 @@ import java.util.Arrays;
 
 
 /**
- * @author Zhang Bowen
- * @Description
- * @ClassName ServiceAspect
- * @date 2020.10.16 12:21
- */
+ * @program nodecontroller
+ * @Description 输出每个操作的全局时延日志
+ * @Author jokerwen666
+ * @date 2022-01-20 19:48
+ **/
 
 @Aspect
 @Component
-public class ServiceAspect {
-    private static final Logger logger = LoggerFactory.getLogger(ServiceAspect.class);
-    private static final String QUERY_FUNCTION = "QueryResult com.hust.nodecontroller.service.NodeServiceImpl.query(InfoFromClient)";
+public class TimeoutLogAspect {
+    private static final Logger logger = LoggerFactory.getLogger(TimeoutLogAspect.class);
 
     @Pointcut("execution(* com.hust.nodecontroller.service.NodeServiceImpl.*(..))")
     public void pointCutNodeService() {}
@@ -36,10 +34,6 @@ public class ServiceAspect {
         Object result = joinPoint.proceed();
         long endTime = System.nanoTime();
         logger.info("Finish the service method({}), Total time({}ms)", methodSignature, (endTime-beginTime)/1000000);
-        //解析操作时，添加总查询时延
-        if (methodSignature.equals(QUERY_FUNCTION)) {
-            CalStateUtil.queryTimeout += (endTime-beginTime)/1000000;
-        }
         return result;
     }
 

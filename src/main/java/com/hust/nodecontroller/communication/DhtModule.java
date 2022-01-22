@@ -1,9 +1,9 @@
 package com.hust.nodecontroller.communication;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.BulkInfo;
-import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityManagementSystemAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
+import com.hust.nodecontroller.exception.ControlSubSystemException;
+import com.hust.nodecontroller.infostruct.answerstruct.IdentityManagementSystemAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.NormalAnswer;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +13,9 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Zhang Bowen
- * @Description
- * @ClassName DhtModule
- * @date 2020.10.18 11:56
+ * @Description 标识管理子系统（DHT）交互类
+ * @ClassName BlockchainModule
+ * @date 2020.10.18 12:28
  */
 
 @Component
@@ -53,11 +53,11 @@ public class DhtModule implements SendInfoToModule{
         NormalAnswer normalAnswer = new NormalAnswer();
 
         try {
-            normalAnswer = PostRequestUtil.getNormalResponse_(toUrl,jsonToImSystem);
+            normalAnswer = PostRequestUtil.getDhtAnswer(toUrl,jsonToImSystem);
             long endTime = System.nanoTime();
             logger.info("Delete Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(normalAnswer);
-        }catch (Exception e){
+        }catch (ControlSubSystemException e){
             normalAnswer.setStatus(0);
             normalAnswer.setMessage(e.getMessage());
             return CompletableFuture.completedFuture(normalAnswer);
@@ -74,11 +74,11 @@ public class DhtModule implements SendInfoToModule{
         jsonToImSystem.put("crossDomain_flag", isCrossDomain);
         IdentityManagementSystemAnswer identityManagementSystemAnswer = new IdentityManagementSystemAnswer();
         try {
-            identityManagementSystemAnswer = PostRequestUtil.getIMQueryResponse(toUrl,jsonToImSystem);
+            identityManagementSystemAnswer = PostRequestUtil.getIdentityManagementAnswer(toUrl,jsonToImSystem);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(identityManagementSystemAnswer);
-        }catch (Exception e){
+        }catch (ControlSubSystemException e){
             identityManagementSystemAnswer.setStatus(0);
             identityManagementSystemAnswer.setMessage(e.getMessage());
             return CompletableFuture.completedFuture(identityManagementSystemAnswer);
@@ -95,52 +95,13 @@ public class DhtModule implements SendInfoToModule{
         NormalAnswer normalAnswer = new NormalAnswer();
 
         try {
-            normalAnswer = PostRequestUtil.getNormalResponse_(toUrl,jsonToImSystem);
+            normalAnswer = PostRequestUtil.getDhtAnswer(toUrl,jsonToImSystem);
             return normalAnswer;
 
-        }catch (Exception e){
+        }catch (ControlSubSystemException e){
             normalAnswer.setStatus(0);
             normalAnswer.setMessage(e.getMessage());
             return normalAnswer;
-        }
-    }
-
-    @Deprecated
-    public BulkInfo bulkRegister(StringBuilder id, StringBuilder url, String toUrl){
-        JSONObject jsonToImSystem = new JSONObject();
-        jsonToImSystem.put("Identitys", id);
-        jsonToImSystem.put("type", 8);
-        jsonToImSystem.put("mappingdatas", url);
-
-        BulkInfo bulkInfo = new BulkInfo();
-
-        try {
-            bulkInfo = PostRequestUtil.getBulkRegisterInfo(toUrl,jsonToImSystem);
-            return bulkInfo;
-
-        }catch (Exception e){
-            bulkInfo.setStatus(0);
-            bulkInfo.setMessage(e.getMessage());
-            return bulkInfo;
-        }
-
-    }
-
-    public BulkInfo bulkQuery(StringBuilder id, String toUrl){
-        JSONObject jsonToImSystem = new JSONObject();
-        jsonToImSystem.put("Identitys", id);
-        jsonToImSystem.put("type", 1);
-
-        BulkInfo bulkInfo = new BulkInfo();
-
-        try {
-            bulkInfo = PostRequestUtil.getBulkQueryInfo(toUrl,jsonToImSystem);
-            return bulkInfo;
-
-        }catch (Exception e){
-            bulkInfo.setStatus(0);
-            bulkInfo.setMessage(e.getMessage());
-            return bulkInfo;
         }
     }
 }

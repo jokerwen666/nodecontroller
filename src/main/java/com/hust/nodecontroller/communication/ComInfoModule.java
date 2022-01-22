@@ -1,6 +1,6 @@
 package com.hust.nodecontroller.communication;
 
-import com.hust.nodecontroller.infostruct.ComQueryInfo;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryGoodsInfoAnswer;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author Zhang Bowen
- * @Description
- * @ClassName ComInfoModule
- * @date 2020.10.20 18:07
+ * @Description 公司产品信息查询子系统交互类
+ * @ClassName BlockchainModule
+ * @date 2020.10.18 12:28
  */
 
 @Component
@@ -18,18 +18,18 @@ public class ComInfoModule implements SendInfoToModule{
 
     private static final Logger logger = LoggerFactory.getLogger(ComInfoModule.class);
 
-    public ComQueryInfo query(String toUrl){
+    public QueryGoodsInfoAnswer query(String toUrl){
         long beginTime = System.nanoTime();
-        ComQueryInfo comQueryInfo = new ComQueryInfo();
+        QueryGoodsInfoAnswer queryGoodsInfoAnswer = new QueryGoodsInfoAnswer();
         try {
-            comQueryInfo = PostRequestUtil.getComQueryInfo(toUrl);
+            queryGoodsInfoAnswer = PostRequestUtil.queryGoodsInfoAnswer(toUrl);
             long endTime = System.nanoTime();
             logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
-            return comQueryInfo;
+            return queryGoodsInfoAnswer;
         }catch (Exception e){
-            comQueryInfo.setStatus(0);
-            comQueryInfo.setMessage(e.getMessage());
-            return comQueryInfo;
+            queryGoodsInfoAnswer.setStatus(0);
+            queryGoodsInfoAnswer.setMessage(e.getMessage());
+            return queryGoodsInfoAnswer;
         }
     }
 }

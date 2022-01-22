@@ -1,4 +1,4 @@
-package com.hust.nodecontroller.infostruct.RequestStruct;
+package com.hust.nodecontroller.infostruct.requestrequest;
 
 /**
  * @program nodecontroller
@@ -6,7 +6,7 @@ package com.hust.nodecontroller.infostruct.RequestStruct;
  * @Author jokerwen666
  * @date 2022-01-20 23:07
  **/
-public class QueryAllPrefixIdRequest extends ClientRequest {
+public class QueryAllByPrefixRequest extends ClientRequest {
     private String orgPrefix;
     private String matchString;
 

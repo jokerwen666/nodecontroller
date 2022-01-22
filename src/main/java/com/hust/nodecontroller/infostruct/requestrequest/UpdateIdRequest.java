@@ -1,17 +1,19 @@
-package com.hust.nodecontroller.infostruct.RequestStruct;
+package com.hust.nodecontroller.infostruct.requestrequest;
 
+import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.enums.ErrorMessageEnum;
 import com.hust.nodecontroller.exception.ControlSubSystemException;
 
 /**
  * @program nodecontroller
- * @Description 删除标识请求类
+ * @Description 更新标识请求类
  * @Author jokerwen666
- * @date 2022-01-20 22:05
+ * @date 2022-01-20 22:02
  **/
 
-public class DeleteIdRequest extends ClientRequest {
+public class UpdateIdRequest extends ClientRequest{
     private String identification;
+    private JSONObject data;
 
     public String getIdentification() {
         return identification;
@@ -19,6 +21,14 @@ public class DeleteIdRequest extends ClientRequest {
 
     public void setIdentification(String identification) {
         this.identification = identification;
+    }
+
+    public JSONObject getData() {
+        return data;
+    }
+
+    public void setData(JSONObject data) {
+        this.data = data;
     }
 
     public String getPrefix() throws ControlSubSystemException {

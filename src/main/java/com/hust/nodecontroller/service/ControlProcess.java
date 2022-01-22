@@ -3,11 +3,9 @@ package com.hust.nodecontroller.service;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.enums.RequestTypeEnum;
 import com.hust.nodecontroller.exception.ControlSubSystemException;
-import com.hust.nodecontroller.infostruct.*;
-import com.hust.nodecontroller.infostruct.AnswerStruct.AllPrefixIdAnswer;
-import com.hust.nodecontroller.infostruct.AnswerStruct.IdentityInfo;
-
-import java.util.concurrent.ExecutionException;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryAllByPrefixAnswer;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryIdAnswer;
+import com.hust.nodecontroller.infostruct.requestrequest.BulkRegisterRequest;
 
 /**
  * @program nodecontroller
@@ -63,7 +61,7 @@ public interface ControlProcess {
     * @Author jokerwen666
     * @Date   2022/1/20
     */
-    QueryResult queryHandle(String client, String identity, String prefix, String domainPrefix, String dhtUrl, String bcUrl, String bcQueryOwner) throws ControlSubSystemException;
+    QueryIdAnswer queryHandle(String client, String identity, String prefix, String domainPrefix, String dhtUrl, String bcUrl, String bcQueryOwner) throws ControlSubSystemException;
 
     /**
     * 根据企业前缀查询所有标识
@@ -76,9 +74,9 @@ public interface ControlProcess {
     * @Author jokerwen666
     * @Date   2022/1/20
     */
-    AllPrefixIdAnswer queryAllIdByPrefix(String prefix, String client, String matchString, String bcUrl) throws ControlSubSystemException;
+    QueryAllByPrefixAnswer queryAllIdByPrefix(String prefix, String client, String matchString, String bcUrl) throws ControlSubSystemException;
 
 
     /** */
-    int bulkRegister(BulkRegister bulkRegister, String dhtUrl, String bcUrl) throws Exception;
+    int bulkRegister(BulkRegisterRequest bulkRegisterRequest, String dhtUrl, String bcUrl) throws ControlSubSystemException;
 }

@@ -1,8 +1,6 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.answerstruct;
 
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
-
-public class HidInfo extends NormalAnswer {
+public class GetMultipleIdQueryInfoAnswer extends NormalAnswer {
     private int oidCount;
     private int ecodeCount;
     private int handleCount;

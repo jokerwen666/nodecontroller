@@ -1,6 +1,5 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.answerstruct;
 
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class QueryResult extends NormalAnswer {
+public class QueryIdAnswer extends NormalAnswer {
     private String url;
     private String nodeID;
     private String goodsInfo;

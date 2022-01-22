@@ -1,7 +1,6 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.answerstruct;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class ComQueryInfo extends NormalAnswer {
+public class QueryGoodsInfoAnswer extends NormalAnswer {
     private JSONObject information;
     private String jsonStr;
 

@@ -1,6 +1,6 @@
 package com.hust.nodecontroller;
 
-import com.hust.nodecontroller.infostruct.ComQueryInfo;
+import com.hust.nodecontroller.infostruct.answerstruct.QueryGoodsInfoAnswer;
 import com.hust.nodecontroller.utils.HashUtil;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,8 @@ public class ComQueryTest {
     @Test
     public void test() throws Exception {
         String url = "http://183.67.5.170:8666/Query/086.001.000001/02.03.12.20210407.031003";
-        ComQueryInfo comQueryInfo = PostRequestUtil.getComQueryInfo(url);
-        String jsonStr = comQueryInfo.getInformation().toString();
+        QueryGoodsInfoAnswer queryGoodsInfoAnswer = PostRequestUtil.queryGoodsInfoAnswer(url);
+        String jsonStr = queryGoodsInfoAnswer.getInformation().toString();
         String hash = HashUtil.SM3Hash(jsonStr);
         System.out.println(hash);
 

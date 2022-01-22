@@ -1,11 +1,10 @@
-package com.hust.nodecontroller.infostruct;
+package com.hust.nodecontroller.infostruct.answerstruct;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.AnswerStruct.NormalAnswer;
 
 import java.util.List;
 
-public class IdentityRankInfo extends NormalAnswer {
+public class QueryIdentityRankAnswer extends NormalAnswer {
     private List<JSONObject> idList;
     private int idNums;
 

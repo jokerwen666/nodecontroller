@@ -1,4 +1,4 @@
-package com.hust.nodecontroller.infostruct.AnswerStruct;
+package com.hust.nodecontroller.infostruct.answerstruct;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -11,7 +11,7 @@ import java.util.List;
  * @date 2022-01-20 23:39
  **/
 
-public class AllPrefixIdAnswer extends NormalAnswer {
+public class QueryAllByPrefixAnswer extends NormalAnswer {
     int totalCount;
     int pageCount;
     List<JSONObject> data;
