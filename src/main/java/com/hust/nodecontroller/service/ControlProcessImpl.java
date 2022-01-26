@@ -268,7 +268,7 @@ public class ControlProcessImpl implements ControlProcess{
                 String errStr = String.format("已成功注册%d个标识，第%d个标识注册出错，出错原因: %s", number, number+1, e.getMessage());
                 throw new Exception(errStr);
             }
-
+            CalStateUtil.registerCount++;
             number++;
         } while (number != idCount);
 
