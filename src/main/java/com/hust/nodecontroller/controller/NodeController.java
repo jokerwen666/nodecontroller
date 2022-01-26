@@ -42,7 +42,6 @@ public class NodeController {
         this.nodeService = nodeService;
     }
 
-
     /**
     * 控制子系统标识注册接口
     * @param  registerIdRequest 标识注册请求信息
