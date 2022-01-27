@@ -22,9 +22,33 @@ public class ScheduleService {
     // 任务1和任务2一起处理如果任务1导致线程1卡死，也不会影响到线程2
 
     @Async("scheduleExecutor")
+    @Scheduled(cron = "0 0/10 * * * ? ")
+    public void calMultipleIdentityList() {
+        long currentTime = System.currentTimeMillis();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("OID", CalStateUtil.differOid());
+        jsonObject.put("Ecode", CalStateUtil.differEcode());
+        jsonObject.put("Handle", CalStateUtil.differHandle());
+        jsonObject.put("DNS", CalStateUtil.differDns());
+        jsonObject.put("DEIS", CalStateUtil.differDht());
+        jsonObject.put("time", currentTime);
+        CalStateUtil.preOidQueryCount = CalStateUtil.oidQueryCount;
+        CalStateUtil.preEcodeQueryCount = CalStateUtil.ecodeQueryCount;
+        CalStateUtil.preHandleQueryCount = CalStateUtil.handleQueryCount;
+        CalStateUtil.preDnsQueryCount = CalStateUtil.dnsQueryCount;
+        CalStateUtil.preDhtQueryCount = CalStateUtil.dhtQueryCount;
+
+        if (CalStateUtil.multipleIdentityList.size() == 9) {
+            CalStateUtil.multipleIdentityList.remove(0);
+        }
+        CalStateUtil.multipleIdentityList.add(jsonObject);
+        logger.info("Calculate multiple identity query count per 10mins");
+    }
+
+    @Async("scheduleExecutor")
     @Scheduled(cron = "0/10 * * * * ? ")
     public void calMinuteSysInfo() {
-        long currentTime = new Date().getTime();
+        long currentTime = System.currentTimeMillis();
         JSONObject jsonObject = new JSONObject();
         Double cpuRate = GetSysInfoUtil.CpuInfo();
         Double memRate = GetSysInfoUtil.MemInfo();
@@ -41,7 +65,7 @@ public class ScheduleService {
     @Async("scheduleExecutor")
     @Scheduled(cron = "0/10 * * * * ? ")
     public void calMinuteRuntimeInfo() throws IOException {
-        long currentTime = new Date().getTime();
+        long currentTime = System.currentTimeMillis();
         JSONObject jsonObject = new JSONObject();
         JSONObject jsonObject1 = new JSONObject();
 
@@ -75,12 +99,13 @@ public class ScheduleService {
     @Async("scheduleExecutor")
     @Scheduled(cron = "0 0/5 * * * ?")
     public void calFiveMinuteQueryInfo() throws Exception {
-        long currentTime = new Date().getTime() / 1000;
+        long currentTime = System.currentTimeMillis() / 1000;
 
         // 当前时刻为整点时，将一小时内的数据放进json数组中，如果一小时内的数据不够12个（比如不是在整点启动系统时），向前补0
         if (currentTime % (60 * 60) == 0) {
-             while (IndustryQueryUtil.getTmpArray().size() < 12)
-                IndustryQueryUtil.getTmpArray().add(0,0);
+             while (IndustryQueryUtil.getTmpArray().size() < 12) {
+                 IndustryQueryUtil.getTmpArray().add(0,0);
+             }
 
              // 将一小时内的查询量放入periodData中
              JSONObject tmpPeriodData = new JSONObject();

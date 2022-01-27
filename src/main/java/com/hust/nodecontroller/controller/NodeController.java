@@ -333,19 +333,17 @@ public class NodeController {
     @ResponseBody
     public HidInfo queryHidInfo() {
         HidInfo backHtml = new HidInfo();
-        backHtml.setOidCount(CalStateUtil.differOid());
-        backHtml.setEcodeCount(CalStateUtil.differEcode());
-        backHtml.setHandleCount(CalStateUtil.differHandle());
-        backHtml.setDnsCount(CalStateUtil.differDns());
-        backHtml.setDhtCount(CalStateUtil.differDht());
-        CalStateUtil.preOidQueryCount = CalStateUtil.oidQueryCount;
-        CalStateUtil.preEcodeQueryCount = CalStateUtil.ecodeQueryCount;
-        CalStateUtil.preHandleQueryCount = CalStateUtil.handleQueryCount;
-        CalStateUtil.preDnsQueryCount = CalStateUtil.dnsQueryCount;
-        CalStateUtil.preDhtQueryCount = CalStateUtil.dhtQueryCount;
-        backHtml.setStatus(1);
-        backHtml.setMessage("异构查询成功！");
-        return backHtml;
+        try {
+            backHtml.setData(CalStateUtil.getMultipleIdentityList());
+            backHtml.setStatus(1);
+            backHtml.setMessage("Success!");
+            return backHtml;
+
+        }catch (Exception e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
     }
 
     @RequestMapping(value = "/industryInfo")
@@ -364,8 +362,6 @@ public class NodeController {
     public NormalMsg bulkRegister(@RequestBody BulkRegister bulkRegister) throws Exception {
         NormalMsg backHtml = new NormalMsg();
         int idCount = bulkRegister.getData().size();
-        CalStateUtil.registerCount = CalStateUtil.registerCount + idCount;
-        CalStateUtil.totalCount = CalStateUtil.totalCount + idCount;
         try {
             threadNum.addAndGet(idCount);
             idCount = nodeService.bulkRegister(bulkRegister);

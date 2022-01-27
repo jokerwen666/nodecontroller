@@ -41,6 +41,7 @@ public class CalStateUtil {
 
     public static List<JSONObject> runtimeInfoList1 = new LinkedList<>();
     public static List<JSONObject> runtimeInfoList2 = new LinkedList<>();
+    public static List<JSONObject> multipleIdentityList = new LinkedList<>();
 
     public static int differQuery(){ return queryCount-preQueryCount; }
 
@@ -67,6 +68,9 @@ public class CalStateUtil {
     }
     public static List<JSONObject> getRuntimeInfoList2() {
         return runtimeInfoList2;
+    }
+    public static List<JSONObject> getMultipleIdentityList() {
+        return multipleIdentityList;
     }
 
     public static float getSuccessRate(){

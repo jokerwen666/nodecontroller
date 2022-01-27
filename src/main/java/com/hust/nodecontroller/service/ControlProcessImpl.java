@@ -269,6 +269,7 @@ public class ControlProcessImpl implements ControlProcess{
                 throw new Exception(errStr);
             }
             CalStateUtil.registerCount++;
+            CalStateUtil.totalCount++;
             number++;
         } while (number != idCount);
 
