@@ -250,10 +250,10 @@ public class ControlProcessImpl implements ControlProcess{
         String client = bulkRegister.getClient();
 
         do {
-            String identification = bulkRegister.getData().get(number).getString("identification");
-            String url = bulkRegister.getData().get(number).getString("url");
-            String goodsHash = bulkRegister.getData().get(number).getString("goodsHash");
-            String queryPermissions = bulkRegister.getData().get(number).getString("queryPermissions");
+            String identification = bulkRegister.getData().getJSONObject(number).getString("identification");
+            String url = bulkRegister.getData().getJSONObject(number).getString("url");
+            String goodsHash = bulkRegister.getData().getJSONObject(number).getString("goodsHash");
+            String queryPermissions = bulkRegister.getData().getJSONObject(number).getString("queryPermissions");
             JSONObject data = new JSONObject();
             data.put("url", url);
             data.put("goodsHash", goodsHash);

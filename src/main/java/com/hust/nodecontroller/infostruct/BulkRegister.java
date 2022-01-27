@@ -1,5 +1,6 @@
 package com.hust.nodecontroller.infostruct;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.boot.context.event.SpringApplicationEvent;
 
@@ -7,7 +8,7 @@ import java.util.List;
 
 public class BulkRegister {
     private String client;
-    private List<JSONObject> data;
+    private JSONArray data;
 
     public String getClient() {
         return client;
@@ -17,11 +18,11 @@ public class BulkRegister {
         this.client = client;
     }
 
-    public List<JSONObject> getData() {
+    public JSONArray getData() {
         return data;
     }
 
-    public void setData(List<JSONObject> data) {
+    public void setData(JSONArray data) {
         this.data = data;
     }
 }

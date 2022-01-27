@@ -1,6 +1,7 @@
 package com.hust.nodecontroller.controller;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.*;
@@ -18,7 +19,9 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -359,8 +362,32 @@ public class NodeController {
 
     @RequestMapping(value = "/bulkRegister")
     @ResponseBody
-    public NormalMsg bulkRegister(@RequestBody BulkRegister bulkRegister) throws Exception {
+    public NormalMsg bulkRegister(@RequestParam MultipartFile uploadFile) {
         NormalMsg backHtml = new NormalMsg();
+        if (uploadFile == null) {
+            backHtml.setStatus(0);
+            backHtml.setMessage("批量注册失败！上传批量注册文件失败！");
+            return backHtml;
+        }
+
+        if (!uploadFile.getOriginalFilename().endsWith(".txt")) {
+            backHtml.setStatus(0);
+            backHtml.setMessage("批量注册失败！注册文件仅支持TXT格式");
+            return backHtml;
+        }
+
+        BulkRegister bulkRegister = new BulkRegister();
+        try {
+            String bulkRegisterJsonString = new String(uploadFile.getBytes());
+            JSONObject jsonObject = JSON.parseObject(bulkRegisterJsonString);
+            bulkRegister.setClient(jsonObject.getString("client"));
+            bulkRegister.setData(jsonObject.getJSONArray("data"));
+        } catch (Exception e) {
+            backHtml.setStatus(0);
+            backHtml.setMessage("批量注册失败！请检查注册文件内容是否符合规范");
+            return backHtml;
+        }
+
         int idCount = bulkRegister.getData().size();
         try {
             threadNum.addAndGet(idCount);
