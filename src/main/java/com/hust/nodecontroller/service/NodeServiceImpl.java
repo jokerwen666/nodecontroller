@@ -134,11 +134,6 @@ public class NodeServiceImpl implements NodeService{
 
         QueryResult queryResult = new QueryResult();
 
-        if (isDnsQuery) {
-            queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
-            return queryResult;
-        }
-
         switch (IdTypeJudgeUtil.typeJudge(identification)) {
             case IDENTITY_TYPE_OID:
                 queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
@@ -151,6 +146,9 @@ public class NodeServiceImpl implements NodeService{
                 break;
             case IDENTITY_TYPE_DHT:
                 queryResult = controlProcess.userHandle(identification, client, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
+                break;
+            case IDENTITY_TYPE_DNS:
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
                 break;
             default:
                 throw new Exception(IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT.getIdTypeMessage());

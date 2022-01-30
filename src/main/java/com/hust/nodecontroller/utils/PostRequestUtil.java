@@ -327,7 +327,7 @@ public class PostRequestUtil {
      */
     public static IdentityInfo getAllByPrefix(String url, String prefix, String matchString) throws Exception{
         //设置初值
-        int pageNum = 1; //查询页面序号
+        int pageNum = 0; //查询页面序号
         int pageQueryCount = 0; //当前页面查询返回标识总数
         int totalQueryCount = 0; //所有页面查询返回标识总数
         String bookmark = ""; //页面标记（用于翻页使用）
@@ -355,8 +355,11 @@ public class PostRequestUtil {
             JSONArray jsonArray = resJson.getJSONArray("data");
             //data为空时，说明查找到的标识数为0，跳出循环
             pageQueryCount = jsonArray.size();
-            if (pageQueryCount == 0) break;
-
+            if (pageQueryCount == 0) {
+                break;
+            }
+            // data不为空时，将页面数+1
+            pageNum++;
             JSONArray recordArray = resJson.getJSONArray("ResponseMetadata");
             //获取页面标记，用于翻页
             bookmark = recordArray.getJSONObject(0).getJSONObject("ResponseMetadata").getString("Bookmark");
@@ -372,14 +375,19 @@ public class PostRequestUtil {
                 JSONObject job = jsonArray.getJSONObject(i); //job为每一个具体的标识查询信息
 
                 String identity = job.getString("Key"); //从job中获取标识
-                if (!identity.contains(matchString)) continue;
+                if (!identity.contains(matchString)) {
+                    continue;
+                }
 
                 JSONObject idData = job.getJSONObject("Record"); //从job中获取标识对应的记录
                 String urlHash = idData.getString("abstract"); //从记录中获取url哈希
                 String goodsHash = idData.getString("mappingData_hash"); //从记录中获取产品信息哈希
                 String permission = idData.getString("permisssion");
-                if (permission.equals("1")) permission = "all";
-                else permission = "only";
+                if (permission.equals("1")) {
+                    permission = "all";
+                } else {
+                    permission = "only";
+                }
 
                 identityData.put("identity", identity);
                 identityData.put("urlHash", urlHash);
@@ -395,10 +403,9 @@ public class PostRequestUtil {
             totalQueryCount = totalQueryCount + pageQueryCount;
 
             //如果当前页的查询总数小于10条，说明下一页必定没有内容，直接跳出循环
-            if (pageQueryCount < 10)
+            if (pageQueryCount < 10) {
                 break;
-            else
-                pageNum++;
+            }
         }
 
         response.setStatus(1);

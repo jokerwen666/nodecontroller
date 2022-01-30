@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
-import java.util.Date;
 
 @Service
 public class ScheduleService {
@@ -22,7 +21,7 @@ public class ScheduleService {
     // 任务1和任务2一起处理如果任务1导致线程1卡死，也不会影响到线程2
 
     @Async("scheduleExecutor")
-    @Scheduled(cron = "0 0/10 * * * ? ")
+    @Scheduled(cron = "0 0/10 * * * ?")
     public void calMultipleIdentityList() {
         long currentTime = System.currentTimeMillis();
         JSONObject jsonObject = new JSONObject();
@@ -73,7 +72,7 @@ public class ScheduleService {
         jsonObject.put("registerCount", CalStateUtil.differRegister());
         jsonObject.put("time", currentTime);
 
-        jsonObject1.put("successRate", CalStateUtil.getSuccessRate());
+        jsonObject1.put("successRate", CalStateUtil.getSuccessRate() > 1 ? 1 : CalStateUtil.getSuccessRate());
         jsonObject1.put("totalCount", CalStateUtil.differTotal());
         jsonObject1.put("queryTimeout", CalStateUtil.getQueryTimeout());
         jsonObject1.put("time", currentTime);

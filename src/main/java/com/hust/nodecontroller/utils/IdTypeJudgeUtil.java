@@ -19,6 +19,7 @@ public class IdTypeJudgeUtil {
     private static final String[] OID_PREFIX = {"1.2.156", "2.13.156"};
     private static final String[] HANDLE_PREFIX = {"10","11","20","21","22","25","27","44","77","86"};
     private static final String[] ECODE_PREFIX = {"10064", "10096", "20128","300121"};
+    private static final String[] DOMAIN_SUFFIX = {".biz", ".com", ".edu", ".gov", ".info", ".int" ,".mil", ".name", ".net", ".org", ".pro", ".xyz"};
     private static final String PATTERN_DHT = "086\\.[0-9]{3}\\.[0-9]{6}\\/[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]{8}\\.[0-9]{6}";
     private static final Integer OID_PART_NUM = 4;
     private static final Integer HANDLE_PART_NUM = 3;
@@ -45,6 +46,11 @@ public class IdTypeJudgeUtil {
         else if (length.equals(ECODE_PART_NUM) && isStartWithString(identification, ECODE_PREFIX)) {
             return IdentityTypeEnum.IDENTITY_TYPE_ECODE;
         }
+
+        else if (isEndWithString(identification, DOMAIN_SUFFIX)) {
+            return IdentityTypeEnum.IDENTITY_TYPE_DNS;
+        }
+
         else {
             return IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT;
         }
@@ -208,4 +214,14 @@ public class IdTypeJudgeUtil {
         }
         return false;
     }
+
+    private static boolean isEndWithString(String identification, String[] suffixes) {
+        for (String suffix : suffixes) {
+            if (identification.endsWith(suffix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

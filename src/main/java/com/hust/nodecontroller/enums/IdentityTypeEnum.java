@@ -19,6 +19,9 @@ public enum IdentityTypeEnum {
     /** 创新型标识类型 */
     IDENTITY_TYPE_DHT(4, "创新型标识，以\"\\\"分为两部分，前缀标识企业，后缀标识产品，前缀分为3段，后缀分为5段"),
 
+    /** DNS域名解析类型*/
+    IDENTITY_TYPE_DNS(5, "DNS待解析域名"),
+
     /** 不支持的标识类型*/
     IDENTITY_TYPE_NOT_SUPPORT(0, "该标识类型系统不支持，无法进行解析")
     ;
