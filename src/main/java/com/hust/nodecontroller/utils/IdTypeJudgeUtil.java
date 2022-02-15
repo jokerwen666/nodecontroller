@@ -11,7 +11,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.regex.Pattern;
 
 public class IdTypeJudgeUtil {
@@ -118,7 +117,7 @@ public class IdTypeJudgeUtil {
         String[] value=new String[title.length];
         try {
 
-            proc = Runtime.getRuntime().exec("python /root/hust/Ecode.py " + id);
+            proc = Runtime.getRuntime().exec("python3 /root/hust/Ecode.py " + id);
             BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line = null;
             line = in.readLine();
@@ -156,7 +155,7 @@ public class IdTypeJudgeUtil {
         try {
 //            File file=new File("D:\\OID.py");    //定位脚本文件所在位置
 
-            Process proc = Runtime.getRuntime().exec("python /root/hust/OID.py " + id);
+            Process proc = Runtime.getRuntime().exec("python3 /root/hust/OID.py " + id);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
