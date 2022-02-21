@@ -40,9 +40,6 @@ public class ControlProcessImpl implements ControlProcess{
     private final DhtModule dhtModule;
     private final BlockchainModule blockchainModule;
     private final AuthorityModule authorityModule;
-    private final ComInfoModule comInfoModule;
-    private final BCErrorHandle bcErrorHandle;
-    private final DhtErrorHandle dhtErrorHandle;
     private static final Logger logger = LoggerFactory.getLogger(ControlProcessImpl.class);
     public static String domainPrefix;
 
@@ -57,9 +54,6 @@ public class ControlProcessImpl implements ControlProcess{
         this.dhtModule = dhtModule;
         this.blockchainModule = blockchainModule;
         this.authorityModule = authorityModule;
-        this.comInfoModule = comInfoModule;
-        this.bcErrorHandle = bcErrorHandle;
-        this.dhtErrorHandle = dhtErrorHandle;
     }
 
     @Override
@@ -111,14 +105,12 @@ public class ControlProcessImpl implements ControlProcess{
         assert dhtInfo != null;
 
         if(bcInfo.get().getStatus() == 0 && dhtInfo.get().getStatus() != 0){
-            dhtErrorHandle.errorHandle(type,identity,prefix);
             logger.info("BlockchainErrorMsg({})", bcInfo.get().getMessage());
             String errStr = "区块链节点错误信息(" + bcInfo.get().getMessage() + ") ";
             throw new Exception(errStr);
         }
 
         if(bcInfo.get().getStatus() != 0 && dhtInfo.get().getStatus() == 0){
-            bcErrorHandle.errorHandle(type,identity);
             logger.info("DHTErrorMsg({})", dhtInfo.get().getMessage());
             String errStr = "DHT节点错误信息(" + dhtInfo.get().getMessage() + ")";
             throw new Exception(errStr);

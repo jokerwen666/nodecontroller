@@ -35,7 +35,6 @@ public class CalStateAspect {
 
     @Before("pointCutQuery()")
     public void doBeforeQuery() throws Exception {
-        CalStateUtil.queryCount++;
         IndustryQueryUtil.setQueryCount(IndustryQueryUtil.getQueryCount()+1);
         CalStateUtil.totalCount++;
     }

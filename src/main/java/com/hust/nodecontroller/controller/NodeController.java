@@ -160,6 +160,7 @@ public class NodeController {
             backHtml.setStatus(1);
             backHtml.setMessage("查询标识信息成功！");
             CalStateUtil.successCount++;
+            CalStateUtil.queryCount++;
             threadNum.decrementAndGet();
             return backHtml;
         } catch (Exception e) {
