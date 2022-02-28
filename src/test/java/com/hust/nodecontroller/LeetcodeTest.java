@@ -1,5 +1,6 @@
 package com.hust.nodecontroller;
 
+import com.hust.nodecontroller.infostruct.IndustryInfo;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.tree.TreeNode;
@@ -16,11 +17,130 @@ public class LeetcodeTest {
 
     @Test
     public void test() {
+        char[][] a = new char[3][];
+        a[0] = new char[]{'A','B','C','E'};
+        a[1] = new char[]{'S','F','C','S'};
+        a[2] = new char[]{'A','D','E','E'};
+        restoreIpAddresses("25525511135");
+        combinationSum2(new int[]{10,1,2,7,6,1,5}, 8);
         TreeNode bst = bstFromPreorder(new int[]{8,5,1,7,10,12});
         TreeNode root = buildTree(new int[]{9,15,7,20,3}, new int[]{9,3,15,20,7});
         maxTurbulenceSize(new int[]{9,4,2,10,7,8,8,1,9});
         totalFruit(new int[]{0, 1, 2, 2});
         findAnagrams("cbaebabacd","abc");
+    }
+
+    public List<String> restoreIpAddresses(String s) {
+        List<Integer> path = new ArrayList<>();
+        List<String> ans = new ArrayList<>();
+        dfs(s,0,0,path,ans);
+        return ans;
+    }
+
+    public void dfs(String s, int depth, int begin, List<Integer> path, List<String> ans) {
+        if (depth == 4) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < path.size(); i++) {
+                sb.append(path.get(i));
+                if (i != path.size()-1) {
+                    sb.append(".");
+                }
+            }
+            ans.add(sb.toString());
+            return;
+        }
+
+        // 让剩下的分段尽可能取到最大，剩余的长度为本段最小长度
+        int l = s.length()-begin-3*(3-depth) < 1 ? 1 : s.length()-begin-3*(3-depth);
+        // 让剩下的分段尽可能取到最小，剩余的长度为本段最大长度
+        int r = s.length()-begin-1*(3-depth) > 3 ? 3 : s.length()-begin-1*(3-depth);
+
+        for(int i = l; i <=r; i++) {
+            // 本段长度不为1，此时不能以0开头
+            if (i != 1 && s.charAt(begin)=='0') {
+                return;
+            }
+
+            int partition = getVal(s, begin, i);
+            // 本段长度为3的时候，不能比255大
+            if (i == 3 && partition > 255) {
+                return;
+            }
+
+            path.add(partition);
+            dfs(s, depth+1, begin+i, path, ans);
+            path.remove(path.size()-1);
+        }
+
+    }
+
+    public int getVal(String s, int begin, int len) {
+        int partitionVal = 0;
+        for (int i = 0 ; i < len; i++) {
+            partitionVal = partitionVal*10 + (s.charAt(begin+i)-'0');
+        }
+        return partitionVal;
+    }
+
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        List<List<Integer>> ans = new ArrayList<>();
+        List<Integer> path = new ArrayList<>();
+        dfs(candidates, 0, 0, target, path, ans);
+        return ans;
+    }
+
+    public void dfs(int[] candidates, int index, int curVal, int target, List<Integer> path, List<List<Integer>>ans) {
+        if (index == candidates.length) {
+            return;
+        }
+
+        if (curVal == target) {
+            List<Integer> pathCopy = new ArrayList<>(path);
+            //Collections.sort(pathCopy);
+            ans.add(pathCopy);
+            return;
+        }
+
+        boolean[] isVisited = new boolean[51];
+
+        for (int i = index; i < candidates.length; i++) {
+            int num = candidates[i];
+            if (num <= target-curVal && !isVisited[num]) {
+                path.add(num);
+                dfs(candidates, i+1, curVal+num, target, path, ans);
+                path.remove(path.size()-1);
+            }
+            isVisited[num] = true;
+        }
+    }
+
+    class Solution {
+        public List<List<Integer>> permute(int[] nums) {
+            List<List<Integer>> ans = new ArrayList<>();
+            List<Integer> list = new ArrayList<>();
+            boolean[] isVisited = new boolean[nums.length+1];
+            dfs(nums, 0, isVisited, list, ans);
+            return ans;
+        }
+
+        public void dfs(int[] nums, int depth, boolean[] isVisited, List<Integer> list, List<List<Integer>> ans) {
+            if (depth == nums.length) {
+                ans.add(new ArrayList<>(list));
+                return;
+            }
+
+            for (int num : nums) {
+                if (!isVisited[num]) {
+                    list.add(num);
+                    isVisited[num] = true;
+
+                    dfs(nums, depth + 1, isVisited, list, ans);
+
+                    isVisited[num] = false;
+                    list.remove(list.size() - 1);
+                }
+            }
+        }
     }
 
 
@@ -115,7 +235,6 @@ public class LeetcodeTest {
 
         Queue<Integer> leftTreeQueue = new LinkedList<>();
         Queue<Integer> rightTreeQueue = new LinkedList<>();
-
         if (queue.size() != 0) {
             int value = queue.poll();
             if (value < rootValue) {
