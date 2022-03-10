@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.IdentityInfo;
 import com.hust.nodecontroller.infostruct.NormalMsg;
 import com.hust.nodecontroller.infostruct.RVSystemInfo;
+import com.hust.nodecontroller.utils.EncDecUtil;
 import com.hust.nodecontroller.utils.HashUtil;
 import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
@@ -113,7 +114,7 @@ public class BlockchainModule implements sendInfoToModule{
         jsonToRVSystem.put("peer_name","peer0");
         jsonToRVSystem.put("Identifier",id);
         jsonToRVSystem.put("hash",hash);
-        jsonToRVSystem.put("abstract", HashUtil.SM3Hash(url));
+        jsonToRVSystem.put("abstract", EncDecUtil.sMHash(url));
         jsonToRVSystem.put("permisssion", queryPermissions);
 
         NormalMsg normalMsg = new NormalMsg();

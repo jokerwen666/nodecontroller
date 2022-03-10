@@ -164,6 +164,7 @@ public class NodeController {
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
             threadNum.decrementAndGet();
+            CalStateUtil.queryCount++;
             return backHtml;
         }
     }

@@ -8,9 +8,6 @@ import com.hust.nodecontroller.communication.ComInfoModule;
 import com.hust.nodecontroller.communication.DhtModule;
 import com.hust.nodecontroller.errorhandle.BCErrorHandle;
 import com.hust.nodecontroller.errorhandle.DhtErrorHandle;
-import com.hust.nodecontroller.fnlencrypt.hashutils.ApHash;
-import com.hust.nodecontroller.fnlencrypt.hashutils.HashUtils;
-import com.hust.nodecontroller.fnlencrypt.hashutils.SM3Hash;
 import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.enums.AuthorityResultEnum;
 import com.hust.nodecontroller.utils.CalStateUtil;
@@ -20,13 +17,10 @@ import com.hust.nodecontroller.utils.IndustryQueryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * @author Zhang Bowen
@@ -41,16 +35,18 @@ public class ControlProcessImpl implements ControlProcess{
     private final DhtModule dhtModule;
     private final BlockchainModule blockchainModule;
     private final AuthorityModule authorityModule;
+    private final ComInfoModule comInfoModule;
     private static final Logger logger = LoggerFactory.getLogger(ControlProcessImpl.class);
     public final String domainPrefix;
 
 
     @Autowired
-    public ControlProcessImpl(ApplicationArguments applicationArguments, DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule, BCErrorHandle bcErrorHandle, DhtErrorHandle dhtErrorHandle) {
+    public ControlProcessImpl(ApplicationArguments applicationArguments, DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule, BCErrorHandle bcErrorHandle, DhtErrorHandle dhtErrorHandle, ComInfoModule comInfoModule1) {
         this.dhtModule = dhtModule;
         this.blockchainModule = blockchainModule;
         this.authorityModule = authorityModule;
         this.domainPrefix = applicationArguments.getOptionValues("domainPrefix").get(0);
+        this.comInfoModule = comInfoModule1;
     }
 
     @Override
@@ -173,7 +169,7 @@ public class ControlProcessImpl implements ControlProcess{
         //4.防篡改检验(url校验+goodsHash校验)(可以更新为异步)
         String url = dhtInfo.get().getMappingData();
         url = url.replace(" ", "");
-        String urlHash_ = HashUtil.SM3Hash(url);
+        String urlHash_ = EncDecUtil.sMHash(url).toUpperCase();
 
         String urlHash = bcInfo.get().getUrlHash();
         String goodsHash = bcInfo.get().getMappingDataHash();
@@ -184,28 +180,24 @@ public class ControlProcessImpl implements ControlProcess{
         }
 
 
-//        ComQueryInfo comQueryInfo = comInfoModule.query(url);
-//
-//        if(comQueryInfo.getStatus() == 0){
-//            logger.info(comQueryInfo.getMessage());
-//            throw new Exception(comQueryInfo.getMessage());
-//        }
-//        String goodsHash_ = HashUtil.SM3Hash(comQueryInfo.getInformation().toString());
-//
-//        if (!goodsHash.equals(goodsHash_)) {
-//            logger.info(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
-//            throw new Exception(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
-//        }
+        ComQueryInfo comQueryInfo = comInfoModule.query(url);
+
+        if(comQueryInfo.getStatus() == 0){
+            logger.info(comQueryInfo.getMessage());
+            throw new Exception(comQueryInfo.getMessage());
+        }
+        String goodsHash_ = EncDecUtil.sMHash(comQueryInfo.getInformation().toString()).toUpperCase();
+
+        if (!goodsHash.equals(goodsHash_)) {
+            logger.info(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
+            throw new Exception(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
+        }
 
         QueryResult queryResult = new QueryResult();
         queryResult.setUrl(url);
         queryResult.setNodeID(dhtInfo.get().getNodeID());
 
-//        queryResult.setGoodsInfo(comQueryInfo.getInformation());
-        JSONObject tmpJson = new JSONObject();
-        tmpJson.put("goodsInfo", "test success");
-        String data  = tmpJson.toString();
-
+        String data = comQueryInfo.getInformation().toString();
         if ("none".equals(encType)) {
             queryResult.setGoodsInfo(data);
         }

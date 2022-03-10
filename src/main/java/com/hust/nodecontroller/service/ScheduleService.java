@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.utils.CalStateUtil;
 import com.hust.nodecontroller.utils.GetSysInfoUtil;
 import com.hust.nodecontroller.utils.IndustryQueryUtil;
+import com.sun.jna.platform.win32.WinCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -11,6 +12,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 
+/**
+ * 修改：构造函数中引入具体的工具类bean
+ * 不使用静态方法
+ */
 @Service
 public class ScheduleService {
 
@@ -39,14 +44,9 @@ public class ScheduleService {
 
     @Async("scheduleExecutor")
     @Scheduled(cron = "0/10 * * * * ? ")
-    public void calMinuteRuntimeInfo() throws IOException {
+    public void calMinuteRuntimeInfo() {
         long currentTime = System.currentTimeMillis();
-        JSONObject jsonObject = new JSONObject();
         JSONObject jsonObject1 = new JSONObject();
-
-        jsonObject.put("queryCount", CalStateUtil.differQuery());
-        jsonObject.put("registerCount", CalStateUtil.differRegister());
-        jsonObject.put("time", currentTime);
 
         jsonObject1.put("successRate", CalStateUtil.getSuccessRate() > 1 ? 1 : CalStateUtil.getSuccessRate());
         jsonObject1.put("totalCount", CalStateUtil.differTotal());
@@ -60,16 +60,11 @@ public class ScheduleService {
         CalStateUtil.preTimeoutCount = CalStateUtil.timeoutCount;
         CalStateUtil.preQueryTimeout = CalStateUtil.queryTimeout;
 
-        if (CalStateUtil.runtimeInfoList1.size() == 6) {
-            CalStateUtil.runtimeInfoList1.remove(0);
-        }
-        CalStateUtil.runtimeInfoList1.add(jsonObject);
-
         if (CalStateUtil.runtimeInfoList2.size() == 6) {
             CalStateUtil.runtimeInfoList2.remove(0);
         }
         CalStateUtil.runtimeInfoList2.add(jsonObject1);
-        logger.info("calculate runtime-info per 10s");
+        logger.info("calculate runtime-info2 per 10s");
     }
 
 
@@ -142,5 +137,54 @@ public class ScheduleService {
         }
         CalStateUtil.multipleIdentityList.add(jsonObject);
         logger.info("Calculate multiple identity query count per 10mins");
+    }
+
+
+    /**
+     * 10s执行一次任务
+     * 将currentDay中的解析数和注册数更新
+     */
+    @Async("scheduleExecutor")
+    @Scheduled(cron = "0/10 * * * * ? ")
+    public void updateCurrentDayRuntimeInfo() {
+        // 系统初始化启动时，currentDayRuntimeInfo还没有加入队列中，此时需要添加
+        if (CalStateUtil.runtimeInfoList1.size() == 0) {
+            JSONObject runtimeInfo = new JSONObject();
+            runtimeInfo.put("registerCount", CalStateUtil.getCurrentDayRuntimeInfo().getRegisterCount());
+            runtimeInfo.put("queryCount", CalStateUtil.getCurrentDayRuntimeInfo().getQueryCount());
+            long currentTime = System.currentTimeMillis()/ 1000L;
+            long daySecond = 60 * 60 * 24;
+            long daytime = currentTime - (currentTime + 8 * 3600) % daySecond * 1000L;
+            runtimeInfo.put("time", daytime);
+            CalStateUtil.runtimeInfoList1.add(runtimeInfo);
+        }
+
+        else {
+            CalStateUtil.runtimeInfoList1.get(CalStateUtil.runtimeInfoList1.size()-1).put("registerCount", CalStateUtil.registerCount - CalStateUtil.lastDayRegisterCount);
+            CalStateUtil.runtimeInfoList1.get(CalStateUtil.runtimeInfoList1.size()-1).put("queryCount", CalStateUtil.queryCount - CalStateUtil.lastDayQueryCount);
+        }
+        logger.info("calculate runtime-info1 per 10s");
+    }
+
+
+    /**
+     * 一天执行一次任务
+     * 将一天内的注册量和解析量放入json数组中
+     */
+    @Async("scheduleExecutor")
+    @Scheduled(cron = "0 0 0 1/1 * ?")
+    public void getDailyInfo() throws InterruptedException {
+        Thread.sleep(100);
+        long currentTime = System.currentTimeMillis();
+        CalStateUtil.getCurrentDayRuntimeInfo().clear();
+        JSONObject runtimeInfo = new JSONObject();
+        runtimeInfo.put("registerCount", CalStateUtil.getCurrentDayRuntimeInfo().getRegisterCount());
+        runtimeInfo.put("queryCount", CalStateUtil.getCurrentDayRuntimeInfo().getQueryCount());
+        runtimeInfo.put("time", currentTime);
+
+        if (CalStateUtil.runtimeInfoList1.size() == 6) {
+            CalStateUtil.runtimeInfoList1.remove(0);
+        }
+        CalStateUtil.runtimeInfoList1.add(runtimeInfo);
     }
 }

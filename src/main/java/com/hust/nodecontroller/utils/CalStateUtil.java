@@ -1,6 +1,7 @@
 package com.hust.nodecontroller.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.hust.nodecontroller.infostruct.DailyRuntimeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,8 @@ public class CalStateUtil {
 
     public static int preQueryCount = 0; // 10s前解析总量
     public static int preRegisterCount = 0; // 10s前注册总量
+    public static int lastDayQueryCount = 0; // 前一天解析总量
+    public static int lastDayRegisterCount = 0; // 前一天注册总量
     public static int preSuccessCount = 0; // 10s前成功解析总量
     public static int preTotalCount = 0; // 10s前总操作量
     public static int preTimeoutCount = 0; // 10s前总时延对应的解析量
@@ -44,6 +47,7 @@ public class CalStateUtil {
     public static List<JSONObject> runtimeInfoList1 = new LinkedList<>();
     public static List<JSONObject> runtimeInfoList2 = new LinkedList<>();
     public static List<JSONObject> multipleIdentityList = new LinkedList<>();
+    public static DailyRuntimeInfo currentDayRuntimeInfo = new DailyRuntimeInfo();
 
     public static int differQuery(){ return queryCount-preQueryCount; }
 
@@ -65,9 +69,6 @@ public class CalStateUtil {
 
     public static int differDht() { return dhtQueryCount - preDhtQueryCount; }
 
-    public static List<JSONObject> getRuntimeInfoList1() {
-        return runtimeInfoList1;
-    }
     public static List<JSONObject> getRuntimeInfoList2() {
         return runtimeInfoList2;
     }
@@ -98,4 +99,16 @@ public class CalStateUtil {
         return (float) top / below;
     }
 
+    public static List<JSONObject> getRuntimeInfoList1() throws InterruptedException {
+        Thread.sleep(200);
+        return runtimeInfoList1;
+    }
+
+    public static DailyRuntimeInfo getCurrentDayRuntimeInfo() {
+        return currentDayRuntimeInfo;
+    }
+
+    public static void setCurrentDayRuntimeInfo(DailyRuntimeInfo currentDayRuntimeInfo) {
+        CalStateUtil.currentDayRuntimeInfo = currentDayRuntimeInfo;
+    }
 }
