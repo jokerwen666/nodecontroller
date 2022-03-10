@@ -17,10 +17,18 @@ public class LeetcodeTest {
 
     @Test
     public void test() {
-        char[][] a = new char[3][];
-        a[0] = new char[]{'A','B','C','E'};
-        a[1] = new char[]{'S','F','C','S'};
-        a[2] = new char[]{'A','D','E','E'};
+        Integer a = 10;
+        Integer b = 10;
+        System.out.println(a == b);
+        Integer c = new Integer(10);
+        Integer d = 10;
+        System.out.println(a == c);
+
+
+        char[][] ch = new char[3][];
+        ch[0] = new char[]{'A','B','C','E'};
+        ch[1] = new char[]{'S','F','C','S'};
+        ch[2] = new char[]{'A','D','E','E'};
         restoreIpAddresses("25525511135");
         combinationSum2(new int[]{10,1,2,7,6,1,5}, 8);
         TreeNode bst = bstFromPreorder(new int[]{8,5,1,7,10,12});
@@ -34,6 +42,7 @@ public class LeetcodeTest {
         List<Integer> path = new ArrayList<>();
         List<String> ans = new ArrayList<>();
         dfs(s,0,0,path,ans);
+
         return ans;
     }
 

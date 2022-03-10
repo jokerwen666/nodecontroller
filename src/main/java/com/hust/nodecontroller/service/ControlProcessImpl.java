@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
@@ -41,19 +42,15 @@ public class ControlProcessImpl implements ControlProcess{
     private final BlockchainModule blockchainModule;
     private final AuthorityModule authorityModule;
     private static final Logger logger = LoggerFactory.getLogger(ControlProcessImpl.class);
-    public static String domainPrefix;
-
-    @Value("${domain.prefix}")
-    public void setDomainPrefix(String prefix) {
-        domainPrefix = prefix;
-    }
+    public final String domainPrefix;
 
 
     @Autowired
-    public ControlProcessImpl(DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule, BCErrorHandle bcErrorHandle, DhtErrorHandle dhtErrorHandle) {
+    public ControlProcessImpl(ApplicationArguments applicationArguments, DhtModule dhtModule, BlockchainModule blockchainModule, AuthorityModule authorityModule, ComInfoModule comInfoModule, BCErrorHandle bcErrorHandle, DhtErrorHandle dhtErrorHandle) {
         this.dhtModule = dhtModule;
         this.blockchainModule = blockchainModule;
         this.authorityModule = authorityModule;
+        this.domainPrefix = applicationArguments.getOptionValues("domainPrefix").get(0);
     }
 
     @Override
@@ -125,11 +122,14 @@ public class ControlProcessImpl implements ControlProcess{
     }
 
     @Override
-    public QueryResult userHandle(String identity, String client, String dhtUrl, String bcUrl, String bcQueryOwner) throws Exception {
+    public QueryResult userHandle(String identity, String client, String dhtUrl, String bcUrl, String bcQueryOwner, String encType) throws Exception {
         CalStateUtil.dhtQueryCount++;
+        CalStateUtil.timeoutCount++;
         String prefix = InfoFromClient.getPrefix(identity);
         String domainPrefix_ = InfoFromClient.getDomainPrefix(identity);
         boolean crossDomain_flag = false;
+        String owner = "";
+        long beginTime = System.nanoTime();
 
         //1.进行跨域解析判断
         crossDomain_flag = !domainPrefix_.equals(domainPrefix);
@@ -137,8 +137,9 @@ public class ControlProcessImpl implements ControlProcess{
         //2.向标识管理子系统发送请求获得url向解析结果验证子系统发送请求获得两个摘要信息
         CompletableFuture<IMSystemInfo> dhtInfo = dhtModule.query(identity,prefix,dhtUrl,crossDomain_flag);
         CompletableFuture<RVSystemInfo> bcInfo = blockchainModule.query(identity,bcUrl);
+        CompletableFuture<NormalMsg> authorityInfo = blockchainModule.queryOwnerByPrefix(prefix, bcQueryOwner);
+        CompletableFuture.allOf(dhtInfo, bcInfo,authorityInfo).join();
 
-        CompletableFuture.allOf(dhtInfo, bcInfo).join();
 
         if(bcInfo.get().getStatus() == 0 && dhtInfo.get().getStatus() != 0){
             logger.info("BlockchainErrorMsg({})", bcInfo.get().getMessage());
@@ -158,15 +159,11 @@ public class ControlProcessImpl implements ControlProcess{
             throw new Exception(errStr);
         }
 
-
         //3 根据前缀查找其所有者并校验
-        String owner = "";
-        NormalMsg normalMsg = blockchainModule.queryOwnerByPrefix(prefix, bcQueryOwner);
-        if (normalMsg.getStatus() == 0) {
-            throw new Exception(normalMsg.getMessage());
+        if (authorityInfo.get().getStatus() == 0) {
+            throw new Exception(authorityInfo.get().getMessage());
         }
-        else owner = normalMsg.getMessage();
-
+        else owner = authorityInfo.get().getMessage();
         String permission = bcInfo.get().getPermission();
         if (permission.equals("0") && !client.equals(owner)) {
             logger.info("用户没有查看该标识的权限！！！");
@@ -176,8 +173,8 @@ public class ControlProcessImpl implements ControlProcess{
         //4.防篡改检验(url校验+goodsHash校验)(可以更新为异步)
         String url = dhtInfo.get().getMappingData();
         url = url.replace(" ", "");
-
         String urlHash_ = HashUtil.SM3Hash(url);
+
         String urlHash = bcInfo.get().getUrlHash();
         String goodsHash = bcInfo.get().getMappingDataHash();
 
@@ -208,8 +205,16 @@ public class ControlProcessImpl implements ControlProcess{
         JSONObject tmpJson = new JSONObject();
         tmpJson.put("goodsInfo", "test success");
         String data  = tmpJson.toString();
-        queryResult.setGoodsInfo(EncDecUtil.sMEncrypt(data));
 
+        if ("none".equals(encType)) {
+            queryResult.setGoodsInfo(data);
+        }
+        else {
+            queryResult.setGoodsInfo(EncDecUtil.sMEncrypt(data));
+        }
+
+        long endTime = System.nanoTime();
+        CalStateUtil.queryTimeout += (endTime-beginTime)/1000000;
         return queryResult;
     }
 

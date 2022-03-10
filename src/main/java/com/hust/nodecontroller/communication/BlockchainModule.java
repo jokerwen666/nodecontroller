@@ -9,11 +9,9 @@ import com.hust.nodecontroller.utils.PostRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  * @author Zhang Bowen
@@ -28,27 +26,20 @@ public class BlockchainModule implements sendInfoToModule{
 
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> register(String id, String hash, String url, String toUrl, String queryPermissions) {
-        long beginTime = System.nanoTime();
         NormalMsg normalMsg;
         normalMsg = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
-        long endTime = System.nanoTime();
-        logger.info("Register Time({}ms)", (endTime-beginTime)/1000000);
         return CompletableFuture.completedFuture(normalMsg);
     }
 
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> update(String id, String hash, String url, String toUrl, String queryPermissions) {
-        long beginTime = System.nanoTime();
         NormalMsg normalMsg;
         normalMsg = registerAndUpdate(id, hash, url, toUrl, queryPermissions);
-        long endTime = System.nanoTime();
-        logger.info("Update Time({}ms)", (endTime-beginTime)/1000000);
         return CompletableFuture.completedFuture(normalMsg);
     }
 
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> delete(String id, String toUrl) {
-        long beginTime = System.nanoTime();
         JSONObject jsonToRVSystem = new JSONObject();
         jsonToRVSystem.put("peer_name","peer0");
         jsonToRVSystem.put("Identifier",id);
@@ -56,8 +47,6 @@ public class BlockchainModule implements sendInfoToModule{
 
         try {
             normalMsg = PostRequestUtil.getNormalResponse(toUrl,jsonToRVSystem);
-            long endTime = System.nanoTime();
-            logger.info("Delete Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(normalMsg);
         }catch (Exception e){
             normalMsg.setStatus(0);
@@ -68,18 +57,14 @@ public class BlockchainModule implements sendInfoToModule{
 
     @Async("queryHandleExecutor")
     public CompletableFuture<RVSystemInfo> query(String identity, String toUrl) {
-        long beginTime = System.nanoTime();
         JSONObject jsonToRVSystem = new JSONObject();
         jsonToRVSystem.put("peer_name", "peer0");
         jsonToRVSystem.put("Identifier", identity);
         RVSystemInfo rvSystemInfo = new RVSystemInfo();
         try {
             rvSystemInfo = PostRequestUtil.getRVQueryResponse(toUrl,jsonToRVSystem);
-            long endTime = System.nanoTime();
-            logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(rvSystemInfo);
         }catch (Exception e){
-            logger.info(String.valueOf(10));
             rvSystemInfo.setStatus(0);
             rvSystemInfo.setMessage(e.getMessage());
             return CompletableFuture.completedFuture(rvSystemInfo);
@@ -87,13 +72,10 @@ public class BlockchainModule implements sendInfoToModule{
     }
 
     public IdentityInfo prefixQuery(String prefix, String bcUrl, String matchString) {
-        long beginTime = System.nanoTime();
         IdentityInfo identityInfo = new IdentityInfo();
 
         try {
             identityInfo = PostRequestUtil.getAllByPrefix(bcUrl,prefix,matchString);
-            long endTime = System.nanoTime();
-            logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return identityInfo;
         }catch (Exception e){
             identityInfo.setStatus(0);
@@ -102,7 +84,8 @@ public class BlockchainModule implements sendInfoToModule{
         }
     }
 
-    public NormalMsg queryOwnerByPrefix(String prefix, String bcUrl) {
+    @Async("queryHandleExecutor")
+    public CompletableFuture<NormalMsg> queryOwnerByPrefix(String prefix, String bcUrl) {
         JSONObject jsonToRVSystem = new JSONObject();
         jsonToRVSystem.put("peer_name","peer0");
         jsonToRVSystem.put("erp_name","");
@@ -115,12 +98,12 @@ public class BlockchainModule implements sendInfoToModule{
 
         try {
             normalMsg = PostRequestUtil.getOwnerQueryResponse(bcUrl,jsonToRVSystem);
-            return normalMsg;
+            return CompletableFuture.completedFuture(normalMsg);
 
         } catch (Exception e) {
             normalMsg.setStatus(0);
             normalMsg.setMessage(e.getMessage());
-            return normalMsg;
+            return CompletableFuture.completedFuture(normalMsg);
         }
 
     }

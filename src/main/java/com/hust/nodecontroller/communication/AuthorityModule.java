@@ -45,7 +45,6 @@ public class AuthorityModule implements sendInfoToModule{
     }
 
     public AMSystemInfo query(String client, String prefix, int type){
-        long beginTime = System.nanoTime();
         JSONObject jsonToAMSystem = new JSONObject();
         jsonToAMSystem.put("peer_name","peer0");
         jsonToAMSystem.put("erp_name", client);
@@ -65,8 +64,6 @@ public class AuthorityModule implements sendInfoToModule{
                 amSystemInfo.setMessage(AuthorityResultEnum.OPERATION_AUTHORITY_VERIFY_ERROR.getMsg());
                 return amSystemInfo;
             }
-            long endTime = System.nanoTime();
-            logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return amSystemInfo;
         }catch (Exception e){
             amSystemInfo.setStatus(0);

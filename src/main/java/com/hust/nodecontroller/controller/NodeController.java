@@ -51,10 +51,7 @@ public class NodeController {
         return threadNum;
     }
 
-
     private final NodeService nodeService;
-    public String ipAndPort;
-    public String serverIp;
     public static AtomicInteger threadNum = new AtomicInteger(0);
     private static final Logger logger = LoggerFactory.getLogger(NodeController.class);
 
@@ -296,10 +293,10 @@ public class NodeController {
             backHtml.setQueryCount(CalStateUtil.queryCount);
             backHtml.setIdCount(nodeService.queryNodeIdTotal());
 
-            if (CalStateUtil.queryCount == 0) {
+            if (CalStateUtil.timeoutCount == 0) {
                 backHtml.setQueryTimeout(0);
             } else {
-                backHtml.setQueryTimeout((float) CalStateUtil.queryTimeout / CalStateUtil.queryCount);
+                backHtml.setQueryTimeout((float) CalStateUtil.queryTimeout / CalStateUtil.timeoutCount);
             }
 
             backHtml.setStatus(1);

@@ -1,6 +1,7 @@
 package com.hust.nodecontroller.utils;
 
 import com.antherd.smcrypto.sm2.Sm2;
+import com.antherd.smcrypto.sm3.Sm3;
 import com.hust.nodecontroller.fnlencrypt.RSAUtil;
 import com.hust.nodecontroller.fnlencrypt.SM2EncDecUtils;
 
@@ -25,6 +26,10 @@ public class EncDecUtil {
             throw new Exception("加解密验证失败！");
         }
         return decrypt;
+    }
+
+    public static  String sMHash(String sourceData) {
+        return Sm3.sm3(sourceData);
     }
 
     public static String rsaEncrypt(String sourceData) throws Exception {

@@ -17,27 +17,29 @@ import java.util.List;
 public class CalStateUtil {
     private static final Logger logger = LoggerFactory.getLogger(CalStateUtil.class);
 
-    public static int preQueryCount = 0;
-    public static int preRegisterCount = 0;
-    public static int preSuccessCount = 0;
-    public static int preTotalCount = 0;
-    public static long preQueryTimeout = 0;
-    public static int preOidQueryCount = 0;
-    public static int preEcodeQueryCount = 0;
-    public static int preHandleQueryCount = 0;
-    public static int preDnsQueryCount = 0;
-    public static int preDhtQueryCount = 0;
+    public static int preQueryCount = 0; // 10s前解析总量
+    public static int preRegisterCount = 0; // 10s前注册总量
+    public static int preSuccessCount = 0; // 10s前成功解析总量
+    public static int preTotalCount = 0; // 10s前总操作量
+    public static int preTimeoutCount = 0; // 10s前总时延对应的解析量
+    public static long preQueryTimeout = 0; // 10s前总时延
+    public static int preOidQueryCount = 0; // 10min前oid总解析量
+    public static int preEcodeQueryCount = 0; // 10min前ecode总解析量
+    public static int preHandleQueryCount = 0; // 10min前handle总解析量
+    public static int preDnsQueryCount = 0; // 10min前dns总解析量
+    public static int preDhtQueryCount = 0; // 10min前dht总解析量
 
-    public static int queryCount = 0;
-    public static int registerCount = 0;
-    public static int successCount = 0;
-    public static int totalCount = 0;
-    public static long queryTimeout = 0;
-    public static int oidQueryCount = 0;
-    public static int ecodeQueryCount = 0;
-    public static int handleQueryCount = 0;
-    public static int dnsQueryCount = 0;
-    public static int dhtQueryCount = 0;
+    public static int queryCount = 0; // 解析总量
+    public static int registerCount = 0; // 注册总量
+    public static int successCount = 0; // 成功解析总量
+    public static int totalCount = 0; // 总操作量
+    public static int timeoutCount = 0; // 总时延对应的解析量（）
+    public static long queryTimeout = 0; // 总时延
+    public static int oidQueryCount = 0; // oid总解析量
+    public static int ecodeQueryCount = 0; // ecode总解析量
+    public static int handleQueryCount = 0; // handle总解析量
+    public static int dnsQueryCount = 0; // dns总解析量
+    public static int dhtQueryCount = 0; // dht总解析量
 
     public static List<JSONObject> runtimeInfoList1 = new LinkedList<>();
     public static List<JSONObject> runtimeInfoList2 = new LinkedList<>();
@@ -86,7 +88,7 @@ public class CalStateUtil {
     }
 
     public static float getQueryTimeout() {
-        int below = differQuery();
+        int below = timeoutCount - preTimeoutCount;
         if (below == 0) {
             return 0;
         }

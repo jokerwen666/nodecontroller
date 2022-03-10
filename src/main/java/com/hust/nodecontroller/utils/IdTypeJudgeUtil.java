@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.enums.IdentityTypeEnum;
+import jdk.nashorn.internal.runtime.regexp.joni.constants.internal.EncloseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,7 @@ public class IdTypeJudgeUtil {
         }
     }
 
-    public static String dnsResolve(String domain) throws Exception{
+    public static String dnsResolve(String domain, String encType) throws Exception{
         CalStateUtil.dnsQueryCount++;
         JSONObject dns = new JSONObject();
         try {
@@ -64,6 +65,9 @@ public class IdTypeJudgeUtil {
                 String key = "answer" + i;
                 dns.put(key, ip[i].getHostAddress());
             }
+            if ("none".equals(encType)) {
+                return dns.toString();
+            }
             return EncDecUtil.sMEncrypt(dns.toString());
         } catch (Exception e) {
             throw new Exception("DNS解析失败");
@@ -71,7 +75,7 @@ public class IdTypeJudgeUtil {
         }
     }
 
-    public static String handleResolve(String id) throws JSONException {
+    public static String handleResolve(String id, String encType) throws JSONException {
         CalStateUtil.handleQueryCount++;
         URL url = null;
         HttpURLConnection httpConn = null;
@@ -107,10 +111,13 @@ public class IdTypeJudgeUtil {
             String value = values.getJSONObject(i).getJSONObject("data").get("value").toString();
             result.put(type, value);
         }
+        if ("none".equals(encType)) {
+            return result.toString();
+        }
         return EncDecUtil.sMEncrypt(result.toString());
     }
 
-    public static String ecodeResolve(String id){
+    public static String ecodeResolve(String id, String encType){
         CalStateUtil.ecodeQueryCount++;
         Process proc;
         String[] title={" 'Ecode编码：\\u3000'"," '产品名称：\\u3000'"," '型号名称：\\u3000'"," '企业名称：\\u3000'"," '回传时间：\\u3000'"};
@@ -144,11 +151,14 @@ public class IdTypeJudgeUtil {
         jsonObject.put("model",value[2]);
         jsonObject.put("company",value[3]);
         jsonObject.put("registrationDate",value[4]);
+        if ("none".equals(encType)) {
+            return jsonObject.toString();
+        }
         return EncDecUtil.sMEncrypt(jsonObject.toString());
     }
 
 
-    public static String oidResolve(String id){
+    public static String oidResolve(String id, String encType){
         CalStateUtil.oidQueryCount++;
         String[] title = {"站点：", "数字OID：", "中文OID：", "英文OID：", "应用范围：", "申请机构中文名：", "申请机构英文名：", "申请机构中文地址：", "申请机构英文地址：", "申请机构网址：", "申请机构邮编：", "申请机构传真："};
         String[] value = new String[title.length];
@@ -193,6 +203,9 @@ public class IdTypeJudgeUtil {
         jsonObject.put("website",value[9]);
         jsonObject.put("zipcode",value[10]);
         jsonObject.put("fax",value[11]);
+        if ("none".equals(encType)) {
+            return jsonObject.toString();
+        }
         return EncDecUtil.sMEncrypt(jsonObject.toJSONString());
     }
 

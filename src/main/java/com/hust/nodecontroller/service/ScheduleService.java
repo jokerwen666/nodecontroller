@@ -21,30 +21,6 @@ public class ScheduleService {
     // 任务1和任务2一起处理如果任务1导致线程1卡死，也不会影响到线程2
 
     @Async("scheduleExecutor")
-    @Scheduled(cron = "0 0/10 * * * ?")
-    public void calMultipleIdentityList() {
-        long currentTime = System.currentTimeMillis();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("OID", CalStateUtil.differOid());
-        jsonObject.put("Ecode", CalStateUtil.differEcode());
-        jsonObject.put("Handle", CalStateUtil.differHandle());
-        jsonObject.put("DNS", CalStateUtil.differDns());
-        jsonObject.put("DEIS", CalStateUtil.differDht());
-        jsonObject.put("time", currentTime);
-        CalStateUtil.preOidQueryCount = CalStateUtil.oidQueryCount;
-        CalStateUtil.preEcodeQueryCount = CalStateUtil.ecodeQueryCount;
-        CalStateUtil.preHandleQueryCount = CalStateUtil.handleQueryCount;
-        CalStateUtil.preDnsQueryCount = CalStateUtil.dnsQueryCount;
-        CalStateUtil.preDhtQueryCount = CalStateUtil.dhtQueryCount;
-
-        if (CalStateUtil.multipleIdentityList.size() == 9) {
-            CalStateUtil.multipleIdentityList.remove(0);
-        }
-        CalStateUtil.multipleIdentityList.add(jsonObject);
-        logger.info("Calculate multiple identity query count per 10mins");
-    }
-
-    @Async("scheduleExecutor")
     @Scheduled(cron = "0/10 * * * * ? ")
     public void calMinuteSysInfo() {
         long currentTime = System.currentTimeMillis();
@@ -81,6 +57,7 @@ public class ScheduleService {
         CalStateUtil.preRegisterCount = CalStateUtil.registerCount;
         CalStateUtil.preSuccessCount = CalStateUtil.successCount;
         CalStateUtil.preTotalCount = CalStateUtil.totalCount;
+        CalStateUtil.preTimeoutCount = CalStateUtil.timeoutCount;
         CalStateUtil.preQueryTimeout = CalStateUtil.queryTimeout;
 
         if (CalStateUtil.runtimeInfoList1.size() == 6) {
@@ -95,36 +72,75 @@ public class ScheduleService {
         logger.info("calculate runtime-info per 10s");
     }
 
+
+    /**
+     * 5分钟执行任务一次
+     * 每5分钟将解析量放进tmpArray中
+     */
     @Async("scheduleExecutor")
     @Scheduled(cron = "0 0/5 * * * ?")
-    public void calFiveMinuteQueryInfo() throws Exception {
-        long currentTime = System.currentTimeMillis() / 1000;
-
-        // 当前时刻为整点时，将一小时内的数据放进json数组中，如果一小时内的数据不够12个（比如不是在整点启动系统时），向前补0
-        if (currentTime % (60 * 60) == 0) {
-             while (IndustryQueryUtil.getTmpArray().size() < 12) {
-                 IndustryQueryUtil.getTmpArray().add(0,0);
-             }
-
-             // 将一小时内的查询量放入periodData中
-             JSONObject tmpPeriodData = new JSONObject();
-             tmpPeriodData.put("recordTime", currentTime);
-             tmpPeriodData.put("queryInPeriod", IndustryQueryUtil.getTmpArray().clone());
-             IndustryQueryUtil.setPeriodData(tmpPeriodData);
-
-            // json数组最多保存4个小时内的数据
-            if (IndustryQueryUtil.getDataCount().size() == 4) {
-                IndustryQueryUtil.getDataCount().remove(0);
-            }
-            // 将periodData放入查询结果dataCount中，并清空periodData和tmpArray
-            IndustryQueryUtil.getDataCount().add((JSONObject) IndustryQueryUtil.getPeriodData().clone());
-            IndustryQueryUtil.getPeriodData().clear();
-            IndustryQueryUtil.getTmpArray().clear();
-
-        }
-
+    public void getFiveMinuteQueryInfo() {
         logger.info("calculate industry query count per 5min");
         IndustryQueryUtil.getTmpArray().add(IndustryQueryUtil.getQueryCount() - IndustryQueryUtil.getPreQueryCount());
         IndustryQueryUtil.setPreQueryCount(IndustryQueryUtil.getQueryCount());
+    }
+    /**
+     * 1小时执行一次
+     * 将一小时内的解析量（tmpArray）放进periodData中中
+     */
+    @Async("scheduleExecutor")
+    @Scheduled(cron = "0 0 0/1 * * ?")
+    public void getOneHourQueryInfo() throws InterruptedException {
+        long currentTime = System.currentTimeMillis();
+
+        //当整点时刻，另一线程会在tmpArray中写数据，此时让读线程sleep100ms
+        Thread.sleep(100);
+        while (IndustryQueryUtil.getTmpArray().size() < 12) {
+            IndustryQueryUtil.getTmpArray().add(0,0);
+        }
+
+        // 将一小时内的查询量放入periodData中
+        JSONObject tmpPeriodData = new JSONObject();
+        tmpPeriodData.put("recordTime", currentTime);
+        tmpPeriodData.put("queryInPeriod", IndustryQueryUtil.getTmpArray().clone());
+        IndustryQueryUtil.setPeriodData(tmpPeriodData);
+
+        // json数组最多保存4个小时内的数据
+        if (IndustryQueryUtil.getDataCount().size() == 4) {
+            IndustryQueryUtil.getDataCount().remove(0);
+        }
+        // 将periodData放入查询结果dataCount中，并清空periodData和tmpArray
+        IndustryQueryUtil.getDataCount().add((JSONObject) IndustryQueryUtil.getPeriodData().clone());
+        IndustryQueryUtil.getPeriodData().clear();
+        IndustryQueryUtil.getTmpArray().clear();
+    }
+
+
+    /**
+     * 十分钟执行一次任务
+     * 计算各种标识十分钟内的解析量
+     */
+    @Async("scheduleExecutor")
+    @Scheduled(cron = "0 0/10 * * * ?")
+    public void getMultipleQueryInfo() {
+        long currentTime = System.currentTimeMillis();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("OID", CalStateUtil.differOid());
+        jsonObject.put("Ecode", CalStateUtil.differEcode());
+        jsonObject.put("Handle", CalStateUtil.differHandle());
+        jsonObject.put("DNS", CalStateUtil.differDns());
+        jsonObject.put("DEIS", CalStateUtil.differDht());
+        jsonObject.put("time", currentTime);
+        CalStateUtil.preOidQueryCount = CalStateUtil.oidQueryCount;
+        CalStateUtil.preEcodeQueryCount = CalStateUtil.ecodeQueryCount;
+        CalStateUtil.preHandleQueryCount = CalStateUtil.handleQueryCount;
+        CalStateUtil.preDnsQueryCount = CalStateUtil.dnsQueryCount;
+        CalStateUtil.preDhtQueryCount = CalStateUtil.dhtQueryCount;
+
+        if (CalStateUtil.multipleIdentityList.size() == 9) {
+            CalStateUtil.multipleIdentityList.remove(0);
+        }
+        CalStateUtil.multipleIdentityList.add(jsonObject);
+        logger.info("Calculate multiple identity query count per 10mins");
     }
 }

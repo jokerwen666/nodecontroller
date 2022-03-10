@@ -29,21 +29,14 @@ public class DhtModule implements sendInfoToModule{
 
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> register(String id, String prefix, String url, String toUrl, int type) {
-        long beginTime = System.nanoTime();
-        NormalMsg normalMsg = new NormalMsg();
-        normalMsg = registerAndUpdate(id, prefix, url, toUrl, type);
-        long endTime = System.nanoTime();
-        logger.info("Register Time({}ms)", (endTime-beginTime)/1000000);
+        NormalMsg normalMsg = registerAndUpdate(id, prefix, url, toUrl, type);
         return CompletableFuture.completedFuture(normalMsg);
     }
 
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> update(String id, String prefix, String url, String toUrl,int type) {
-        long beginTime = System.nanoTime();
         NormalMsg normalMsg;
         normalMsg = registerAndUpdate(id, prefix, url, toUrl, type);
-        long endTime = System.nanoTime();
-        logger.info("Update Time({}ms)", (endTime-beginTime)/1000000);
         return CompletableFuture.completedFuture(normalMsg);
     }
 
@@ -72,7 +65,6 @@ public class DhtModule implements sendInfoToModule{
 
     @Async("queryHandleExecutor")
     public CompletableFuture<IMSystemInfo> query(String identity, String prefix, String toUrl, Boolean crossDomain_flag) {
-        long beginTime = System.nanoTime();
         JSONObject jsonToIMSystem = new JSONObject();
         jsonToIMSystem.put("orgname", prefix);
         jsonToIMSystem.put("Identity", identity);
@@ -81,8 +73,6 @@ public class DhtModule implements sendInfoToModule{
         IMSystemInfo imSystemInfo = new IMSystemInfo();
         try {
             imSystemInfo = PostRequestUtil.getIMQueryResponse(toUrl,jsonToIMSystem);
-            long endTime = System.nanoTime();
-            logger.info("Query Time({}ms)", (endTime-beginTime)/1000000);
             return CompletableFuture.completedFuture(imSystemInfo);
         }catch (Exception e){
             imSystemInfo.setStatus(0);

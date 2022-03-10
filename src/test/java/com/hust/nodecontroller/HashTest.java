@@ -1,5 +1,6 @@
 package com.hust.nodecontroller;
 
+import com.hust.nodecontroller.utils.EncDecUtil;
 import com.hust.nodecontroller.utils.HashUtil;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,10 @@ public class HashTest {
 
         String url = "python \"" + "/root/hust/OID.py" + "\" " + "123456";
 
-        String dataHash_ = Integer.toHexString(HashUtil.apHash(data_));
+        String dataHashAp = Integer.toHexString(HashUtil.apHash(data_));
+        String dataHashSm3 = HashUtil.SM3Hash(data_);
+        String dataHashSm3_ = EncDecUtil.sMHash(data_);
+        System.out.println(dataHashSm3_);
 
     }
 }

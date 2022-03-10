@@ -16,27 +16,7 @@ public class IndustryQueryUtil {
     public static int preQueryCount = 0;
 
     public static List<JSONObject> calIndustryQueryInfo() throws InterruptedException {
-        long currentTime = new Date().getTime() / 1000;
-
-        // 如果当前请求时刻不是整点，则将tmparray中数据临时添加入dataCount后返回，如果是整点则直接返回dataCount
-        if (currentTime % (60 * 60) != 0) {
-            Thread.sleep(100);
-            JSONObject tmpPeriodData = new JSONObject();
-            tmpPeriodData.put("recordTime", currentTime);
-            tmpPeriodData.put("queryInPeriod", getTmpArray().clone());
-            List<JSONObject> tmpDataCount = new LinkedList<>();
-
-            for (int i= 0; i < getDataCount().size(); i++) {
-                JSONObject jsonObject = (JSONObject) getDataCount().get(i).clone();
-                tmpDataCount.add(jsonObject);
-            }
-
-            if (tmpDataCount.size() == 4)
-                tmpDataCount.remove(0);
-            tmpDataCount.add(tmpPeriodData);
-            return tmpDataCount;
-        }
-
+        Thread.sleep(200);
         return getDataCount();
     }
 

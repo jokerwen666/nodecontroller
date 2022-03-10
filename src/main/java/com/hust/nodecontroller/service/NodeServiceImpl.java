@@ -120,14 +120,14 @@ public class NodeServiceImpl implements NodeService{
     public QueryResult multipleTypeQuery(InfoFromClient infoFromClient, boolean isDnsQuery) throws Exception {
         String identification = infoFromClient.getIdentification();
         String client = infoFromClient.getClient();
-        String hashType = infoFromClient.getType();
+        String encType = infoFromClient.getType();
 
         // 添加解密，解密出明文
-        if ("sm2".equals(hashType)) {
+        if ("sm2".equals(encType)) {
             identification = EncDecUtil.sMDecrypt(identification);
             client = EncDecUtil.sMDecrypt(client);
         }
-        else if ("rsa".equals(hashType)) {
+        else if ("rsa".equals(encType)) {
             identification = EncDecUtil.rsaDecrypt(identification);
             client = EncDecUtil.rsaDecrypt(client);
         }
@@ -136,19 +136,19 @@ public class NodeServiceImpl implements NodeService{
 
         switch (IdTypeJudgeUtil.typeJudge(identification)) {
             case IDENTITY_TYPE_OID:
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification));
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.oidResolve(identification, encType));
                 break;
             case IDENTITY_TYPE_HANDLE:
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.handleResolve(identification));
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.handleResolve(identification, encType));
                 break;
             case IDENTITY_TYPE_ECODE:
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification));
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.ecodeResolve(identification, encType));
                 break;
             case IDENTITY_TYPE_DHT:
-                queryResult = controlProcess.userHandle(identification, client, dhtQueryUrl,bcQueryUrl, bcQueryOwner);
+                queryResult = controlProcess.userHandle(identification, client, dhtQueryUrl,bcQueryUrl, bcQueryOwner, encType);
                 break;
             case IDENTITY_TYPE_DNS:
-                queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification));
+                queryResult.setGoodsInfo(IdTypeJudgeUtil.dnsResolve(identification, encType));
                 break;
             default:
                 throw new Exception(IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT.getIdTypeMessage());
