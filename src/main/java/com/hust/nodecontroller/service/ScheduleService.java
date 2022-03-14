@@ -4,14 +4,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.utils.CalStateUtil;
 import com.hust.nodecontroller.utils.GetSysInfoUtil;
 import com.hust.nodecontroller.utils.IndustryQueryUtil;
-import com.sun.jna.platform.win32.WinCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import java.io.IOException;
-
 /**
  * 修改：构造函数中引入具体的工具类bean
  * 不使用静态方法
@@ -147,39 +146,27 @@ public class ScheduleService {
     @Async("scheduleExecutor")
     @Scheduled(cron = "0/10 * * * * ? ")
     public void updateCurrentDayRuntimeInfo() {
-        // 系统初始化启动时，currentDayRuntimeInfo还没有加入队列中，此时需要添加
-        if (CalStateUtil.runtimeInfoList1.size() == 0) {
-            JSONObject runtimeInfo = new JSONObject();
-            runtimeInfo.put("registerCount", CalStateUtil.getCurrentDayRuntimeInfo().getRegisterCount());
-            runtimeInfo.put("queryCount", CalStateUtil.getCurrentDayRuntimeInfo().getQueryCount());
-            long currentTime = System.currentTimeMillis()/ 1000L;
-            long daySecond = 60 * 60 * 24;
-            long daytime = currentTime - (currentTime + 8 * 3600) % daySecond * 1000L;
-            runtimeInfo.put("time", daytime);
-            CalStateUtil.runtimeInfoList1.add(runtimeInfo);
-        }
-
-        else {
-            CalStateUtil.runtimeInfoList1.get(CalStateUtil.runtimeInfoList1.size()-1).put("registerCount", CalStateUtil.registerCount - CalStateUtil.lastDayRegisterCount);
-            CalStateUtil.runtimeInfoList1.get(CalStateUtil.runtimeInfoList1.size()-1).put("queryCount", CalStateUtil.queryCount - CalStateUtil.lastDayQueryCount);
-        }
+        CalStateUtil.runtimeInfoList1.get(CalStateUtil.runtimeInfoList1.size()-1).put("registerCount", CalStateUtil.registerCount - CalStateUtil.lastDayRegisterCount);
+        CalStateUtil.runtimeInfoList1.get(CalStateUtil.runtimeInfoList1.size()-1).put("queryCount", CalStateUtil.queryCount - CalStateUtil.lastDayQueryCount);
         logger.info("calculate runtime-info1 per 10s");
     }
 
 
     /**
      * 一天执行一次任务
-     * 将一天内的注册量和解析量放入json数组中
+     * 更新lastDayRegisterCount和lastDayQueryCount
+     * 创建一个新的JSON对象放入runtimeInfoList1中
      */
     @Async("scheduleExecutor")
     @Scheduled(cron = "0 0 0 1/1 * ?")
     public void getDailyInfo() throws InterruptedException {
         Thread.sleep(100);
         long currentTime = System.currentTimeMillis();
-        CalStateUtil.getCurrentDayRuntimeInfo().clear();
+        CalStateUtil.lastDayQueryCount = CalStateUtil.queryCount;
+        CalStateUtil.lastDayRegisterCount = CalStateUtil.registerCount;
         JSONObject runtimeInfo = new JSONObject();
-        runtimeInfo.put("registerCount", CalStateUtil.getCurrentDayRuntimeInfo().getRegisterCount());
-        runtimeInfo.put("queryCount", CalStateUtil.getCurrentDayRuntimeInfo().getQueryCount());
+        runtimeInfo.put("registerCount", 0);
+        runtimeInfo.put("queryCount", 0);
         runtimeInfo.put("time", currentTime);
 
         if (CalStateUtil.runtimeInfoList1.size() == 6) {

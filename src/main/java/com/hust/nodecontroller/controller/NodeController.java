@@ -170,30 +170,6 @@ public class NodeController {
     }
 
 
-    @RequestMapping(value = "/dnsQuery")
-    @ResponseBody
-    public QueryResult dnsQuery(@RequestBody InfoFromClient infoFromClient) throws Exception {
-        QueryResult backHtml = new QueryResult();
-        try {
-            threadNum.addAndGet(1);
-            CalStateUtil.queryCount++;
-            IndustryQueryUtil.setQueryCount(IndustryQueryUtil.getQueryCount()+1);
-            CalStateUtil.totalCount++;
-            backHtml = nodeService.multipleTypeQuery(infoFromClient,true);
-            backHtml.setStatus(1);
-            backHtml.setMessage("DNS解析成功！");
-            CalStateUtil.successCount++;
-            threadNum.decrementAndGet();
-            return backHtml;
-        } catch (Exception e) {
-            backHtml.setStatus(0);
-            backHtml.setMessage(e.getMessage());
-            threadNum.decrementAndGet();
-            return backHtml;
-        }
-    }
-
-
     /**
      * 根据企业前缀返回所有标识信息
      * @param infoFromClient

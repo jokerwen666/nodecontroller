@@ -21,7 +21,8 @@ public class IdTypeJudgeUtil {
     private static final String[] ECODE_PREFIX = {"10064", "10096", "20128","300121"};
     private static final String[] DOMAIN_SUFFIX = {".biz", ".com", ".edu", ".gov", ".info", ".int" ,".mil", ".name", ".net", ".org", ".pro", ".xyz"};
     private static final String PATTERN_DHT = "086\\.[0-9]{3}\\.[0-9]{6}\\/[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]{8}\\.[0-9]{6}";
-    private static final Integer OID_PART_NUM = 4;
+    private static final Integer OID_PART_NUM_SHORT = 4;
+    private static final Integer OID_PART_NUM_LONG = 5;
     private static final Integer HANDLE_PART_NUM = 3;
     private static final Integer ECODE_PART_NUM = 1;
 
@@ -35,7 +36,7 @@ public class IdTypeJudgeUtil {
             return IdentityTypeEnum.IDENTITY_TYPE_DHT;
         }
 
-        else if (length.equals(OID_PART_NUM) && isStartWithString(identification, OID_PREFIX)) {
+        else if ((length.equals(OID_PART_NUM_SHORT) || length.equals(OID_PART_NUM_LONG)) && isStartWithString(identification, OID_PREFIX)) {
             return IdentityTypeEnum.IDENTITY_TYPE_OID;
         }
 

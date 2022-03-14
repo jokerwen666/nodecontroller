@@ -63,7 +63,7 @@ public class ControlProcessImpl implements ControlProcess{
 
         if(type == 2 || type == 8){
             url = data.getString("url");
-            goodsHash = data.getString("goodsHash");
+            goodsHash = data.getString("goodsHash").toLowerCase();
             queryPermissions = data.getString("queryPermissions");
 
         }
@@ -169,7 +169,7 @@ public class ControlProcessImpl implements ControlProcess{
         //4.防篡改检验(url校验+goodsHash校验)(可以更新为异步)
         String url = dhtInfo.get().getMappingData();
         url = url.replace(" ", "");
-        String urlHash_ = EncDecUtil.sMHash(url).toUpperCase();
+        String urlHash_ = EncDecUtil.sMHash(url);
 
         String urlHash = bcInfo.get().getUrlHash();
         String goodsHash = bcInfo.get().getMappingDataHash();
@@ -186,7 +186,7 @@ public class ControlProcessImpl implements ControlProcess{
             logger.info(comQueryInfo.getMessage());
             throw new Exception(comQueryInfo.getMessage());
         }
-        String goodsHash_ = EncDecUtil.sMHash(comQueryInfo.getInformation().toString()).toUpperCase();
+        String goodsHash_ = EncDecUtil.sMHash(comQueryInfo.getInformation().toString());
 
         if (!goodsHash.equals(goodsHash_)) {
             logger.info(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());

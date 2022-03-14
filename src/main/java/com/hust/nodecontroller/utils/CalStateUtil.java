@@ -1,10 +1,11 @@
 package com.hust.nodecontroller.utils;
 
 import com.alibaba.fastjson.JSONObject;
-import com.hust.nodecontroller.infostruct.DailyRuntimeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * @date 2020.10.17 18:15
  */
 
+@Component
 public class CalStateUtil {
     private static final Logger logger = LoggerFactory.getLogger(CalStateUtil.class);
 
@@ -47,7 +49,25 @@ public class CalStateUtil {
     public static List<JSONObject> runtimeInfoList1 = new LinkedList<>();
     public static List<JSONObject> runtimeInfoList2 = new LinkedList<>();
     public static List<JSONObject> multipleIdentityList = new LinkedList<>();
-    public static DailyRuntimeInfo currentDayRuntimeInfo = new DailyRuntimeInfo();
+
+
+    public CalStateUtil() {
+        Calendar now  = Calendar.getInstance();
+        now.set(Calendar.HOUR_OF_DAY, 0);
+        now.set(Calendar.MINUTE, 0);
+        now.set(Calendar.SECOND, 0);
+        now.set(Calendar.MILLISECOND, 0);
+        int dayOfMonth = now.get(Calendar.DAY_OF_MONTH);
+        for (int i = 5; i >= 0; i--) {
+            now.set(Calendar.DAY_OF_MONTH, dayOfMonth-i);
+            long currentTime = now.getTimeInMillis();
+            JSONObject runtimeInfo = new JSONObject();
+            runtimeInfo.put("registerCount", 100);
+            runtimeInfo.put("queryCount", 100);
+            runtimeInfo.put("time", currentTime);
+            runtimeInfoList1.add(runtimeInfo);
+        }
+    }
 
     public static int differQuery(){ return queryCount-preQueryCount; }
 
@@ -102,13 +122,5 @@ public class CalStateUtil {
     public static List<JSONObject> getRuntimeInfoList1() throws InterruptedException {
         Thread.sleep(200);
         return runtimeInfoList1;
-    }
-
-    public static DailyRuntimeInfo getCurrentDayRuntimeInfo() {
-        return currentDayRuntimeInfo;
-    }
-
-    public static void setCurrentDayRuntimeInfo(DailyRuntimeInfo currentDayRuntimeInfo) {
-        CalStateUtil.currentDayRuntimeInfo = currentDayRuntimeInfo;
     }
 }
