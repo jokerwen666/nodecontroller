@@ -11,6 +11,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * 修改：构造函数中引入具体的工具类bean
  * 不使用静态方法
