@@ -67,7 +67,7 @@ public class AuthorityModule implements sendInfoToModule{
             return amSystemInfo;
         }catch (Exception e){
             amSystemInfo.setStatus(0);
-            amSystemInfo.setMessage(e.getMessage());
+            amSystemInfo.setMessage(AuthorityResultEnum.OPERATION_AUTHORITY_VERIFY_ERROR.getMsg());
             return amSystemInfo;
         }
     }
