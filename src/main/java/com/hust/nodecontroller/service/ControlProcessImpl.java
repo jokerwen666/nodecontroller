@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
@@ -49,8 +50,10 @@ public class ControlProcessImpl implements ControlProcess{
         this.comInfoModule = comInfoModule1;
     }
 
+
+    @Async()
     @Override
-    public void enterpriseHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl, int type) throws Exception {
+    public void enterpriseHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl, int type, boolean isTrust) throws Exception {
 
         String client = infoFromClient.getClient(); //请求发送的企业名称
         String identity = infoFromClient.getIdentification(); //请求标识
@@ -69,10 +72,12 @@ public class ControlProcessImpl implements ControlProcess{
         }
 
         //1.向权限管理子系统发送请求，接收到相关权限信息，并鉴权(不需要异步)
-        AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,type);
-        if (amSystemInfo.getStatus() == 0){
-            logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
-            throw new Exception(amSystemInfo.getMessage());
+        if (!isTrust) {
+            AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,type);
+            if (amSystemInfo.getStatus() == 0){
+                logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
+                throw new Exception(amSystemInfo.getMessage());
+            }
         }
 
         //2.向解析结果验证子系统、标识管理系统发送对应的json数据（异步）
@@ -116,6 +121,7 @@ public class ControlProcessImpl implements ControlProcess{
         }
 
     }
+
 
     @Override
     public QueryResult userHandle(String identity, String client, String dhtUrl, String bcUrl, String bcQueryOwner, String encType) throws Exception {
@@ -237,9 +243,21 @@ public class ControlProcessImpl implements ControlProcess{
         int idCount = bulkRegister.getData().size();
         int number = 0;
         String client = bulkRegister.getClient();
+        String prefix = bulkRegister.getPrefix();
+
+        AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,8);
+        if (amSystemInfo.getStatus() == 0){
+            logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
+            throw new Exception(amSystemInfo.getMessage());
+        }
 
         do {
             String identification = bulkRegister.getData().getJSONObject(number).getString("identification");
+            String idPrefix = InfoFromClient.getPrefix(identification);
+            if (!idPrefix.equals(prefix)) {
+                String errStr = String.format("已成功注册%d个标识，第%d个标识注册出错，出错原因: %s", number, number+1, "尝试注册未持有的标识！");
+                throw new Exception(errStr);
+            }
             String url = bulkRegister.getData().getJSONObject(number).getString("url");
             String goodsHash = bulkRegister.getData().getJSONObject(number).getString("goodsHash");
             String queryPermissions = bulkRegister.getData().getJSONObject(number).getString("queryPermissions");
@@ -252,7 +270,7 @@ public class ControlProcessImpl implements ControlProcess{
             infoFromClient.setData(data);
             infoFromClient.setIdentification(identification);
             try {
-                enterpriseHandle(infoFromClient,dhtUrl,bcUrl,8);
+                enterpriseHandle(infoFromClient,dhtUrl,bcUrl,8, true);
             }catch (Exception e) {
                 String errStr = String.format("已成功注册%d个标识，第%d个标识注册出错，出错原因: %s", number, number+1, e.getMessage());
                 throw new Exception(errStr);
@@ -261,7 +279,6 @@ public class ControlProcessImpl implements ControlProcess{
             CalStateUtil.totalCount++;
             number++;
         } while (number != idCount);
-
         return idCount;
     }
 

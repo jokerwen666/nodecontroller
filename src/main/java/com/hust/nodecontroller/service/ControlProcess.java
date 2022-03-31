@@ -5,7 +5,7 @@ import com.hust.nodecontroller.infostruct.*;
 
 public interface ControlProcess {
 
-    public void enterpriseHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl, int type) throws Exception;
+    public void enterpriseHandle(InfoFromClient infoFromClient, String dhtUrl, String bcUrl, int type, boolean isTrust) throws Exception;
 
     public QueryResult userHandle(String identity, String client, String dhtUrl, String bcUrl, String bcQueryOwner, String EncType) throws Exception;
 

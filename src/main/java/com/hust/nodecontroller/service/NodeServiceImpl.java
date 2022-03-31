@@ -93,7 +93,7 @@ public class NodeServiceImpl implements NodeService{
 
     @Override
     public void register(InfoFromClient infoFromClient) throws Exception {
-        controlProcess.enterpriseHandle(infoFromClient,dhtRegisterUrl,bcRegisterUrl,8);
+        controlProcess.enterpriseHandle(infoFromClient,dhtRegisterUrl,bcRegisterUrl,8, false);
     }
 
     @Override
@@ -103,12 +103,12 @@ public class NodeServiceImpl implements NodeService{
 
     @Override
     public void delete(InfoFromClient infoFromClient) throws Exception {
-        controlProcess.enterpriseHandle(infoFromClient,dhtDeleteUrl,bcDeleteUrl,4);
+        controlProcess.enterpriseHandle(infoFromClient,dhtDeleteUrl,bcDeleteUrl,4, false);
     }
 
     @Override
     public void update(InfoFromClient infoFromClient) throws Exception {
-        controlProcess.enterpriseHandle(infoFromClient,dhtUpdateUrl,bcUpdateUrl,2);
+        controlProcess.enterpriseHandle(infoFromClient,dhtUpdateUrl,bcUpdateUrl,2, false);
     }
 
     @Override

@@ -9,6 +9,7 @@ import java.util.List;
 public class BulkRegister {
     private String client;
     private JSONArray data;
+    private String prefix;
 
     public String getClient() {
         return client;
@@ -24,5 +25,13 @@ public class BulkRegister {
 
     public void setData(JSONArray data) {
         this.data = data;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 }
