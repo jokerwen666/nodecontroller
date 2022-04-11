@@ -328,7 +328,7 @@ public class NodeController {
     @ResponseBody
     public IndustryInfo queryIndustryInfo() throws InterruptedException {
         IndustryInfo backHtml = new IndustryInfo();
-        backHtml.setIndustryName("086.001");
+        backHtml.setIndustryName("086.002");
         backHtml.setDataCount(IndustryQueryUtil.calIndustryQueryInfo());
         backHtml.setStatus(1);
         backHtml.setMessage("行业时段解析查询成功！");
@@ -356,6 +356,7 @@ public class NodeController {
             String bulkRegisterJsonString = new String(uploadFile.getBytes());
             JSONObject jsonObject = JSON.parseObject(bulkRegisterJsonString);
             bulkRegister.setClient(jsonObject.getString("client"));
+            bulkRegister.setPrefix(jsonObject.getString("prefix"));
             bulkRegister.setData(jsonObject.getJSONArray("data"));
         } catch (Exception e) {
             backHtml.setStatus(0);

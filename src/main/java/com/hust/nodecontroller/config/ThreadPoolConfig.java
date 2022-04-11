@@ -34,6 +34,7 @@ public class ThreadPoolConfig {
      */
     @Bean("enterpriseHandleExecutor")
     public Executor enterpriseHandleExecutor() {
+
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         //配置核心线程池数
         taskExecutor.setCorePoolSize(10);

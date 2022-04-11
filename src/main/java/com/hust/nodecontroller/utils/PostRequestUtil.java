@@ -334,15 +334,15 @@ public class PostRequestUtil {
 
         List<JSONObject> data = new ArrayList<>();
         IdentityInfo response = new IdentityInfo();
+        List<JSONObject> identityList = new ArrayList<>();
 
-        //当检索到第一页或者当前页查询总数不为0是进入循环
+        // 每次获取1000个数据，直到获取不到
         while(true){
             JSONObject jsonToBC = new JSONObject();
             jsonToBC.put("prefix",prefix);
             jsonToBC.put("pageNum",bookmark);
-            jsonToBC.put("pageSize",10);
+            jsonToBC.put("pageSize",1000);
             jsonToBC.put("peer_name","peer0");
-
             JSONObject resJson = SendPostPacket(url,jsonToBC);
 
             //当查询信息报错时，直接返回查询错误
@@ -352,27 +352,23 @@ public class PostRequestUtil {
                 return response;
             }
 
-            JSONArray jsonArray = resJson.getJSONArray("data");
             //data为空时，说明查找到的标识数为0，跳出循环
+            JSONArray jsonArray = resJson.getJSONArray("data");
             pageQueryCount = jsonArray.size();
             if (pageQueryCount == 0) {
                 break;
             }
-            // data不为空时，将页面数+1
-            pageNum++;
-            JSONArray recordArray = resJson.getJSONArray("ResponseMetadata");
+
             //获取页面标记，用于翻页
+            JSONArray recordArray = resJson.getJSONArray("ResponseMetadata");
             bookmark = recordArray.getJSONObject(0).getJSONObject("ResponseMetadata").getString("Bookmark");
 
             JSONObject pageJson = new JSONObject();
-            List<JSONObject> identityList = new ArrayList<>();
 
-            //在该页中遍历每个查询返回标识信息
+            //在该页中遍历每个查询返回标识信息,满10个作为一页
             for (int i = 0; i < pageQueryCount; i++){
-
-                JSONObject identityData = new JSONObject(); //identityData为存储当前查询标识的json数据
-
                 JSONObject job = jsonArray.getJSONObject(i); //job为每一个具体的标识查询信息
+                JSONObject identityData = new JSONObject(); //identityData为存储当前查询标识的json数据
 
                 String identity = job.getString("Key"); //从job中获取标识
                 if (!identity.contains(matchString)) {
@@ -393,19 +389,28 @@ public class PostRequestUtil {
                 identityData.put("urlHash", urlHash);
                 identityData.put("goodsHash", goodsHash);
                 identityData.put("queryAuthority",permission);
-
                 identityList.add(identityData);
-            }
 
-            pageJson.put("pageID",pageNum);
-            pageJson.put("identityList",identityList);
-            data.add(pageJson);
-            totalQueryCount = totalQueryCount + pageQueryCount;
 
-            //如果当前页的查询总数小于10条，说明下一页必定没有内容，直接跳出循环
-            if (pageQueryCount < 10) {
-                break;
+                if (identityList.size() == 10) {
+                    // data不为空时，将页面数+1
+                    pageNum++;
+                    pageJson.put("pageID", pageNum);
+                    pageJson.put("identityList", new ArrayList<JSONObject>(identityList));
+                    data.add(pageJson);
+                    identityList.clear();
+                    totalQueryCount = totalQueryCount + 10;
+                }
             }
+        }
+
+        if (identityList.size() > 0) {
+            pageNum++;
+            JSONObject lastPage = new JSONObject();
+            lastPage.put("pageID", pageNum);
+            lastPage.put("identityList", new ArrayList<JSONObject>(identityList));
+            totalQueryCount = totalQueryCount + identityList.size();
+            data.add(lastPage);
         }
 
         response.setStatus(1);

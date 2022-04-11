@@ -18,8 +18,12 @@
         <java.version>1.8</java.version>
         <skipTests>true</skipTests>
     </properties>
-
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <version>2.5.4</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
@@ -141,6 +145,10 @@
             <groupId>com.antherd</groupId>
             <artifactId>sm-crypto</artifactId>
             <version>0.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
 
     </dependencies>

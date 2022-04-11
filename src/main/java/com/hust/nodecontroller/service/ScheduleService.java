@@ -9,11 +9,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 /**
  * 修改：构造函数中引入具体的工具类bean
@@ -90,6 +93,7 @@ public class ScheduleService {
     @Scheduled(cron = "0 0 0/1 * * ?")
     public void getOneHourQueryInfo() throws InterruptedException {
         long currentTime = System.currentTimeMillis();
+        Calendar now = Calendar.getInstance();
 
         //当整点时刻，另一线程会在tmpArray中写数据，此时让读线程sleep100ms
         Thread.sleep(100);
