@@ -173,13 +173,16 @@ public class PostRequestUtil {
         JSONObject resJson = SendGetPacket(url);
         ComQueryInfo response = new ComQueryInfo();
 
-        if(!resJson.getBoolean("IsSuccess")){
-            response.setMessage(resJson.getString("Message"));
-            response.setStatus(0);
-            return response;
-        }
+//        if(!resJson.getBoolean("IsSuccess")){
+//            response.setMessage(resJson.getString("Message"));
+//            response.setStatus(0);
+//            return response;
+//        }
 
         JSONObject dataJson = resJson.getJSONObject("Data");
+        if (dataJson == null) {
+            dataJson = resJson;
+        }
 
         response.setStatus(1);
         response.setMessage("Query CompanyInfo Success!");
@@ -317,6 +320,67 @@ public class PostRequestUtil {
         return response;
     }
 
+
+    public static SinglePageInfo getSinglePage(String url, String prefix, String matchString, String txid) throws Exception {
+        JSONObject jsonToBC = new JSONObject();
+        jsonToBC.put("prefix", prefix);
+        jsonToBC.put("pageNum", txid);
+        jsonToBC.put("pageSize", 10);
+        jsonToBC.put("peer_name", "peer1");
+        JSONObject resJson = SendPostPacket(url, jsonToBC);
+        SinglePageInfo response = new SinglePageInfo();
+        List<JSONObject> identityList = new ArrayList<>();
+
+        // 当查询信息报错时，直接返回查询错误
+        if (resJson.getIntValue("status") == 0) {
+            response.setMessage(resJson.getString("message"));
+            response.setStatus(resJson.getIntValue("status"));
+            return response;
+        }
+
+        // 记录当前页的标识个数（最大10）
+        JSONArray jsonArray = resJson.getJSONArray("data");
+        int count = jsonArray.size();
+
+        // 获取翻页id
+        JSONArray recordArray = resJson.getJSONArray("ResponseMetadata");
+        String bookmark = recordArray.getJSONObject(0).getJSONObject("ResponseMetadata").getString("Bookmark");
+
+        // 该页数据保存
+        for (int i = 0; i < count; i++){
+            JSONObject job = jsonArray.getJSONObject(i); //job为每一个具体的标识查询信息
+            JSONObject identityData = new JSONObject(); //identityData为存储当前查询标识的json数据
+
+            String identity = job.getString("Key"); //从job中获取标识
+            if (!identity.contains(matchString)) {
+                continue;
+            }
+
+            JSONObject idData = job.getJSONObject("Record"); //从job中获取标识对应的记录
+            String urlHash = idData.getString("abstract"); //从记录中获取url哈希
+            String goodsHash = idData.getString("mappingData_hash"); //从记录中获取产品信息哈希
+            String permission = idData.getString("permisssion");
+            if (permission.equals("1")) {
+                permission = "all";
+            } else {
+                permission = "only";
+            }
+
+            identityData.put("identity", identity);
+            identityData.put("urlHash", urlHash);
+            identityData.put("goodsHash", goodsHash);
+            identityData.put("queryAuthority",permission);
+            identityList.add(identityData);
+        }
+
+        response.setStatus(1);
+        response.setMessage("Query Single Page Success!");
+        response.setCount(count);
+        response.setIdentityList(identityList);
+        response.setTxid(bookmark);
+        return response;
+    }
+
     /**
      * @Description : 向指定url发送json数据，返回IdentityInfo数据，用于查询某企业前缀下所有的标识信息
      * @author : Zhang Bowen
@@ -342,7 +406,7 @@ public class PostRequestUtil {
             jsonToBC.put("prefix",prefix);
             jsonToBC.put("pageNum",bookmark);
             jsonToBC.put("pageSize",1000);
-            jsonToBC.put("peer_name","peer0");
+            jsonToBC.put("peer_name","peer1");
             JSONObject resJson = SendPostPacket(url,jsonToBC);
 
             //当查询信息报错时，直接返回查询错误

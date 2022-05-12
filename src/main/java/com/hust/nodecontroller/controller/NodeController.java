@@ -12,18 +12,18 @@ import com.hust.nodecontroller.utils.CalStateUtil;
 import com.hust.nodecontroller.utils.GetSysInfoUtil;
 import com.hust.nodecontroller.utils.IndustryQueryUtil;
 import org.omg.CORBA.BAD_CONTEXT;
+import org.omg.PortableInterceptor.INACTIVE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.cglib.proxy.InvocationHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -184,6 +184,20 @@ public class NodeController {
             backHtml = nodeService.queryAllByPrefix(infoFromClient);
             return backHtml;
         }catch (Exception e){
+            backHtml.setStatus(0);
+            backHtml.setMessage(e.getMessage());
+            return backHtml;
+        }
+    }
+
+    @RequestMapping(value = "/querySinglePage")
+    @ResponseBody
+    public SinglePageInfo querySinglePage(@RequestBody InfoFromClient infoFromClient) throws Exception {
+        SinglePageInfo backHtml = new SinglePageInfo();
+        try {
+            backHtml = nodeService.querySinglePage(infoFromClient);
+            return backHtml;
+        }catch (Exception e) {
             backHtml.setStatus(0);
             backHtml.setMessage(e.getMessage());
             return backHtml;

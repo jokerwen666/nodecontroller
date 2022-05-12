@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class IdTypeJudgeUtil {
@@ -21,6 +22,7 @@ public class IdTypeJudgeUtil {
     private static final String[] ECODE_PREFIX = {"10064", "10096", "20128","300121"};
     private static final String[] DOMAIN_SUFFIX = {".biz", ".com", ".edu", ".gov", ".info", ".int" ,".mil", ".name", ".net", ".org", ".pro", ".xyz"};
     private static final String PATTERN_DHT = "086\\.[0-9]{3}\\.[0-9]{6}\\/[0-9]{2}\\.[0-9]{2}\\.[0-9]{2}\\.[0-9]{8}\\.[0-9]{6}";
+    private static final String DHT_PREFIX = "086\\.[0-9]{3}\\.[0-9]{6}\\/.*";
     private static final Integer OID_PART_NUM_SHORT = 4;
     private static final Integer OID_PART_NUM_LONG = 5;
     private static final Integer HANDLE_PART_NUM = 3;
@@ -32,7 +34,7 @@ public class IdTypeJudgeUtil {
         Integer length = identification.split("\\.").length;
         String firstPart = identification.split("\\.")[0];
 
-        if (Pattern.matches(PATTERN_DHT, identification)) {
+        if (Pattern.matches(DHT_PREFIX, identification)) {
             return IdentityTypeEnum.IDENTITY_TYPE_DHT;
         }
 

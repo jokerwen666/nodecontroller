@@ -3,6 +3,7 @@ package com.hust.nodecontroller.utils;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
@@ -49,15 +50,47 @@ public class CalStateUtil {
     public volatile static List<JSONObject> runtimeInfoList2 = new LinkedList<>();
     public volatile static List<JSONObject> multipleIdentityList = new LinkedList<>();
 
+    @Autowired
+    public CalStateUtil(List<String> serverInfo) {
+        preRegisterCount = Integer.parseInt(serverInfo.get(4));
+        registerCount = Integer.parseInt(serverInfo.get(4));
+        preQueryCount = Integer.parseInt(serverInfo.get(5));
+        lastDayQueryCount = Integer.parseInt(serverInfo.get(5));
+        queryCount = Integer.parseInt(serverInfo.get(5));
 
-    public CalStateUtil() {
+
+        Calendar now  = Calendar.getInstance();
+        now.set(Calendar.HOUR_OF_DAY, 0);
+        now.set(Calendar.MINUTE, 0);
+        now.set(Calendar.SECOND, 0);
+        now.set(Calendar.MILLISECOND, 0);
+        int dayOfMonth = now.get(Calendar.DAY_OF_MONTH);
+        for (int i = 5; i >= 0; i--) {
+            now.set(Calendar.DAY_OF_MONTH, dayOfMonth-i);
+            long currentTime = now.getTimeInMillis();
+            JSONObject runtimeInfo = new JSONObject();
+            runtimeInfo.put("registerCount", 0);
+            runtimeInfo.put("queryCount", 0);
+            runtimeInfo.put("time", currentTime);
+            runtimeInfoList1.add(runtimeInfo);
+        }
+//
+//        preQueryCount = 1551;
+//        lastDayQueryCount = 1551;
+//        queryCount = 1551;
+//
+//        preRegisterCount = 800;
+//        registerCount = 800;
+//
+//
 //        Calendar now  = Calendar.getInstance();
 //        now.set(Calendar.HOUR_OF_DAY, 0);
 //        now.set(Calendar.MINUTE, 0);
 //        now.set(Calendar.SECOND, 0);
 //        now.set(Calendar.MILLISECOND, 0);
 //        int dayOfMonth = now.get(Calendar.DAY_OF_MONTH);
-//        for (int i = 5; i >= 0; i--) {
+//
+//        for (int i = 5; i >= 3; i--) {
 //            now.set(Calendar.DAY_OF_MONTH, dayOfMonth-i);
 //            long currentTime = now.getTimeInMillis();
 //            JSONObject runtimeInfo = new JSONObject();
@@ -67,54 +100,29 @@ public class CalStateUtil {
 //            runtimeInfoList1.add(runtimeInfo);
 //        }
 //
-        preQueryCount = 1551;
-        lastDayQueryCount = 1551;
-        queryCount = 1551;
-
-        preRegisterCount = 800;
-        registerCount = 800;
-
-
-        Calendar now  = Calendar.getInstance();
-        now.set(Calendar.HOUR_OF_DAY, 0);
-        now.set(Calendar.MINUTE, 0);
-        now.set(Calendar.SECOND, 0);
-        now.set(Calendar.MILLISECOND, 0);
-        int dayOfMonth = now.get(Calendar.DAY_OF_MONTH);
-
-        for (int i = 5; i >= 3; i--) {
-            now.set(Calendar.DAY_OF_MONTH, dayOfMonth-i);
-            long currentTime = now.getTimeInMillis();
-            JSONObject runtimeInfo = new JSONObject();
-            runtimeInfo.put("registerCount", 0);
-            runtimeInfo.put("queryCount", 0);
-            runtimeInfo.put("time", currentTime);
-            runtimeInfoList1.add(runtimeInfo);
-        }
-
-        now.set(Calendar.DAY_OF_MONTH, dayOfMonth-2);
-        long currentTime1 = now.getTimeInMillis();
-        JSONObject runtimeInfo1 = new JSONObject();
-        runtimeInfo1.put("registerCount", 0);
-        runtimeInfo1.put("queryCount", 1494);
-        runtimeInfo1.put("time", currentTime1);
-        runtimeInfoList1.add(runtimeInfo1);
-
-        now.set(Calendar.DAY_OF_MONTH, dayOfMonth-1);
-        long currentTime2 = now.getTimeInMillis();
-        JSONObject runtimeInfo2 = new JSONObject();
-        runtimeInfo2.put("registerCount", 205);
-        runtimeInfo2.put("queryCount", 57);
-        runtimeInfo2.put("time", currentTime2);
-        runtimeInfoList1.add(runtimeInfo2);
-
-        now.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        long currentTime3 = now.getTimeInMillis();
-        JSONObject runtimeInfo3 = new JSONObject();
-        runtimeInfo3.put("registerCount", 205);
-        runtimeInfo3.put("queryCount", 57);
-        runtimeInfo3.put("time", currentTime3);
-        runtimeInfoList1.add(runtimeInfo3);
+//        now.set(Calendar.DAY_OF_MONTH, dayOfMonth-2);
+//        long currentTime1 = now.getTimeInMillis();
+//        JSONObject runtimeInfo1 = new JSONObject();
+//        runtimeInfo1.put("registerCount", 0);
+//        runtimeInfo1.put("queryCount", 1494);
+//        runtimeInfo1.put("time", currentTime1);
+//        runtimeInfoList1.add(runtimeInfo1);
+//
+//        now.set(Calendar.DAY_OF_MONTH, dayOfMonth-1);
+//        long currentTime2 = now.getTimeInMillis();
+//        JSONObject runtimeInfo2 = new JSONObject();
+//        runtimeInfo2.put("registerCount", 205);
+//        runtimeInfo2.put("queryCount", 57);
+//        runtimeInfo2.put("time", currentTime2);
+//        runtimeInfoList1.add(runtimeInfo2);
+//
+//        now.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+//        long currentTime3 = now.getTimeInMillis();
+//        JSONObject runtimeInfo3 = new JSONObject();
+//        runtimeInfo3.put("registerCount", 205);
+//        runtimeInfo3.put("queryCount", 57);
+//        runtimeInfo3.put("time", currentTime3);
+//        runtimeInfoList1.add(runtimeInfo3);
     }
 
     public static int differQuery(){ return queryCount-preQueryCount; }

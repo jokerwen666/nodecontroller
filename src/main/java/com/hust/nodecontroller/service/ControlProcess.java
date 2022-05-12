@@ -14,4 +14,6 @@ public interface ControlProcess {
     public int bulkRegister(BulkRegister bulkRegister, String dhtUrl, String bcUrl) throws Exception;
 
     public BulkInfo bulkQuery(JSONArray jsonArray, String url) ;
+
+    SinglePageInfo singlePageHandle(InfoFromClient infoFromClient, String bcPrefixQuery) throws Exception;
 }

@@ -30,6 +30,8 @@ public class NodeServiceImpl implements NodeService{
     private final String dhtPort;
     private final String controllerPort;
     private final String zookeeperAddress;
+    private final String registerCount;
+    private final String queryCount;
 
     private final String dhtRegisterUrl;
     private final String dhtDeleteUrl;
@@ -65,10 +67,14 @@ public class NodeServiceImpl implements NodeService{
         List<String> dPort = applicationArguments.getOptionValues("dPort");
         List<String> cPort = applicationArguments.getOptionValues("server.port");
         List<String> zAddress = applicationArguments.getOptionValues("zAddress");
+        List<String> register = applicationArguments.getOptionValues("register");
+        List<String> query = applicationArguments.getOptionValues("query");
         serverIp = ip.get(0);
         dhtPort = dPort.get(0);
         controllerPort = cPort.get(0);
         zookeeperAddress = zAddress.get(0);
+        registerCount = register.get(0);
+        queryCount = query.get(0);
 
         dhtRegisterUrl = "http://" + serverIp + ":" + dhtPort + "/dht/register";
         dhtDeleteUrl = "http://" + serverIp + ":" + dhtPort + "/dht/delete";
@@ -88,6 +94,8 @@ public class NodeServiceImpl implements NodeService{
         infoList.add(dhtPort);
         infoList.add(controllerPort);
         infoList.add(zookeeperAddress);
+        infoList.add(registerCount);
+        infoList.add(queryCount);
         return infoList;
     }
 
@@ -164,6 +172,11 @@ public class NodeServiceImpl implements NodeService{
     @Override
     public IdentityInfo queryAllByPrefix(InfoFromClient infoFromClient) throws Exception {
         return controlProcess.identityHandle(infoFromClient,bcPrefixQuery);
+    }
+
+    @Override
+    public SinglePageInfo querySinglePage(InfoFromClient infoFromClient) throws Exception {
+        return controlProcess.singlePageHandle(infoFromClient, bcPrefixQuery);
     }
 
     @Override

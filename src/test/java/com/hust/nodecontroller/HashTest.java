@@ -11,21 +11,4 @@ import org.junit.jupiter.api.Test;
  * @date 2020.10.20 21:12
  */
 public class HashTest {
-
-    @Test
-    public void test(){
-        String data = "http://222.180.148.30:8666/Query/086.001.000001/01.02.06.20201119.600057";
-
-        String data_ = " http://222.180.148.30:8666/Query/086.001.000001/01.02.06.20201119.600057";
-
-        String dataHash = Integer.toHexString(HashUtil.apHash(data));
-
-        String url = "python \"" + "/root/hust/OID.py" + "\" " + "123456";
-
-        String dataHashAp = Integer.toHexString(HashUtil.apHash(data_));
-        String dataHashSm3 = HashUtil.SM3Hash(data_);
-        String dataHashSm3_ = EncDecUtil.sMHash(data_);
-        System.out.println(dataHashSm3_);
-
-    }
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.hust.nodecontroller.infostruct.IdentityInfo;
 import com.hust.nodecontroller.infostruct.NormalMsg;
 import com.hust.nodecontroller.infostruct.RVSystemInfo;
+import com.hust.nodecontroller.infostruct.SinglePageInfo;
 import com.hust.nodecontroller.utils.EncDecUtil;
 import com.hust.nodecontroller.utils.HashUtil;
 import com.hust.nodecontroller.utils.PostRequestUtil;
@@ -45,7 +46,7 @@ public class BlockchainModule implements sendInfoToModule{
     @Async("enterpriseHandleExecutor")
     public CompletableFuture<NormalMsg> delete(String id, String toUrl) {
         JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name","peer0");
+        jsonToRVSystem.put("peer_name","peer1");
         jsonToRVSystem.put("Identifier",id);
         NormalMsg normalMsg = new NormalMsg();
 
@@ -62,7 +63,7 @@ public class BlockchainModule implements sendInfoToModule{
     @Async("queryHandleExecutor")
     public CompletableFuture<RVSystemInfo> query(String identity, String toUrl) {
         JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name", "peer0");
+        jsonToRVSystem.put("peer_name", "peer1");
         jsonToRVSystem.put("Identifier", identity);
         RVSystemInfo rvSystemInfo = new RVSystemInfo();
         try {
@@ -88,10 +89,24 @@ public class BlockchainModule implements sendInfoToModule{
         }
     }
 
+    public SinglePageInfo singlePageQuery(String prefix, String bcUrl, String matchString, String txid) {
+        SinglePageInfo singlePageInfo = new SinglePageInfo();
+
+        try {
+            singlePageInfo = PostRequestUtil.getSinglePage(bcUrl, prefix, matchString, txid);
+            return singlePageInfo;
+        }catch (Exception e) {
+            singlePageInfo.setStatus(0);
+            singlePageInfo.setMessage(e.getMessage());
+            return singlePageInfo;
+        }
+    }
+
+
     @Async("queryHandleExecutor")
     public CompletableFuture<NormalMsg> queryOwnerByPrefix(String prefix, String bcUrl) {
         JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name","peer0");
+        jsonToRVSystem.put("peer_name","peer1");
         jsonToRVSystem.put("erp_name","");
         jsonToRVSystem.put("identity_prefix", prefix);
         jsonToRVSystem.put("public_key","");
@@ -114,7 +129,7 @@ public class BlockchainModule implements sendInfoToModule{
 
     private NormalMsg registerAndUpdate(String id, String hash, String url, String toUrl, String queryPermissions) {
         JSONObject jsonToRVSystem = new JSONObject();
-        jsonToRVSystem.put("peer_name","peer0");
+        jsonToRVSystem.put("peer_name","peer1");
         jsonToRVSystem.put("Identifier",id);
         jsonToRVSystem.put("hash",hash);
         jsonToRVSystem.put("abstract", EncDecUtil.sMHash(url));

@@ -6,14 +6,12 @@ import com.hust.nodecontroller.communication.AuthorityModule;
 import com.hust.nodecontroller.communication.BlockchainModule;
 import com.hust.nodecontroller.communication.ComInfoModule;
 import com.hust.nodecontroller.communication.DhtModule;
+import com.hust.nodecontroller.enums.IdentityTypeEnum;
 import com.hust.nodecontroller.errorhandle.BCErrorHandle;
 import com.hust.nodecontroller.errorhandle.DhtErrorHandle;
 import com.hust.nodecontroller.infostruct.*;
 import com.hust.nodecontroller.enums.AuthorityResultEnum;
-import com.hust.nodecontroller.utils.CalStateUtil;
-import com.hust.nodecontroller.utils.EncDecUtil;
-import com.hust.nodecontroller.utils.HashUtil;
-import com.hust.nodecontroller.utils.IndustryQueryUtil;
+import com.hust.nodecontroller.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
@@ -23,6 +21,8 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -67,6 +67,12 @@ public class ControlProcessImpl implements ControlProcess{
 
         if(type == 2 || type == 8){
             url = data.getString("url");
+            // 更新操作，url为空，默认使用
+             if (type == 2 && url.equals("")) {
+                String queryUrl = dhtUrl.replace("modify", "resolve");
+                CompletableFuture<IMSystemInfo> dhtInfo = dhtModule.query(identity,prefix,queryUrl, false);
+                url = dhtInfo.get().getMappingData();
+            }
             goodsHash = data.getString("goodsHash").toLowerCase();
             queryPermissions = data.getString("queryPermissions");
 
@@ -193,7 +199,8 @@ public class ControlProcessImpl implements ControlProcess{
             logger.info(comQueryInfo.getMessage());
             throw new Exception(comQueryInfo.getMessage());
         }
-        String goodsHash_ = EncDecUtil.sMHash(comQueryInfo.getInformation().toString());
+        String preHash = comQueryInfo.getInformation().toString();
+        String goodsHash_ = EncDecUtil.sMHash(preHash);
 
         if (!goodsHash.equals(goodsHash_)) {
             logger.info(AuthorityResultEnum.GOODSHASH_VERIFY_ERROR.getMsg());
@@ -236,6 +243,61 @@ public class ControlProcessImpl implements ControlProcess{
         }
 
         return identityInfo;
+    }
+
+    @Override
+    public SinglePageInfo singlePageHandle(InfoFromClient infoFromClient, String bcPrefixQuery) throws Exception {
+        String prefix = infoFromClient.getOrgPrefix();
+        String client = infoFromClient.getClient();
+        String matchString = infoFromClient.getMatchString();
+        String txid = infoFromClient.getTxid();
+
+        AMSystemInfo amSystemInfo = authorityModule.query(client,prefix,1);
+        if (amSystemInfo.getStatus() == 0){
+            logger.info("AuthorityVerifyError({})", amSystemInfo.getMessage());
+            throw new Exception(amSystemInfo.getMessage());
+        }
+
+        // 有匹配字符转为单个标识查询
+        if (matchString != "") {
+            if (IdTypeJudgeUtil.typeJudge(matchString).equals(IdentityTypeEnum.IDENTITY_TYPE_NOT_SUPPORT)) {
+                SinglePageInfo singlePageInfo = new SinglePageInfo();
+                singlePageInfo.setStatus(0);
+                singlePageInfo.setMessage("Matching String is invalid!");
+                return singlePageInfo;
+            }
+
+            CompletableFuture<RVSystemInfo> bcInfo = blockchainModule.query(matchString, "http://39.107.238.25:8686/api/queryIdentifier");
+            String urlHash = bcInfo.get().getUrlHash();
+            String goodsHash = bcInfo.get().getMappingDataHash();
+            String permission = bcInfo.get().getPermission();
+            if (permission.equals("1")) {
+                permission = "all";
+            } else {
+                permission = "only";
+            }
+
+            JSONObject jsonObject = new JSONObject();
+            List<JSONObject> identityList = new ArrayList<>();
+            jsonObject.put("identity", matchString);
+            jsonObject.put("urlHash", urlHash);
+            jsonObject.put("goodsHash", goodsHash);
+            jsonObject.put("queryAuthority", permission);
+            identityList.add(jsonObject);
+            SinglePageInfo singlePageInfo = new SinglePageInfo();
+            singlePageInfo.setCount(1);
+            singlePageInfo.setIdentityList(identityList);
+            singlePageInfo.setStatus(1);
+            singlePageInfo.setMessage("Query Single Page Success!");
+            return singlePageInfo;
+        }
+
+        SinglePageInfo singlePageInfo = blockchainModule.singlePageQuery(prefix, bcPrefixQuery, matchString, txid);
+        if (singlePageInfo.getStatus() == 0) {
+            logger.info(singlePageInfo.getMessage());
+            throw new Exception(singlePageInfo.getMessage());
+        }
+        return singlePageInfo;
     }
 
 

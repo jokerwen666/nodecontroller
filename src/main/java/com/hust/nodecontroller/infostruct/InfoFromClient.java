@@ -28,6 +28,16 @@ public class InfoFromClient {
     private String identification;
     private String orgPrefix;
     private String matchString;
+
+    public String getTxid() {
+        return txid;
+    }
+
+    public void setTxid(String txid) {
+        this.txid = txid;
+    }
+
+    private String txid;
     private JSONObject data;
     private String client;
     private Boolean crossDomain_flag = false;

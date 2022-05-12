@@ -73,6 +73,9 @@ public interface NodeService {
      */
     IdentityInfo queryAllByPrefix(InfoFromClient infoFromClient) throws Exception;
 
+
+    SinglePageInfo querySinglePage(InfoFromClient infoFromClient) throws Exception;
+
     /**
      * 通过控制节点获取某企业前缀下（也即某企业拥有的）全部标识排行（解析次数排行）
      * @param prefix
