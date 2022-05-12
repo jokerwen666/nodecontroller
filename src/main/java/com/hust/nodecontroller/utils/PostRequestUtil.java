@@ -321,7 +321,7 @@ public class PostRequestUtil {
     }
 
 
-    public static SinglePageInfo getSinglePage(String url, String prefix, String matchString, String txid) throws Exception {
+    public static SinglePageInfo getSinglePage(String url, String prefix, String matchString, String txid, int totalCount) throws Exception {
         JSONObject jsonToBC = new JSONObject();
         jsonToBC.put("prefix", prefix);
         jsonToBC.put("pageNum", txid);
@@ -337,17 +337,15 @@ public class PostRequestUtil {
             response.setStatus(resJson.getIntValue("status"));
             return response;
         }
-
-        // 记录当前页的标识个数（最大10）
         JSONArray jsonArray = resJson.getJSONArray("data");
-        int count = jsonArray.size();
+        int pageCount = jsonArray.size();
 
         // 获取翻页id
         JSONArray recordArray = resJson.getJSONArray("ResponseMetadata");
         String bookmark = recordArray.getJSONObject(0).getJSONObject("ResponseMetadata").getString("Bookmark");
 
         // 该页数据保存
-        for (int i = 0; i < count; i++){
+        for (int i = 0; i < pageCount; i++){
             JSONObject job = jsonArray.getJSONObject(i); //job为每一个具体的标识查询信息
             JSONObject identityData = new JSONObject(); //identityData为存储当前查询标识的json数据
 
@@ -375,7 +373,7 @@ public class PostRequestUtil {
 
         response.setStatus(1);
         response.setMessage("Query Single Page Success!");
-        response.setCount(count);
+        response.setCount(totalCount);
         response.setIdentityList(identityList);
         response.setTxid(bookmark);
         return response;

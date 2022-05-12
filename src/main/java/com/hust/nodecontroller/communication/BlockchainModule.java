@@ -89,11 +89,11 @@ public class BlockchainModule implements sendInfoToModule{
         }
     }
 
-    public SinglePageInfo singlePageQuery(String prefix, String bcUrl, String matchString, String txid) {
+    public SinglePageInfo singlePageQuery(String prefix, String bcUrl, String matchString, String txid, int totalCount) {
         SinglePageInfo singlePageInfo = new SinglePageInfo();
 
         try {
-            singlePageInfo = PostRequestUtil.getSinglePage(bcUrl, prefix, matchString, txid);
+            singlePageInfo = PostRequestUtil.getSinglePage(bcUrl, prefix, matchString, txid, totalCount);
             return singlePageInfo;
         }catch (Exception e) {
             singlePageInfo.setStatus(0);

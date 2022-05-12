@@ -15,5 +15,5 @@ public interface ControlProcess {
 
     public BulkInfo bulkQuery(JSONArray jsonArray, String url) ;
 
-    SinglePageInfo singlePageHandle(InfoFromClient infoFromClient, String bcPrefixQuery) throws Exception;
+    SinglePageInfo singlePageHandle(InfoFromClient infoFromClient, String bcPrefixQuery, String dhtUrl) throws Exception;
 }

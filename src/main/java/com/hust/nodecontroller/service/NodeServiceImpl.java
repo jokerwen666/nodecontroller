@@ -176,7 +176,7 @@ public class NodeServiceImpl implements NodeService{
 
     @Override
     public SinglePageInfo querySinglePage(InfoFromClient infoFromClient) throws Exception {
-        return controlProcess.singlePageHandle(infoFromClient, bcPrefixQuery);
+        return controlProcess.singlePageHandle(infoFromClient, bcPrefixQuery, dhtOrgResolveNumsUrl);
     }
 
     @Override

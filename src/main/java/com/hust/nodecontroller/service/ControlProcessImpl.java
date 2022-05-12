@@ -246,7 +246,7 @@ public class ControlProcessImpl implements ControlProcess{
     }
 
     @Override
-    public SinglePageInfo singlePageHandle(InfoFromClient infoFromClient, String bcPrefixQuery) throws Exception {
+    public SinglePageInfo singlePageHandle(InfoFromClient infoFromClient, String bcPrefixQuery, String dhtUrl) throws Exception {
         String prefix = infoFromClient.getOrgPrefix();
         String client = infoFromClient.getClient();
         String matchString = infoFromClient.getMatchString();
@@ -292,7 +292,14 @@ public class ControlProcessImpl implements ControlProcess{
             return singlePageInfo;
         }
 
-        SinglePageInfo singlePageInfo = blockchainModule.singlePageQuery(prefix, bcPrefixQuery, matchString, txid);
+        JSONObject callJson = new JSONObject();
+        callJson.put("orgname", prefix);
+        callJson.put("type", 5);
+        IdentityRankInfo identityRankInfo = PostRequestUtil.queryIdRankByPrefix(dhtUrl,callJson);
+        int totalCount = identityRankInfo.getIdNums();
+
+
+        SinglePageInfo singlePageInfo = blockchainModule.singlePageQuery(prefix, bcPrefixQuery, matchString, txid, totalCount);
         if (singlePageInfo.getStatus() == 0) {
             logger.info(singlePageInfo.getMessage());
             throw new Exception(singlePageInfo.getMessage());
