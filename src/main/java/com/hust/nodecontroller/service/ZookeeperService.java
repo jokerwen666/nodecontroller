@@ -42,7 +42,6 @@ public class ZookeeperService {
     }
 
     //添加定时任务
-    @Async("scheduleExecutor")
     @Scheduled(cron = "0/10 * * * * ?")
     public void configureTasks() {
         AtomicInteger threadNum = (AtomicInteger)applicationContext.getBean("threadNum");
