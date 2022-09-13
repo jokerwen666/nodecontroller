@@ -8,7 +8,6 @@ import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,8 +60,7 @@ public class ZookeeperService {
                 setZook(node.getDomainName());
                 createEnterprise(node.getEnterprise());
             }
-
-            stat = zookeeper.setData(destination, (threadNum+"/"+node.toString()).getBytes(), stat.getVersion());
+            stat = zookeeper.setData(destination, (threadNum+"/"+node.toString()).getBytes(),-1);
             System.out.println(threadNum+"/"+node.toString());
         } catch (Exception e) {
             e.printStackTrace();
