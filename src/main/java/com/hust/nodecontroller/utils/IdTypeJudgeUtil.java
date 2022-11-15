@@ -3,7 +3,9 @@ package com.hust.nodecontroller.utils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.hust.nodecontroller.communication.ComInfoModule;
 import com.hust.nodecontroller.enums.IdentityTypeEnum;
+import com.hust.nodecontroller.infostruct.ComQueryInfo;
 import jdk.nashorn.internal.runtime.regexp.joni.constants.internal.EncloseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,38 +124,31 @@ public class IdTypeJudgeUtil {
 
     public static String ecodeResolve(String id, String encType){
         CalStateUtil.ecodeQueryCount++;
-        Process proc;
         String[] title={" 'Ecode编码：\\u3000'"," '产品名称：\\u3000'"," '型号名称：\\u3000'"," '企业名称：\\u3000'"," '回传时间：\\u3000'"};
         String[] value=new String[title.length];
-        try {
-
-            proc = Runtime.getRuntime().exec("python3 /root/hust/Ecode.py " + id);
-            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            String line = null;
-            line = in.readLine();
-            String[] ecode=line.split(",");
-            for(int i=0;i< 12;i++)
-            {
-                for(int j=0;j<title.length;j++)
-                {
-                    if(ecode[i+8].equals(title[j]))
-                    {
-                        value[j]=ecode[i+9];
-                        break;
-                    }
-                }
-            }
-            in.close();
-            proc.waitFor();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("encoding",value[0]);
-        jsonObject.put("name",value[1]);
-        jsonObject.put("model",value[2]);
-        jsonObject.put("company",value[3]);
-        jsonObject.put("registrationDate",value[4]);
+        String url = "https://www.iotroot.com/api/query/search/E=" + id;
+        ComInfoModule comInfoModule = new ComInfoModule();
+        ComQueryInfo comQueryInfo = comInfoModule.query(url);
+        JSONObject data = comQueryInfo.getInformation();
+        String encoding = data.getJSONObject("data").get("Ecode").toString();
+        jsonObject.put("encoding",encoding);
+        JSONArray datas = data.getJSONObject("data").getJSONObject("template").getJSONArray("datas");
+        if (datas.size() == 1) {
+            String name = datas.getJSONObject(0).getString("value");
+            jsonObject.put("name", name);
+            String model = "无";
+            jsonObject.put("model", model);
+        } else if (datas.size() >= 2) {
+            String name = datas.getJSONObject(0).getString("value");
+            jsonObject.put("name", name);
+            String model = datas.getJSONObject(1).getString("value");
+            jsonObject.put("model", model);
+        }
+        String company = data.getJSONObject("data").getString("companyName");
+        jsonObject.put("company", company);
+        String time = data.getJSONObject("data").getJSONObject("ecodeReturn").getString("time");
+        jsonObject.put("registrationDate",time);
         if ("none".equals(encType)) {
             return jsonObject.toString();
         }
