@@ -1,7 +1,6 @@
 package com.hust.nodecontroller.infostruct;
 
 import com.alibaba.fastjson.JSONObject;
-import netscape.javascript.JSObject;
 
 import java.util.List;
 
